@@ -1,6 +1,6 @@
 {
   "agent": "specno-design",
-  "updatedAt": "2026-10-14T13:00:00Z",
+  "updatedAt": "2026-10-14T16:30:00Z",
   "projectSlug": null,
   "stackProfile": "web-vite",
   "stack": {
@@ -9,13 +9,13 @@
     "router": "none (single-page state machine in InvitePage)",
     "uiLibrary": "shadcn/ui base-nova on Base UI (@base-ui/react), lucide-react",
     "styling": "Tailwind CSS 4 with CSS variables (src/index.css)",
-    "animations": "motion 14 (LazyMotion, domAnimation) for the tear and stamp; CSS for fades",
+    "animations": "motion 14 (LazyMotion, domAnimation) for the tear and stamp; CSS for fades; three 0.186 + @react-three/fiber 9 (lazy chunk) for the sealed-screen lanyard ticket; Web Audio (synthesized, opt-in) and navigator.vibrate",
     "forms": "react-hook-form + zod 4 (jitless) + input-otp",
     "backend": "Convex (rsvps, email code challenges), nodemailer",
     "packageManager": "pnpm"
   },
   "screens": [
-    { "route": "/", "view": "sealed", "file": "src/components/SealedView.tsx", "layout": false, "states": ["default", "missing-key"] },
+    { "route": "/", "view": "sealed", "file": "src/components/SealedView.tsx", "layout": false, "states": ["default", "missing-key", "stage-3d", "stage-dom-fallback"] },
     { "route": "/", "view": "attendance", "file": "src/components/AttendanceView.tsx", "layout": false },
     { "route": "/", "view": "form", "file": "src/components/DetailsView.tsx", "layout": false, "states": ["default", "invalid_link"] },
     { "route": "/", "view": "code", "file": "src/components/CodeView.tsx", "layout": false, "states": ["default", "invalid_link"] },
@@ -23,7 +23,8 @@
   ],
   "components": [
     { "name": "InvitePage", "path": "src/components/InvitePage.tsx", "props": ["api", "missingKey"] },
-    { "name": "SealedView", "path": "src/components/SealedView.tsx", "props": ["onTorn", "focusHeading", "missingKey"] },
+    { "name": "SealedView", "path": "src/components/SealedView.tsx", "props": ["onTorn", "onStageEnd", "staged", "focusHeading", "missingKey"] },
+    { "name": "LanyardTicket", "path": "src/components/three/LanyardTicket.tsx", "props": ["hostLine", "onReady", "onFail", "settleRef"] },
     { "name": "AttendanceView", "path": "src/components/AttendanceView.tsx", "props": ["initial", "onContinue"] },
     { "name": "DetailsView", "path": "src/components/DetailsView.tsx", "props": ["initial", "serverErrors", "onChangeValues", "onSubmit", "onChangeAttending"] },
     { "name": "CodeView", "path": "src/components/CodeView.tsx", "props": ["email", "attending", "initialStatus", "initialSentAt", "initialRetryAfterMs", "onRequestCode", "onVerify", "onSaved", "onInvalidPayload", "onBack"] },
@@ -44,7 +45,9 @@
     "directionName": "Matchday Programme",
     "contract": ".specno-design/",
     "customTokens": true,
-    "customComponents": true
+    "customComponents": true,
+    "sealedStage": "Floodlit Night Stand (treatment A), sealed screen only; fades to paper after Tear open; stub stays on paper",
+    "sceneLights": { "key": 4.2, "ambient": 1.6, "note": "owner-approved amendment 2026-10-14, replaces brief 1.0 / 1.4, tuned on the built scene" }
   },
   "lastVerifiedAt": "2026-10-14T11:38:00Z"
 }

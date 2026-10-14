@@ -72,13 +72,13 @@ Fallbacks are silent: no error message to the guest. Log one console `debug` lin
 
 ## 9. Deferred until after the phone test
 
-- Environment: paper-coloured page (as today) or floodlit stadium night. A dark stadium would collide with "light theme only" and needs its own owner decision.
+- Environment: paper-coloured page (as today) or floodlit stadium night. A dark stadium would collide with "light theme only" and needs its own owner decision. **Decided 2026-10-14:** floodlit stadium night (treatment A), sealed screen only. See `save-the-date-stadium-options.md`.
 - Gyro / device-orientation tilt (iOS needs a permission prompt; behaviour in the WhatsApp webview is unverified).
-- Whether the returned stub should also be 3D.
+- Whether the returned stub should also be 3D. **Decided 2026-10-14:** no. The returned stub stays on the paper page in the DOM (owner confirmed).
 
 ## Open questions for after the phone test
 
 1. Does WebGL context creation and touch drag (no scroll hijack, `touch-action: none` on the canvas only) work in the WhatsApp in-app browser on iOS and Android? Unverified here.
 2. Is verlet rope enough, or does the swing need cannon-es?
 3. Do the frame-time and 260 kB targets hold on his phone and on a mid-range Android?
-4. Is the strap text legible and tasteful at phone size, or should the strap be plain?
+4. Is the strap text legible and tasteful at phone size, or should the strap be plain? **Decided 2026-10-14:** keep "THIRTY UNITED" repeated (current build, owner confirmed).

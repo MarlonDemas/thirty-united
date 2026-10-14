@@ -34,18 +34,18 @@ A personal invite for Marlon "Makes" Demas's 30th birthday, Monday 21 December 2
 
 - No official club crest, wordmark or kit, ever (trademark). The United nod is the red, the condensed and serif type and programme print culture.
 - No confetti, balloons, gold foil, "30" clip-art, stock photography or illustration.
-- No ball glyph, no stadium photo. The ticket is the only illustration.
+- No ball glyph, no stadium photo. The ticket is the only illustration. Exception (owner decision 2026-10-14), scoped to the sealed screen's stage only: a drawn night-stadium backdrop (CSS gradients, one self-hosted SVG of seat rows, and the three.js key light, tinted ambient and baked contact-shadow plane) behind the 3D ticket. It stays an illustrated scene, never a photograph, HDRI or video; no crest, wordmark, kit or club imagery; no red in the scene; no neon, gold, glow borders or betting-app chips; it never moves after the ticket's entrance (one 600 ms floodlight fade-in at most). Every other view stays photo-free and illustration-free.
 - Open Graph image: the sealed ticket artwork with "Thirty United, 21 Dec 2026". `noindex`.
 
 ## Accessibility floor
 
 - WCAG 2.2 AA on every view; text 4.5:1, control borders and focus 3:1 (values in `tokens.md`).
 - Keyboard completion of every step, visible focus ring, focus moves to the new view's heading, live-region announcement of the tear result and of every status.
-- `prefers-reduced-motion`: instant reveal, no tear, "Tear open" button only. `forced-colors` and 200% text supported. Light theme only.
+- `prefers-reduced-motion`: instant reveal, no tear, "Tear open" button only. `forced-colors` and 200% text supported. Light theme only, except the sealed screen's night stage (see Marks and imagery); the form, code and stub views are light.
 - Minimum text 14px, inputs 16px, targets 48px.
 
 ## Prohibited patterns
 
-Shadowed cards (except the ticket, which may carry one soft contact shadow); gradients (except one light-driven sheen on the ticket and stamp); red fills beyond the primary button and stamp; pill buttons; toasts; dark theme; autoplay or looping motion (except the ticket and stamp: the 3D ticket answers the guest's hand and settles under damping to rest, it never loops or moves on its own after its entrance; no other surface gets a shadow, gradient or motion); placeholder-only labels; red asterisks for required fields (optional fields carry a muted "optional" tag instead); any official club imagery.
+Shadowed cards (except the ticket, which may carry one soft contact shadow); gradients (except one light-driven sheen on the ticket and stamp); red fills beyond the primary button and stamp; pill buttons; toasts; dark theme (except the sealed screen's night stage only, never behind a form, code or stub view); autoplay or looping motion (except the ticket and stamp: the 3D ticket answers the guest's hand and settles under damping to rest, it never loops or moves on its own after its entrance; no other surface gets a shadow, gradient or motion); placeholder-only labels; red asterisks for required fields (optional fields carry a muted "optional" tag instead); any official club imagery.
 
-Amended 2026-10-14 by owner decision (`lux-notes/save-the-date-2026-10-14-r2.md`). The exceptions are scoped to the ticket and its stamp only. Sound is opt-in, off by default, behind a "Sound" tab on the ticket.
+Amended 2026-10-14 by owner decision (`lux-notes/save-the-date-2026-10-14-r2.md`). The exceptions are scoped to the ticket and its stamp only, plus the sealed screen's night stage (a gradient backdrop, drawn, static). Sound is opt-in, off by default, behind a "Sound" tab on the ticket.

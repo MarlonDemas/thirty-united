@@ -1,6 +1,6 @@
 # DESIGN.md: Thirty United
 
-Generated from the `.specno-design/` contract (Direction A, Matchday Programme) and the shipped build in `src/`. This file is an export. Change the contract, not this file.
+Generated from the `.specno-design/` contract (Direction A, Matchday Programme, with the 3D ticket and the sealed-screen stadium stage) and the shipped build in `src/`. This file is an export. Change the contract, not this file.
 
 ## 1. Stack
 
@@ -12,11 +12,11 @@ Generated from the `.specno-design/` contract (Direction A, Matchday Programme) 
 - **Routing:** none. `InvitePage` is a state machine with five views (`sealed`, `attendance`, `form`, `code`, `stub`)
 - **Forms:** react-hook-form + zod 4 (`z.config({ jitless: true })` so the CSP needs no `unsafe-eval`) + `input-otp`
 - **State (server):** Convex (RSVP records, email code challenges); `nodemailer` for the code email
-- **Animation:** `motion` 14 via `LazyMotion` (`domAnimation`); CSS for fades
+- **Animation:** `motion` 14 via `LazyMotion` (`domAnimation`) for the tear and stamp; CSS for fades; `three` 0.186 with `@react-three/fiber` 9 for the sealed-screen lanyard ticket (lazy chunk); Web Audio (synthesized) and `navigator.vibrate` for the opt-in craft moves
 - **Icons:** `lucide-react`
 - **Testing:** Vitest + Testing Library + convex-test; Playwright for e2e
 - **Delivery:** Netlify. CSP and security headers in `netlify.toml`; `style-src` carries a sha256 hash for input-otp's empty `<style>`
-- **Bundle:** the details and code views are lazy-loaded; entry is about 156 kB gzip (232 before)
+- **Bundle:** the details and code views are lazy-loaded; entry was about 156 kB gzip (232 before); the 3D scene is a separate lazy chunk loaded only on the sealed screen
 
 ## 2. Project Context
 
@@ -37,11 +37,13 @@ A one-page save-the-date and RSVP for Marlon "Makes" Demas's 30th birthday, Mond
 - Use one serif standfirst line per view, none on the code view.
 
 **Don't:**
-- Use an official club crest, wordmark or kit, confetti, balloons, gold foil, stock photography or illustration.
+- Use an official club crest, wordmark or kit, confetti, balloons, gold foil, stock photography or illustration. The one exception is the drawn night-stadium backdrop on the sealed screen (no photo, crest, wordmark, kit or red).
 - Use exclamation marks, emoji or "Oops", or blame the guest.
 - Use inflated vocabulary or filler openers (Specno writing rules apply to all copy).
 
 There is no logo; the ticket is the mark. The Open Graph image (`public/og.png`, 1200×630) is the sealed ticket artwork.
+
+**Sealed-screen stage (owner decisions, 2026-10-14):** the sealed screen shows the ticket hanging on a lanyard that the guest can grab, swing and fling (3D option C; the DOM ticket is the fallback), in front of stadium treatment A, "Floodlit Night Stand". The stage is the sealed screen only. After "Tear open" it fades to the paper page, and the returned stub stays on paper. Both points are decided (confirmed by the owner on 2026-10-14; they started as defaults). The strap reads "THIRTY UNITED", repeated (confirmed 2026-10-14). The Netlify badge stays and its CSP console errors are accepted.
 
 **Direction (hard constraints from `feedback.md`):** A "Matchday Programme" is chosen. B "Terrace Ticket" (letterpress rendering, ink bleed, shadowed perforation, one question per screen) and C "Scoreboard Broadcast" (ink strips, ticker, wipes) are rejected; do not propose UI that drifts into either.
 
@@ -70,7 +72,19 @@ Light theme only (`color-scheme: light`, no `.dark` block). Contrast ratios are 
 
 ### Dark
 
-_No entries yet._ Dark mode is out by owner decision (2026-10-14).
+_No entries yet._ Dark mode is out by owner decision (2026-10-14). The one exception is the sealed screen's night stage, which is a painted layer and not a theme (`:root` stays `color-scheme: light`). Its scene tokens apply to the sealed state only; no form, code or stub view uses them.
+
+| Token | Value | Role |
+|-------|-------|------|
+| `scene-night-deep` | `#0B1411` | Page edge, sky (paper on it 16.05:1) |
+| `scene-night-mid` | `#16231E` | Terrace body, footer scrim (paper 13.93:1) |
+| `scene-night-lift` | `#22342D` | Bowl centre behind the ticket, keeps the contact shadow visible (paper 11.28:1) |
+| `scene-floodlight` | `#FFF6DC` | Floodlight glow and key light colour |
+| `scene-pitch` | `#2F5D3A` | Pitch glow and mowing stripes at low opacity |
+| `scene-pitch-lit` | `#2A4A31` | Pitch band under the footer (paper 8.49:1) |
+| `scene-ambient` | `#9FB4AA` | Cool green ambient light colour in three (not a CSS paint) |
+
+On the stage, red alone fails 3:1 (2.86:1 on `scene-night-deep`, 1.51:1 on `scene-pitch-lit`) and the ink strap is 1.08:1. Required fixes, not clutter: "Tear open" carries a 2px `paper` outer ring; the focus ring is 3px red offset 2px plus a 2px `paper` ring outside it (scoped to the `.stage` ancestor); the strap has paper stitching and paper caps. Under `forced-colors` the backdrop is hidden and the scene tokens are ignored.
 
 Rules: text on a red fill is `paper-raised` (ink on red is 2.66:1, banned). No red fills other than the primary button and the stamp. Nothing lighter than `muted` for text. State is never colour alone: each status pairs an icon and a line, and errors add the 2px rule.
 
@@ -120,9 +134,9 @@ Role split is strict: display for the ticket title, view headings and tabs; seri
 | `rule` | 1px solid ink: ticket frame, boxes, inputs, tiles |
 | `rule-active` | 2px by inset shadow, no layout shift: focused box, selected tile |
 | Radius | `--radius: 0` everywhere; `radius-mark` 2px for the stamp and the "optional" and "MAYBE" tags; 50% only for the radio dot |
-| Shadow | None. Rules do the grouping |
+| Shadow | None. Rules do the grouping. One exception: the ticket and stamp may carry one soft contact shadow (down and to the right) and one light-driven sheen from the upper left; curl and fold gradients stay out, and no other surface gets a shadow or gradient (owner amendment, 2026-10-14) |
 | Grain | static SVG noise at 4% opacity on ticket and stub only |
-| Perforation | CSS mask: each ticket half loses a quarter circle at both seam ends (`--notch` 10px, 14px from 768px), so a joined ticket shows full punches and a torn one keeps matching edges; an SVG quarter-arc redraws the ink edge |
+| Perforation | CSS mask on the DOM ticket: a row of punched holes along the seam (3px radius, 9px pitch, 12px from 768px) and a quarter circle lost from each half at both seam ends (`--notch` 10px, 14px from 768px), so a joined ticket shows full punches and a torn one keeps matching edges; an SVG quarter-arc redraws the ink edge. The 3D ticket face redraws the seam as a dotted line with corner notches. No shadow inside or under the perforation |
 | Stamp | rotated -4deg, 2px red border with a 1px inner rule; the only rotated element |
 | Focus ring | 3px `#B3261E`, offset 2px, set once on base `:focus-visible`. Do not add `outline-none` to controls (it hid focus everywhere during the build) |
 
@@ -138,7 +152,7 @@ Hierarchy: ticket (framed) > ruled boxes (1px) > fields (1px) > tags (2px radius
 
 ## 9. Motion & Animation
 
-Budget: signature (the tear), instant for anyone who asks for reduced motion. Transform and opacity only. Nothing loops.
+Budget: signature (the tear), instant for anyone who asks for reduced motion. Transform and opacity only. Nothing loops. The ticket answers the guest's hand (grab, swing, fling), lands (stamp) and then settles under damping; after its entrance nothing moves on its own.
 
 | Token | Duration | Easing | Use |
 |---|---|---|---|
@@ -148,8 +162,14 @@ Budget: signature (the tear), instant for anyone who asks for reduced motion. Tr
 | `tear-cancel` | 200ms | same ease-out | Release before 35% |
 | `stamp-land` | 180ms | `cubic-bezier(0.22, 1, 0.36, 1)` | Stamp scales 1.15 to 1 and fades in, no bounce |
 | `hint-nudge` | 600ms | ease-in-out | Stub edge lifts 4px after 3s idle, twice at most |
+| `lights-on` | 600ms | `cubic-bezier(0.2, 0, 0, 1)` | One-shot floodlight glow fade-in during the ticket's drop entrance, opacity only; settles, never loops. Off under reduced motion (the glow is simply present) |
+| `stage-fade` | 160ms | `cubic-bezier(0.2, 0, 0, 1)` | After "Tear open" settles (about 400ms ease to face-front), the night stage cross-fades to `page` while the DOM ticket takes over; instant under reduced motion |
 
-- **Library:** `motion` (`LazyMotion`, `domAnimation`).
+- **Library:** `motion` (`LazyMotion`, `domAnimation`) for the tear and stamp; `three` with `@react-three/fiber` for the sealed-screen ticket.
+- **3D ticket and stage:** the ticket hangs on a rope-physics strap, drawn to a canvas texture from the DOM ticket's fonts and tokens. The DOM ticket stays mounted for screen readers and as the fallback. The canvas renders on demand (`frameloop="demand"`), so it stops at rest. Scene lights, owner-approved amendment of 2026-10-14: key light 4.2 and ambient 1.6 as built, replacing the brief's 1.0 and 1.4 (reason: tuned on the built scene). The key sits upper left at `[-4, 6, 5]`, matching the left floodlight. One baked contact-shadow plane, no shadow maps.
+- **Fallback ladder:** WebGL unavailable, context lost, slow frames or a failed 3D load keep the drawn backdrop and show the flat DOM ticket with a CSS contact shadow and sheen. `prefers-reduced-motion` and `forced-colors` never load the 3D chunk (reduced motion keeps the static backdrop, forced colors hides it).
+- **Haptics:** `navigator.vibrate` where it exists, never required. Tear tick 4ms every 40px of tip travel, separation 10-30-18ms, stamp 22ms (Maybe 12ms). Fires only after a gesture and not under reduced motion.
+- **Sound (opt-in):** a "Sound" tab on the ticket's top rule (`aria-pressed`, "Sound off" by default). The first tap unlocks the `AudioContext`. Synthesized only (tear ticks, paper rip, stamp thump), master gain 0.25, no media files. The choice is kept in `sessionStorage` for the visit. Skipped under reduced motion and forced colors; an iOS silent switch mutes it.
 - **Reduced motion** (`prefers-reduced-motion: reduce`): no handle, no hint, no drag. The visible "Tear open" button reveals the stub instantly (measured 68ms against 823ms), the stamp appears in place, view changes are instant, and CSS animation and transition durations are forced to 0.
 - Wrong code does not shake the field. Success lands the stamp and fades the stub in.
 - The handle alone sets `touch-action: none`, so the page still scrolls elsewhere.
@@ -160,6 +180,9 @@ Code is the source of truth; `.specno-design/components.md` lists the divergence
 
 ### Foundations
 - **Ticket** (`src/components/Ticket.tsx`): main half and stub half joined at the perforation. Sized by content, capped at 960px.
+- **LanyardTicket** (`src/components/three/LanyardTicket.tsx`, with `sceneTextures.ts`, `ticketTexture.ts`, `rope.ts`): the 3D ticket, strap and lights on the sealed screen. Lazy-loaded; the DOM `Ticket` is the fallback.
+- **Stage backdrop** (`InvitePage.tsx`, `.stage-backdrop` in `index.css`, `assets/terrace-dots.svg`): the drawn night stadium, `aria-hidden`, sealed state only, removed after the fade to paper.
+- **Sound tab** (`SealedView.tsx`): the opt-in sound toggle on the ticket's top rule.
 - **HeaderTicket** (`HeaderTicket.tsx`): the ticket as a page header on later views, with the picked reply (`yes`, `maybe`, `no`).
 - **RuledBox** (`RuledBox.tsx`): `fieldset` with the label tab as `legend`.
 - **StatusLine** and **Announcer** (`StatusLine.tsx`): inline status in an `aria-live="polite"` region, tones `success`, `warning`, `error`, `neutral`. No toasts.
@@ -192,12 +215,13 @@ _No entries yet._ No dialogs, popovers or toasts by design.
 
 ## 11. Patterns & UX Rules
 
-- **Accessibility floor:** WCAG 2.2 AA. Text 4.5:1, control borders and focus 3:1. Verified with 0 axe violations (wcag2a/aa/21aa/22aa) in 26 states. Keyboard completion of every step; light theme only; `forced-colors` and 200% text supported.
+- **Accessibility floor:** WCAG 2.2 AA. Text 4.5:1, control borders and focus 3:1. Verified with 0 axe violations (wcag2a/aa/21aa/22aa) in 26 states on the paper views. Keyboard completion of every step; light theme only except the sealed screen's night stage; `forced-colors` and 200% text supported.
 - **Focus:** on every view change focus moves to the new view's h1 (`tabIndex=-1`), including the code view, so a keyboard user needs one Tab to reach the code field. This is deliberate. A live region announces the result ("Ticket opened", "Code sent to <email>", "Saved").
 - **Touch targets:** 48px (56px for tiles and code cells), 8px apart.
 - **Responsive:** mobile-first; one object and one column at every breakpoint. Orientation is not locked.
 - **Forms:** visible label above every field, no placeholder-only labels; optional fields carry a muted "optional" tag, no red asterisks. Error text sits under the field with the 2px `status-error` rule and `circle-alert`. After a failed submit, fields revalidate on change (not on blur) and radio errors clear on selection; mounting errors on blur moved the layout and dropped clicks. Focus goes to the first invalid field. Answers survive every failure.
 - **Code step:** six digits, paste strips spaces and dashes. Code valid 10 minutes, 5 attempts, resend cooldown 60 seconds (live countdown, announced at start and end). After lockout resend stays disabled until the cooldown ends. Every outcome has its own icon, line and next action: sending, sent, cooldown, wrong code ("3 tries left"), expired, too many tries, rate-limited, service unavailable, saved, updated. The backend replays a correct, already-used code, so a verify queued while offline still shows as saved. **Invite key:** the shared link carries a secret `?k=...` that stays in the address bar (a `sessionStorage` copy is the fallback). With a wrong key (`invalid_link`) the send step and resend show "This link is missing its invite key. Ask Makes to send you the full link." under "Send my code" with answers kept, and verify shows it in the code view without counting a wrong try and keeping the entered code. Neutral tone, no icon.
+- **Sealed screen and stage:** the night stage appears on the sealed screen only. The "Tear open" button stays a real DOM button below the canvas and is always the equal path to the drag. The RSVP form, code and stub views stay on light paper. Decisions confirmed by the owner on 2026-10-14: the stage fades to paper after "Tear open" (yes); the stub stays on paper (yes); the strap text is "THIRTY UNITED", repeated; scene lights stay at the built key 4.2 and ambient 1.6; the Netlify badge stays and its CSP console errors are accepted.
 - **Navigation:** no router and no Back button; browser Back leaves the page. A reload during the code step returns to the prefilled form. Accepted gaps.
 - **Loading:** a slow send shows a still-working line at 5s and a retry at 15s; no silent retry, since a retry would send a second email. No data loads on first paint.
 - **Empty states:** none; there are no lists.
@@ -212,8 +236,10 @@ _No entries yet._ No dialogs, popovers or toasts by design.
 - `public/og.png`: 1200×630 Open Graph image, the sealed ticket
 - Fonts: self-hosted from `@fontsource/barlow-condensed`, `source-serif-4`, `inter`, `jetbrains-mono` (bundled into `dist/assets`)
 - Wireframes and references: `.specno-design/wireframes/save-the-date-2026-10-14/`, `.specno-design/references/`
-- Verify report: `.specno-design/captures/save-the-date-verify-2026-10-14.md`
+- `src/assets/terrace-dots.svg`: seat dots for the stage backdrop (self-hosted, referenced from CSS)
+- Verify reports: `.specno-design/captures/save-the-date-verify-2026-10-14.md` (paper views), `.specno-design/captures/save-the-date-verify-stadium-2026-10-14.md` (stage)
 
 **Change log:**
 - **2026-10-14**: Initial DESIGN.md generated from the contract and the verified build (Direction A chosen; lux note; verify with 0 axe violations, 0 console errors, 192 of 192 unit tests and 2 of 2 end-to-end tests after the fix loop). Fix loop closed: base focus ring restored, revalidate-on-change, `viewport-fit=cover`, noindex and Open Graph image, No-stub void strip, offline verify replay.
 - **2026-10-14 (invite-key gate)**: Bot protection built as a secret invite key in the link (`src/lib/inviteKey.ts`; backend check in `convex/lib/inviteGate.ts`). New states: sealed ticket with no key, and `invalid_link` at send, resend and verify, all one neutral `StatusLine` sentence. Tests: 214 of 214 unit, 3 of 3 end-to-end. The accessibility scan predates these states; they reuse the already-scanned `StatusLine`.
+- **2026-10-14 (3D ticket and stadium A)**: Contract amended for the 3D lanyard ticket (option C), opt-in sound, haptics and the soft contact shadow and sheen on the ticket and stamp, then for the sealed-screen stage (treatment A, "Floodlit Night Stand"). Owner decisions recorded: scene lights stay at the built key 4.2 and ambient 1.6 (replacing 1.0 and 1.4, tuned on the built scene); the stage fades to paper after "Tear open"; the stub stays on paper; the strap reads "THIRTY UNITED", repeated; the Netlify badge stays. DESIGN.md and `.agents/specno-design.json` regenerated from the contract. Sections 1, 3, 4, 7, 9, 10, 11 and 12 changed.

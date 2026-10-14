@@ -58,3 +58,26 @@ Owner answered the round-2 lux note: reverse two round-1 commits, amend brand.md
 - LUX: Committed. The ticket is a 3D object on a lanyard (option C, R3F/three) that answers the hand and settles under damping; nothing loops. The environment is pending the owner's phone test in WhatsApp's in-app browser. The DOM ticket is the fallback. Spec: `lux-notes/save-the-date-3d-lanyard-spec.md`.
 - CORRECTION: The round-1 entry "the perforation is a CSS mask, so the page colour shows through the punches" is inaccurate. The perforation is a dotted right border with four corner notches (`src/components/Ticket.tsx:55`, `index.css:242-261`); there are no punches. Treat the dotted seam as the built state, not a mask.
 
+## 2026-10-14 (stadium stage)
+
+### Context
+Owner tested the lanyard spike in WhatsApp and asked for a stadium background. He chose treatment A from `lux-notes/save-the-date-stadium-options.md`; he answered only that question, so the other two points are defaults he can override.
+
+### Decisions
+- LUX: Committed. Stadium A, "Floodlit Night Stand", is the stage for the sealed screen only: a drawn CSS/SVG night bowl behind a transparent R3F canvas, with the three key light matching the left floodlight. It is not a photo, carries no red, crest or kit, and never moves after the entrance. This amends brand.md's "no stadium photo" and "dark theme" lines for that stage alone. (Owner: chose A.)
+- LUX: Committed (default, owner may override). After "Tear open" the stage fades to the paper `page`; the RSVP form, code and stub views stay light and AA-verified. A dark stage behind the form would re-open every contrast and forced-colors check.
+- LUX: Committed (default, owner may override). The returned stub sits on the paper page, not the stadium.
+- INSIGHT: On the night stage, red alone fails 3:1 (2.86:1 on deep, 1.51:1 on the pitch band) and the ink strap is 1.08:1. The "Tear open" button needs a 2px paper outer ring, the focus ring a paper outer ring, and the strap paper stitching and caps. Do not drop these as clutter.
+- CORRECTION: The stadium note said the scene must live in the CSS file because the CSP blocks inline styles. CSSOM writes (React, `motion`) are not blocked; only literal `style="..."` attributes in static HTML are.
+
+## 2026-10-14 (owner decisions, 3D ticket and stadium A)
+
+### Context
+Owner settled the four open points for the 3D ticket and stadium A. This section closes the two "Committed (default, owner may override)" lines in "2026-10-14 (stadium stage)" above.
+
+### Decisions
+- CORRECTION: Scene light values. Key light 1.0 and ambient 1.4 (brief, `lux-notes/save-the-date-stadium-build.md` section 2) → key 4.2 and ambient 1.6 as built (`src/components/three/LanyardTicket.tsx:16-17`). Owner-approved amendment: keep the built values. Reason: tuned on the built scene.
+- LUX: Committed, now decided. After "Tear open" the stadium fades to the paper `page`; the RSVP form, code and stub views stay light and AA-verified. (Owner: yes. Was a default he could override.)
+- LUX: Committed, now decided. The returned stub stays on paper, not the stadium. (Owner: yes. Was a default he could override.)
+- ACCEPTED: Strap text is "THIRTY UNITED", repeated, as built. (Owner: confirmed. Closes open question 4 in `lux-notes/save-the-date-3d-lanyard-spec.md`.)
+- ACCEPTED: The Netlify badge stays; its CSP console errors are accepted. (Owner: confirmed earlier.)

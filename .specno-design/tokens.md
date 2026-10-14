@@ -10,7 +10,7 @@ lastUpdated: "2026-10-14"
 
 # Tokens: Thirty United (Direction A, Matchday Programme)
 
-Projected from `direction.md` (typographic identity, color thesis, motion philosophy). One light theme only: set `color-scheme: light` on `:root`, remove the `.dark` block from `src/index.css` at build. Contrast ratios below were computed (WCAG relative luminance), not estimated.
+Projected from `direction.md` (typographic identity, color thesis, motion philosophy). One light theme only, except the sealed screen's night stage (scene tokens below, sealed state only): set `color-scheme: light` on `:root`, remove the `.dark` block from `src/index.css` at build. Contrast ratios below were computed (WCAG relative luminance), not estimated.
 
 ## Color
 
@@ -51,6 +51,32 @@ State is never colour alone: every status pairs an icon, a short line and (for e
 |---|---|
 | `focus-ring` | 3px `red`, offset 2px, on every interactive element (`:focus-visible`). 4.98:1 on page, 5.61:1 on paper |
 | `focus-rule` | The owning ruled box thickens to 2px (inset shadow, no layout shift) while a field inside it has focus |
+
+### Scene tokens: the sealed screen's night stage (stadium A, owner decision 2026-10-14)
+
+Used only by the sealed screen's backdrop and the 3D scene lights. No form, code or stub view uses them; the `.dark` block stays removed and `:root` stays `color-scheme: light` (the stage is a painted layer, not a theme). Define as CSS custom properties in `src/index.css`. Contrast ratios computed (WCAG relative luminance).
+
+| Token | Hex | Role | Contrast |
+|---|---|---|---|
+| `scene-night-deep` | `#0B1411` | Page edge, sky | paper on it 16.05:1 |
+| `scene-night-mid` | `#16231E` | Terrace body, footer scrim | paper 13.93:1 |
+| `scene-night-lift` | `#22342D` | Bowl centre, behind the ticket (keeps the contact shadow visible) | paper 11.28:1 |
+| `scene-floodlight` | `#FFF6DC` | Floodlight glow and key light colour | 17.34:1 on night-deep |
+| `scene-pitch` | `#2F5D3A` | Pitch glow, mowing stripes at lower opacity | paper 6.56:1 |
+| `scene-pitch-lit` | `#2A4A31` | Pitch band under the footer | paper 8.49:1 (footer text passes) |
+| `scene-ambient` | `#9FB4AA` | Cool green ambient light colour in three (not a CSS paint) | n/a |
+
+Required fixes on the stage (without them the Direction A parts fail):
+
+| Element | Problem | Fix | Result |
+|---|---|---|---|
+| "Tear open" button edge | `red` on `scene-night-deep` 2.86:1, on `night-lift` 2.01:1, on `pitch-lit` 1.51:1 (needs 3:1) | 2px `paper` outer ring around the red button (`box-shadow: 0 0 0 2px var(--paper)`, not a layout change). Label stays `paper-raised` on red, 6.16:1 | ring 16.05:1 on deep, 11.28:1 on lift, 8.49:1 on pitch-lit |
+| Focus ring on the stage | 3px `red` alone is 2.86:1 or less on night | Two-tone: 3px `red` ring (offset 2px) plus a 2px `paper` ring outside it. The paper edge carries the 3:1. Off the stage, `focus-ring` is unchanged | 16.05:1 on deep |
+| Strap (ink cloth) | `ink` on `scene-night-deep` 1.08:1, on `night-lift` 1.32:1 | 1.5px stitched edge lines in `paper`, and "THIRTY UNITED" caps in `paper` at about 55% (about 5.3:1 on the ink cloth); key light catches the upper-left edge. If it still reads weak, lift the strap fill to `ink-2` `#4A463D` (1.99:1 on night; the stitching does the work) | stitching 16.05:1 on deep, 11.28:1 on lift |
+| Footer text on the stage | n/a | `paper` on `scene-pitch-lit` or `scene-night-mid` | 8.49:1 / 13.93:1 |
+| Ticket edge vs stage | n/a | paper ticket on night, no change | 16.05:1 |
+
+Forced colors: the backdrop layer is `display: none`; the ticket, button and focus ring use their forced-colour borders and `Highlight`, as today. The scene tokens are ignored.
 
 ### shadcn variable mapping (for the build, `src/index.css`)
 
@@ -143,6 +169,8 @@ Budget: signature (the tear), instant for everyone who asks for reduced motion. 
 | `stamp-land` | 180ms | `cubic-bezier(0.22, 1, 0.36, 1)` (no bounce) | Stamp scales 1.15 to 1 and fades in at -4deg |
 | `hint-nudge` | 600ms | `ease-in-out` | One 4px lift of the stub edge after 3s idle, twice at most, then still |
 | `tab-fill` | 120ms | `ease-out` | Label tab fill on hover (colour only) |
+| `lights-on` | 600ms | `cubic-bezier(0.2, 0, 0, 1)` | One-shot floodlight glow opacity fade-in during the ticket's drop entrance; settles, never loops. Off under reduced motion (glow simply present) |
+| `stage-fade` | 160ms | same as `fade-view` | After "Tear open" settles, the night stage cross-fades to `page`; instant under reduced motion |
 
 Decisions that tighten the brief to the direction's "one clean tear, then still":
 - Wrong code: no shake. The field rule goes to 2px `status-error` with the alert icon and message (a shake is the one extra movement the direction does not allow, and it is hard on vestibular conditions).
