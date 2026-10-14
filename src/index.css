@@ -433,10 +433,20 @@
   opacity: 1;
 }
 
+/* The stamp's contact shadow: the ticket's (down and right, soft, same alpha) at about a fifth of the size. */
+.stamp-shadow {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  box-shadow: 4px 6px 5px 0 rgb(0 0 0 / 0.55);
+}
+
 @media (forced-colors: active) {
   .stage-backdrop,
   .stage-tab,
   .ticket-shadow,
+  .stamp-shadow,
   .ticket[data-lit] .piece-main::before {
     display: none;
   }

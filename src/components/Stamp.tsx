@@ -41,32 +41,45 @@ export function Stamp({ variant, className, onImpact }: { variant: StampVariant;
   }, [reduced, maybe])
   return (
     <m.div
-      data-variant={variant}
       initial={reduced ? false : FROM[variant]}
       animate={{ opacity: 1, scale: 1, rotate: -4 }}
       transition={{ default: LAND, opacity: { duration: 0.05 } }}
-      className={cn(
-        "stamp-worn inline-flex w-fit max-w-full flex-col items-center border-2 border-red p-1 forced-colors:border-[CanvasText]",
-        maybe ? "bg-transparent text-red" : "bg-red text-paper-raised",
-        className,
-      )}
+      className={cn("relative inline-flex w-fit max-w-full", className)}
     >
+      {/* Contact shadow: a sibling of the masked face so the speckle mask cannot clip it. It lands at contact. */}
+      {!maybe && (
+        <m.span
+          aria-hidden="true"
+          className="stamp-shadow"
+          initial={reduced ? false : { opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.08, delay: IMPACT_MS / 1000 }}
+        />
+      )}
       <div
+        data-variant={variant}
         className={cn(
-          "flex flex-col items-center justify-center gap-y-1 border px-3 py-1.5 text-center font-mono text-sm leading-5 font-medium tracking-wide uppercase md:flex-row md:gap-x-2 md:text-base",
-          maybe ? "border-red" : "border-paper-raised",
+          "stamp-worn inline-flex w-fit max-w-full flex-col items-center border-2 border-red p-1 forced-colors:border-[CanvasText]",
+          maybe ? "bg-transparent text-red" : "bg-red text-paper-raised",
         )}
       >
-        {maybe && <CircleHelp aria-hidden="true" className="size-5" strokeWidth={1.5} />}
-        <span className="inline-flex flex-col items-center md:flex-row md:gap-x-2">
-          <span className="whitespace-nowrap">Admit one</span>
-          <span aria-hidden="true" className="hidden md:inline">·</span>
-          <span className="sr-only">, </span>
-          <span className="whitespace-nowrap">21 Dec 2026</span>
-        </span>
-        {maybe && (
-          <span className="rounded-mark border border-red px-1.5 text-xs font-medium tracking-widest md:text-sm">Maybe</span>
-        )}
+        <div
+          className={cn(
+            "flex flex-col items-center justify-center gap-y-1 border px-3 py-1.5 text-center font-mono text-sm leading-5 font-medium tracking-wide uppercase md:flex-row md:gap-x-2 md:text-base",
+            maybe ? "border-red" : "border-paper-raised",
+          )}
+        >
+          {maybe && <CircleHelp aria-hidden="true" className="size-5" strokeWidth={1.5} />}
+          <span className="inline-flex flex-col items-center md:flex-row md:gap-x-2">
+            <span className="whitespace-nowrap">Admit one</span>
+            <span aria-hidden="true" className="hidden md:inline">·</span>
+            <span className="sr-only">, </span>
+            <span className="whitespace-nowrap">21 Dec 2026</span>
+          </span>
+          {maybe && (
+            <span className="rounded-mark border border-red px-1.5 text-xs font-medium tracking-widest md:text-sm">Maybe</span>
+          )}
+        </div>
       </div>
     </m.div>
   )
