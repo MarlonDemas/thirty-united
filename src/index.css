@@ -39,6 +39,14 @@
   --status-warning: #8a5a00;
   --red-pressed: #8f1d17;
   --ease-fade: cubic-bezier(0.2, 0, 0, 1);
+  /* The sealed screen's night stage (tokens.md, scene tokens). Sealed state only. */
+  --scene-night-deep: #0b1411;
+  --scene-night-mid: #16231e;
+  --scene-night-lift: #22342d;
+  --scene-floodlight: #fff6dc;
+  --scene-pitch: #2f5d3a;
+  --scene-pitch-lit: #2a4a31;
+  --scene-ambient: #9fb4aa;
 }
 
 @theme inline {
@@ -76,6 +84,7 @@
   --color-status-error: var(--destructive);
   --color-status-success: var(--status-success);
   --color-status-warning: var(--status-warning);
+  --color-scene-night-mid: var(--scene-night-mid);
 
   --radius-sm: 0;
   --radius-md: 0;
@@ -227,36 +236,45 @@
   }
 }
 
-/* Ticket perforation: each half loses a quarter circle at both ends of the seam, so a joined
-   ticket shows full punched half-circles and a torn one keeps matching edges. */
+/* Ticket perforation: a row of punched holes along the seam (3px radius, 9px pitch, 12px from md),
+   cut with the same mask on both halves so the page shows through them at any viewport and tilt.
+   Each half also loses a quarter circle at both ends of the seam. A torn edge keeps the regular
+   scallop of the holes. No shadow inside or under the perforation. */
 .ticket {
   --notch: 10px;
+  --hole: 3px;
+  --pitch: 9px;
   --stub-w: min(8.5rem, 38%);
 }
 @media (min-width: 768px) {
   .ticket {
     --notch: 14px;
+    --pitch: 12px;
     --stub-w: min(15rem, 38%);
   }
 }
 .piece-main {
-  -webkit-mask:
-    radial-gradient(circle var(--notch) at 100% 0, #0000 calc(var(--notch) - 0.5px), #000 var(--notch)),
-    radial-gradient(circle var(--notch) at 100% 100%, #0000 calc(var(--notch) - 0.5px), #000 var(--notch));
-  -webkit-mask-composite: source-in;
-  mask:
-    radial-gradient(circle var(--notch) at 100% 0, #0000 calc(var(--notch) - 0.5px), #000 var(--notch)),
-    radial-gradient(circle var(--notch) at 100% 100%, #0000 calc(var(--notch) - 0.5px), #000 var(--notch));
-  mask-composite: intersect;
+  --punch-x: 100%;
 }
 .piece-stub {
-  -webkit-mask:
-    radial-gradient(circle var(--notch) at 0 0, #0000 calc(var(--notch) - 0.5px), #000 var(--notch)),
-    radial-gradient(circle var(--notch) at 0 100%, #0000 calc(var(--notch) - 0.5px), #000 var(--notch));
+  --punch-x: 0%;
+}
+.piece-main,
+.piece-stub {
+  --corner-x: var(--punch-x);
+  -webkit-mask-image:
+    radial-gradient(circle var(--notch) at var(--corner-x) 0, #0000 calc(var(--notch) - 0.5px), #000 var(--notch)),
+    radial-gradient(circle var(--notch) at var(--corner-x) 100%, #0000 calc(var(--notch) - 0.5px), #000 var(--notch)),
+    radial-gradient(circle var(--hole) at var(--punch-x) calc(var(--pitch) / 2), #0000 calc(var(--hole) - 0.5px), #000 var(--hole));
+  -webkit-mask-size: auto, auto, 100% var(--pitch);
+  -webkit-mask-repeat: no-repeat, no-repeat, repeat-y;
   -webkit-mask-composite: source-in;
-  mask:
-    radial-gradient(circle var(--notch) at 0 0, #0000 calc(var(--notch) - 0.5px), #000 var(--notch)),
-    radial-gradient(circle var(--notch) at 0 100%, #0000 calc(var(--notch) - 0.5px), #000 var(--notch));
+  mask-image:
+    radial-gradient(circle var(--notch) at var(--corner-x) 0, #0000 calc(var(--notch) - 0.5px), #000 var(--notch)),
+    radial-gradient(circle var(--notch) at var(--corner-x) 100%, #0000 calc(var(--notch) - 0.5px), #000 var(--notch)),
+    radial-gradient(circle var(--hole) at var(--punch-x) calc(var(--pitch) / 2), #0000 calc(var(--hole) - 0.5px), #000 var(--hole));
+  mask-size: auto, auto, 100% var(--pitch);
+  mask-repeat: no-repeat, no-repeat, repeat-y;
   mask-composite: intersect;
 }
 @media (forced-colors: active) {
@@ -264,5 +282,166 @@
   .piece-stub {
     -webkit-mask: none;
     mask: none;
+  }
+}
+
+/* The stamp: worn rubber. A speckle mask at about 94% coverage with crisp edges: no blur, no bleed. */
+.stamp-worn {
+  -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='w' x='0' y='0' width='100%' height='100%'><feTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2' seed='7' stitchTiles='stitch'/><feColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -40 28.4'/></filter><rect width='120' height='120' filter='url(%23w)'/></svg>");
+  mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='w' x='0' y='0' width='100%' height='100%'><feTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2' seed='7' stitchTiles='stitch'/><feColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -40 28.4'/></filter><rect width='120' height='120' filter='url(%23w)'/></svg>");
+  -webkit-mask-size: 120px 120px;
+  mask-size: 120px 120px;
+}
+@media (forced-colors: active) {
+  .stamp-worn {
+    -webkit-mask: none;
+    mask: none;
+  }
+}
+
+/* The night stage behind the sealed screen (stadium A, "Floodlit Night Stand"). Drawn in CSS and one
+   small SVG mask, static, no photo. Back to front: night, terrace arcs, bowl lift behind the ticket,
+   pitch glow and stripes, then the lit pitch under the footer. The backdrop never moves. */
+.stage-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -10;
+  pointer-events: none;
+  background-color: var(--scene-night-deep);
+  background-image:
+    linear-gradient(to top, var(--scene-pitch-lit) 0, var(--scene-pitch-lit) 4.5rem, transparent 9rem),
+    linear-gradient(to top, var(--scene-pitch), transparent),
+    radial-gradient(ellipse 75% 42% at 50% 42%, var(--scene-night-lift) 30%, transparent 100%),
+    radial-gradient(
+      ellipse 130% 78% at 50% 100%,
+      transparent 0 52%,
+      var(--scene-night-mid) 52% 68%,
+      transparent 68% 73%,
+      var(--scene-night-mid) 73% 91%,
+      transparent 91%
+    );
+  background-size: 100% 100%, 100% 22%, 100% 100%, 100% 100%;
+  background-position: 0 0, 0 100%, 0 0, 0 0;
+  background-repeat: no-repeat;
+  transition: opacity 160ms var(--ease-fade);
+}
+.stage-backdrop[data-on="false"] {
+  opacity: 0;
+}
+/* Seat dots on the terraces: the SVG is an alpha shape, the colour is a token. */
+.stage-backdrop::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--scene-ambient);
+  opacity: 0.16;
+  -webkit-mask-image: url("./assets/terrace-dots.svg");
+  mask-image: url("./assets/terrace-dots.svg");
+  -webkit-mask-size: max(100%, 1000px) auto;
+  mask-size: max(100%, 1000px) auto;
+  -webkit-mask-position: 50% 100%;
+  mask-position: 50% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+/* Mowing stripes in the pitch band, fading out toward the terrace. */
+.stage-backdrop::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 22%;
+  background: repeating-linear-gradient(90deg, rgb(255 255 255 / 0.05) 0 3.5rem, transparent 3.5rem 7rem);
+  -webkit-mask-image: linear-gradient(to top, #000, transparent);
+  mask-image: linear-gradient(to top, #000, transparent);
+}
+/* Two floodlight banks at the top corners: left large and bright (the key light's side), right smaller. */
+.stage-glow {
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(ellipse 62% 46% at 6% -4%, color-mix(in srgb, var(--scene-floodlight) 40%, transparent), transparent),
+    radial-gradient(ellipse 42% 30% at 94% -3%, color-mix(in srgb, var(--scene-floodlight) 25%, transparent), transparent);
+}
+@keyframes lights-on {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .stage-glow {
+    animation: lights-on 600ms var(--ease-fade) both;
+  }
+}
+
+/* On the stage, text and controls sit on night: the footer is paper on the lit pitch, the red button
+   gets a paper ring (3:1 against the night), and the focus ring is two-tone (red, then paper). */
+.stage footer,
+.stage .stage-status {
+  color: var(--paper);
+  transition: color 160ms var(--ease-fade);
+}
+.stage [data-slot="button"] {
+  box-shadow: 0 0 0 2px var(--paper);
+}
+.stage :focus-visible {
+  box-shadow: 0 0 0 7px var(--paper);
+}
+.stage-tab:focus-visible {
+  box-shadow: 0 0 0 7px var(--paper);
+}
+
+/* Cursor on the 3D canvas: grab, grabbing while pressed (pointer capture keeps :active during a drag). */
+.lanyard-canvas {
+  cursor: grab;
+}
+.lanyard-canvas:active {
+  cursor: grabbing;
+}
+
+/* Light on the ticket: one key light, upper left. The contact shadow falls down and right, the sheen
+   comes in from the upper left. Same direction in the DOM ticket and the 3D ticket. Ticket only. */
+.ticket {
+  container-type: inline-size;
+  isolation: isolate;
+}
+.ticket-shadow {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 160ms var(--ease-fade);
+  box-shadow: min(3.9cqw, 22px) min(6.1cqw, 34px) min(4.5cqw, 26px) 0 rgb(0 0 0 / 0.55);
+}
+.ticket[data-lit="true"] .ticket-shadow {
+  opacity: 1;
+}
+.ticket[data-lit] .piece-main::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(115deg, rgb(255 255 255 / 0.28) 0%, rgb(255 255 255 / 0) 40%);
+  transition: opacity 160ms var(--ease-fade);
+}
+.ticket[data-lit="true"] .piece-main::before {
+  opacity: 1;
+}
+
+@media (forced-colors: active) {
+  .stage-backdrop,
+  .stage-tab,
+  .ticket-shadow,
+  .ticket[data-lit] .piece-main::before {
+    display: none;
+  }
+  .stage [data-slot="button"],
+  .stage :focus-visible {
+    box-shadow: none;
   }
 }

@@ -1,3 +1,5 @@
+import { useCallback } from "react"
+import { animate, useMotionValue } from "motion/react"
 import { HeartHandshake, Pencil } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Stamp } from "@/components/Stamp"
@@ -6,6 +8,8 @@ import { formatSeat } from "@/lib/seat"
 import { Ticket } from "@/components/Ticket"
 import { VenueTba } from "@/components/SealedView"
 import { useFocusOnMount } from "@/hooks/useFocusOnMount"
+import { useTilt } from "@/hooks/useTilt"
+import { useReducedMotion } from "@/hooks/useReducedMotion"
 import type { SavedResult } from "@/lib/api"
 import type { RsvpPayload } from "@/lib/schemas/rsvp"
 
@@ -27,6 +31,16 @@ export function StubView({
   onChange: () => void
 }) {
   const headingRef = useFocusOnMount<HTMLHeadingElement>()
+  const reduced = useReducedMotion()
+  const tilt = useTilt(!reduced)
+  const y = useMotionValue(0)
+  const rotate = useMotionValue(0)
+  // The stamp hits the ticket: 1.5px down and 0.4deg, then it settles (M4.2).
+  const recoil = useCallback(() => {
+    const spring = { type: "spring", stiffness: 500, damping: 20 } as const
+    animate(y, 1.5, spring).then(() => animate(y, 0, spring))
+    animate(rotate, 0.4, spring).then(() => animate(rotate, 0, spring))
+  }, [y, rotate])
   const no = result.attending === "no"
   const maybe = result.attending === "maybe"
   const fullName = [result.firstName, result.surname].filter(Boolean).join(" ")
@@ -49,6 +63,8 @@ export function StubView({
         </h1>
       </div>
       <Ticket
+        tilt={tilt}
+        style={reduced ? undefined : { y, rotate }}
         mainClassName="flex min-h-[18rem] flex-col gap-4 p-4 md:min-h-[26rem] md:p-10"
         stub={
           <Stub
@@ -84,7 +100,7 @@ export function StubView({
             </div>
             {!no && (
               <div className="mt-auto flex justify-start pt-4 md:justify-end">
-                <Stamp variant={maybe ? "maybe" : "yes"} />
+                <Stamp variant={maybe ? "maybe" : "yes"} onImpact={recoil} />
               </div>
             )}
             {no && (

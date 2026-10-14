@@ -1,6 +1,7 @@
 import type { ReactNode, Ref } from "react"
 import { m, type MotionStyle } from "motion/react"
 import { cn } from "cn"
+import type { useTilt } from "@/hooks/useTilt"
 
 /** A quarter-arc stroke that redraws the ink edge of a punched notch (stroke = currentColor). */
 function Notch({ corner }: { corner: "tr" | "br" | "tl" | "bl" }) {
@@ -23,15 +24,48 @@ function Notch({ corner }: { corner: "tr" | "br" | "tl" | "bl" }) {
   )
 }
 
+/** The stub half. Rendered once at rest; while tearing, a second aria-hidden copy is the free (peeling) part. */
+function StubPiece({ stub, className, style, free }: { stub: ReactNode; className?: string; style?: MotionStyle; free?: boolean }) {
+  return (
+    <m.div
+      aria-hidden={free || undefined}
+      inert={free || undefined}
+      data-peel={free ? "free" : undefined}
+      // .grain sets position: relative outside the utility layer, so the free copy is pinned inline
+      style={free ? { position: "absolute", inset: 0, ...style } : style}
+      className={cn(
+        "piece-stub grain w-full border border-l-0 border-ink bg-paper",
+        !free && "relative",
+        className,
+      )}
+    >
+      {stub}
+      <Notch corner="tl" />
+      <Notch corner="bl" />
+    </m.div>
+  )
+}
+
+export type Peel = {
+  /** Clip for the real stub: only what is still below the tip. */
+  heldStyle: MotionStyle
+  /** Style for the free copy above the tip. Omit while nothing is peeling, and the copy is not rendered. */
+  freeStyle?: MotionStyle
+}
+
 /**
- * The ticket: a main half and a stub half joined at a perforation. Sized by content (no fixed
- * aspect ratio), so enlarged text grows it. Capped at 960px.
+ * The ticket: a main half and a stub half joined at a perforation of punched holes. Sized by
+ * content (no fixed aspect ratio), so enlarged text grows it. Capped at 960px.
  */
 export function Ticket({
   main,
   stub,
-  stubStyle,
-  stubRef,
+  peel,
+  tilt,
+  lit,
+  stubEdge,
+  style,
+  mainStyle,
   ticketRef,
   className,
   mainClassName,
@@ -40,8 +74,14 @@ export function Ticket({
 }: {
   main: ReactNode
   stub: ReactNode
-  stubStyle?: MotionStyle
-  stubRef?: Ref<HTMLDivElement>
+  peel?: Peel
+  tilt?: ReturnType<typeof useTilt>
+  /** On the stage only: the key light's contact shadow and sheen. Omit off the stage (no shadow, no sheen). */
+  lit?: boolean
+  /** Edge label of the stub (aria-hidden). While tearing it rides with the free part, so it is never cut. */
+  stubEdge?: ReactNode
+  style?: MotionStyle
+  mainStyle?: MotionStyle
   ticketRef?: Ref<HTMLDivElement>
   className?: string
   mainClassName?: string
@@ -49,27 +89,51 @@ export function Ticket({
   children?: ReactNode
 }) {
   return (
-    <div ref={ticketRef} className={cn("ticket relative mx-auto flex w-full max-w-[960px] items-stretch", className)}>
-      <div
+    <m.div
+      ref={ticketRef}
+      style={{ ...tilt?.style, ...style }}
+      {...tilt?.handlers}
+      data-lit={lit}
+      className={cn("ticket relative mx-auto flex w-full max-w-[960px] items-stretch", className)}
+    >
+      {lit !== undefined && <m.div aria-hidden="true" className="ticket-shadow" style={tilt?.shadow} />}
+      <m.div
+        style={mainStyle}
         className={cn(
-          "piece-main grain relative min-w-0 flex-1 border border-r-2 border-ink border-r-ink bg-paper [border-right-style:dotted]",
+          "piece-main grain relative min-w-0 flex-1 border border-r border-ink border-r-ink bg-paper",
           mainClassName,
         )}
       >
         {main}
         <Notch corner="tr" />
         <Notch corner="br" />
-      </div>
-      <m.div
-        ref={stubRef}
-        style={{ transformOrigin: "0 0", ...stubStyle }}
-        className={cn("piece-stub grain relative w-(--stub-w) shrink-0 border border-l-0 border-ink bg-paper", stubClassName)}
-      >
-        {stub}
-        <Notch corner="tl" />
-        <Notch corner="bl" />
       </m.div>
+      <div className="relative flex w-(--stub-w) shrink-0">
+        <StubPiece
+          stub={
+            <>
+              {stub}
+              {!peel?.freeStyle && stubEdge}
+            </>
+          }
+          className={stubClassName}
+          style={peel?.heldStyle}
+        />
+        {peel?.freeStyle && (
+          <StubPiece
+            free
+            stub={
+              <>
+                {stub}
+                {stubEdge}
+              </>
+            }
+            className={stubClassName}
+            style={peel.freeStyle}
+          />
+        )}
+      </div>
       {children}
-    </div>
+    </m.div>
   )
 }

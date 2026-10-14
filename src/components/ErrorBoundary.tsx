@@ -2,14 +2,25 @@ import { Component, type ReactNode } from "react"
 import { CircleAlert } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
+type Props = {
+  children: ReactNode
+  /** Rendered instead of the full-page message (use `null` to step down silently). */
+  fallback?: ReactNode
+  onError?: () => void
+}
+
 /** Friendly fallback for an unexpected render error. Answers live in sessionStorage, so they survive. */
-export class ErrorBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
+export class ErrorBoundary extends Component<Props, { failed: boolean }> {
   state = { failed: false }
   static getDerivedStateFromError() {
     return { failed: true }
   }
+  componentDidCatch() {
+    this.props.onError?.()
+  }
   render() {
     if (!this.state.failed) return this.props.children
+    if (this.props.fallback !== undefined) return this.props.fallback
     return (
       <section role="alert" className="mx-auto flex max-w-[640px] flex-col gap-6 border border-ink bg-paper p-6">
         <h1 className="heading-view m-0">Something slipped</h1>

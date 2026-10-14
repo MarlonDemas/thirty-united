@@ -1,3 +1,8 @@
+/** One uniform factor that fits the card inside a rect: the ticket scales, never distorts. */
+export function settleScale(rectW: number, rectH: number, cardPxW: number, cardPxH: number): number {
+  return Math.min(rectW / cardPxW, rectH / cardPxH)
+}
+
 /**
  * Hand-rolled 2D verlet lanyard: a pinned rope of `segments` links, then a rigid card rod hanging from
  * its end. Plain maths, no dependencies. Point `a` is the card's top edge, `b` its bottom edge.
@@ -12,7 +17,7 @@ export class Lanyard {
   py: Float64Array
   private w: Float64Array
   private len: Float64Array
-  grab: { t: number; tx: number; ty: number } | null = null
+  private grab: { t: number; tx: number; ty: number } | null = null
   private still = 0
 
   readonly anchorX: number
@@ -54,6 +59,11 @@ export class Lanyard {
     this.py = this.y.slice()
     this.px[this.b] -= kick // a small initial swing so the guest sees it is alive
     this.px[this.a] -= kick * 0.4
+  }
+
+  /** True until the rope and card have been still for 30 steps. */
+  get active(): boolean {
+    return this.still < 30
   }
 
   /** One fixed step. Returns true while still moving. */
@@ -111,10 +121,38 @@ export class Lanyard {
     let v = 0
     for (let i = 1; i < n; i++) v = Math.max(v, Math.hypot(x[i] - px[i], y[i] - py[i]))
     this.still = v < this.cardH * 0.0008 && !gr ? this.still + 1 : 0
-    return this.still < 30
+    return this.active
   }
 
   wake() {
     this.still = 0
+  }
+
+  /** Grab the card at a world point: remembers where along the card rod it was caught. */
+  grabAt(x: number, y: number) {
+    const { a, b } = this
+    const ax = this.x[a]
+    const ay = this.y[a]
+    const dx = this.x[b] - ax
+    const dy = this.y[b] - ay
+    const t = Math.min(1, Math.max(0, ((x - ax) * dx + (y - ay) * dy) / (dx * dx + dy * dy)))
+    this.grab = { t, tx: x, ty: y }
+    this.wake()
+  }
+
+  /** Move the held point. No-op when nothing is held; returns whether it was. */
+  dragTo(x: number, y: number): boolean {
+    if (!this.grab) return false
+    this.grab.tx = x
+    this.grab.ty = y
+    return true
+  }
+
+  /** Let go. Returns whether anything was held. */
+  release(): boolean {
+    const had = this.grab !== null
+    this.grab = null
+    this.wake()
+    return had
   }
 }

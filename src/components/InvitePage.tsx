@@ -1,3 +1,4 @@
+import { cn } from "cn"
 import { Suspense, lazy, useCallback, useEffect, useRef, useState } from "react"
 import { AttendanceView } from "@/components/AttendanceView"
 import type { CodeStatus } from "@/components/CodeView"
@@ -70,6 +71,7 @@ export function InvitePage({ api, missingKey = false }: { api: RsvpApi; missingK
   const [result, setResult] = useState<{ saved: SavedResult; payload: RsvpPayload } | null>(null)
   const [navigated, setNavigated] = useState(false)
   const [announce, setAnnounce] = useState("")
+  const [stageOn, setStageOn] = useState(true) // the sealed screen's night stage; false once "Tear open" settles
   const valuesRef = useRef(values)
 
   // Warm both chunks while the guest reads the ticket, so the views open without a gap.
@@ -127,12 +129,22 @@ export function InvitePage({ api, missingKey = false }: { api: RsvpApi; missingK
   const email = normalizeEmail(current.email)
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-[1200px] flex-col px-4 py-8 md:px-8 md:py-16">
+    <div
+      className={cn(
+        "mx-auto flex min-h-dvh w-full max-w-[1200px] flex-col px-4 py-8 md:px-8 md:py-16",
+        view === "sealed" && stageOn && "stage",
+      )}
+    >
+      {view === "sealed" && (
+        <div aria-hidden="true" data-on={stageOn} className="stage-backdrop">
+          <div className="stage-glow" />
+        </div>
+      )}
       <main className="flex-1">
         <Suspense fallback={null}>
         <div key={view + (view === "form" ? formKey : "")} className="view-enter">
           {view === "sealed" && (
-            <SealedView missingKey={missingKey} focusHeading={navigated} onTorn={() => go("attendance", "Ticket opened")} />
+            <SealedView staged={stageOn} missingKey={missingKey} focusHeading={navigated} onStageEnd={() => setStageOn(false)} onTorn={() => go("attendance", "Ticket opened")} />
           )}
           {view === "attendance" && (
             <AttendanceView
