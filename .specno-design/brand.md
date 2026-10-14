@@ -46,4 +46,6 @@ A personal invite for Marlon "Makes" Demas's 30th birthday, Monday 21 December 2
 
 ## Prohibited patterns
 
-Shadowed cards; gradients; red fills beyond the primary button and stamp; pill buttons; toasts; dark theme; autoplay or looping motion; placeholder-only labels; red asterisks for required fields (optional fields carry a muted "optional" tag instead); any official club imagery.
+Shadowed cards (except the ticket, which may carry one soft contact shadow); gradients (except one light-driven sheen on the ticket and stamp); red fills beyond the primary button and stamp; pill buttons; toasts; dark theme; autoplay or looping motion (except the ticket and stamp: the 3D ticket answers the guest's hand and settles under damping to rest, it never loops or moves on its own after its entrance; no other surface gets a shadow, gradient or motion); placeholder-only labels; red asterisks for required fields (optional fields carry a muted "optional" tag instead); any official club imagery.
+
+Amended 2026-10-14 by owner decision (`lux-notes/save-the-date-2026-10-14-r2.md`). The exceptions are scoped to the ticket and its stamp only. Sound is opt-in, off by default, behind a "Sound" tab on the ticket.

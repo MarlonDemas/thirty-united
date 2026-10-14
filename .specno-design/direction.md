@@ -51,7 +51,9 @@ profileVersion: "1.0.0"
 
 **Ticket material and rendering:** flat printed card stock, crisp vector perforation (a row of punched semicircles along the stub line), a 1px ink outline, a faint paper grain at 4% opacity. The ADMIT ONE stamp is a rotated -4 degree rubber stamp in red with a 1px inner rule.
 
-**Motion philosophy:** "Printer's precision: one clean tear, then still." The tear follows the pointer along the stub line, then finishes with a 700 ms ease-out; the stamp lands in 180 ms with no bounce; nothing else moves except 160 ms fades between views. Reduced motion: the ticket and stub are swapped instantly, the tear is replaced by a "Tear open" button with no animation, and the stamp simply appears.
+**Motion philosophy:** "The ticket is a physical object: it answers the hand (grab, swing, tear) and lands (stamp); it settles under damping and never moves on its own after that." Amended 2026-10-14 by owner decision (supersedes "Printer's precision: one clean tear, then still"; see `lux-notes/save-the-date-2026-10-14-r2.md`). The tear still follows the pointer along the stub line and finishes with a 700 ms ease-out; the stamp lands in 180 ms with no bounce; nothing outside the ticket and its stamp moves except 160 ms fades between views. Reduced motion: the ticket and stub are swapped instantly, the tear is replaced by a "Tear open" button with no animation, and the stamp simply appears.
+
+**Amendment, 3D ticket (owner decision 2026-10-14):** option C is chosen, an R3F/three 3D scene with the ticket hanging on a lanyard the guest can grab, swing and fling. The environment (today's paper-coloured page or a floodlit stadium night) is pending until the owner has tested a prototype in WhatsApp's in-app browser on his own phone. The DOM ticket (option A) is the fallback. Build spec: `lux-notes/save-the-date-3d-lanyard-spec.md`.
 
 **Density:** medium. One ruled box per question group; about 6 rows visible on a phone; generous 24 px gutters inside boxes.
 

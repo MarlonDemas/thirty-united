@@ -46,3 +46,15 @@ Save-the-date page built and verified (web-vite, Direction A). Verify: 0 axe vio
 ## 2026-10-14 (invite key)
 
 - INSIGHT: The invite key stays in the URL (`?k=...`) and is not stripped after load. Stripping it broke WhatsApp hand-offs ("open in browser", copy-link), and the history and log exposure exists either way. A `sessionStorage` copy is only the fallback.
+
+## 2026-10-14 (round 2, 3D ticket)
+
+### Context
+Owner answered the round-2 lux note: reverse two round-1 commits, amend brand.md scoped to the ticket and stamp, build option C (R3F lanyard), opt-in sound. See `lux-notes/save-the-date-2026-10-14-r2.md`.
+
+### Decisions
+- LUX: Reversed. Round-1 "Not committing. Multi-sensory ... No haptics or sound". Haptics via `navigator.vibrate` where supported are committed; sound is opt-in behind a "Sound" tab on the ticket, off by default, synthesized only. (Owner: yes.)
+- LUX: Reversed. Round-1 "Material truth ... No shadow, curl or fold gradient". The ticket and stamp may carry one soft contact shadow and one light-driven sheen; curl and fold gradients stay out, and no other surface gets a shadow or gradient. Direction B's ink bleed, letterpress text-shadow, random deckled edge and shadowed perforation stay rejected.
+- LUX: Committed. The ticket is a 3D object on a lanyard (option C, R3F/three) that answers the hand and settles under damping; nothing loops. The environment is pending the owner's phone test in WhatsApp's in-app browser. The DOM ticket is the fallback. Spec: `lux-notes/save-the-date-3d-lanyard-spec.md`.
+- CORRECTION: The round-1 entry "the perforation is a CSS mask, so the page colour shows through the punches" is inaccurate. The perforation is a dotted right border with four corner notches (`src/components/Ticket.tsx:55`, `index.css:242-261`); there are no punches. Treat the dotted seam as the built state, not a mask.
+
