@@ -1,0 +1,268 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource/barlow-condensed/latin-700.css";
+@import "@fontsource/source-serif-4/latin-400-italic.css";
+@import "@fontsource/inter/latin-400.css";
+@import "@fontsource/inter/latin-500.css";
+@import "@fontsource/jetbrains-mono/latin-500.css";
+
+/* Thirty United, Direction A (Matchday Programme). Tokens from .specno-design/tokens.md.
+   One light theme only. */
+
+:root {
+  color-scheme: light;
+  --background: #e8e0cf;
+  --foreground: #1b1a17;
+  --card: #f3ede1;
+  --card-foreground: #1b1a17;
+  --popover: #fbf8f1;
+  --popover-foreground: #1b1a17;
+  --primary: #b3261e;
+  --primary-foreground: #fbf8f1;
+  --secondary: #f3ede1;
+  --secondary-foreground: #1b1a17;
+  --muted: #e8e0cf;
+  --muted-foreground: #5e5a50;
+  --accent: #1b1a17;
+  --accent-foreground: #f3ede1;
+  --destructive: #7f1d17;
+  --border: #1b1a17;
+  --input: #1b1a17;
+  --ring: #b3261e;
+  --radius: 0;
+  --paper: #f3ede1;
+  --paper-raised: #fbf8f1;
+  --ink-2: #4a463d;
+  --rule-soft: #d9d0be;
+  --status-success: #2f5d3a;
+  --status-warning: #8a5a00;
+  --red-pressed: #8f1d17;
+  --ease-fade: cubic-bezier(0.2, 0, 0, 1);
+}
+
+@theme inline {
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-heading: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --font-display: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --font-serif: "Source Serif 4", Georgia, serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-paper: var(--paper);
+  --color-paper-raised: var(--paper-raised);
+  --color-ink: var(--foreground);
+  --color-ink-2: var(--ink-2);
+  --color-rule-soft: var(--rule-soft);
+  --color-red: var(--primary);
+  --color-red-pressed: var(--red-pressed);
+  --color-status-error: var(--destructive);
+  --color-status-success: var(--status-success);
+  --color-status-warning: var(--status-warning);
+
+  --radius-sm: 0;
+  --radius-md: 0;
+  --radius-lg: 0;
+  --radius-xl: 0;
+  --radius-2xl: 0;
+  --radius-mark: 2px;
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+  html {
+    font-family: var(--font-sans);
+    background: var(--background);
+    color: var(--foreground);
+    scroll-padding-block: 6rem;
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    font-size: 1rem;
+    line-height: 1.5;
+    padding-inline: env(safe-area-inset-left) env(safe-area-inset-right);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  @media (min-width: 768px) {
+    body {
+      font-size: 1.0625rem;
+      line-height: 1.625;
+    }
+  }
+  :focus-visible {
+    outline: 3px solid var(--ring);
+    outline-offset: 2px;
+  }
+  [tabindex="-1"]:focus {
+    outline: none;
+  }
+}
+
+/* Type roles */
+@utility display-ticket {
+  font-family: var(--font-display);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  font-size: 4rem;
+  line-height: 3.75rem;
+  @media (min-width: 768px) {
+    font-size: 7.5rem;
+    line-height: 6.5rem;
+  }
+}
+@utility heading-view {
+  font-family: var(--font-display);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  font-size: 2.25rem;
+  line-height: 2.375rem;
+  @media (min-width: 768px) {
+    font-size: 3.5rem;
+    line-height: 3.5rem;
+  }
+}
+@utility standfirst {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+  @media (min-width: 768px) {
+    font-size: 1.5rem;
+    line-height: 2rem;
+  }
+}
+@utility label-tab {
+  font-family: var(--font-display);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.875rem;
+  line-height: 1rem;
+}
+@utility data-stub {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+}
+@utility data-label {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+@utility helper {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: var(--muted-foreground);
+}
+
+/* Paper grain, ticket and stub only (static, 4%). */
+.grain {
+  position: relative;
+}
+.grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+/* View crossfade: 160ms, opacity only. */
+@keyframes fade-view {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.view-enter {
+  animation: fade-view 160ms var(--ease-fade) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0s !important;
+    transition-duration: 0s !important;
+  }
+}
+
+@media (forced-colors: active) {
+  .grain::after {
+    display: none;
+  }
+  :focus-visible {
+    outline-color: Highlight;
+  }
+}
+
+/* Ticket perforation: each half loses a quarter circle at both ends of the seam, so a joined
+   ticket shows full punched half-circles and a torn one keeps matching edges. */
+.ticket {
+  --notch: 10px;
+  --stub-w: min(8.5rem, 38%);
+}
+@media (min-width: 768px) {
+  .ticket {
+    --notch: 14px;
+    --stub-w: min(15rem, 38%);
+  }
+}
+.piece-main {
+  -webkit-mask:
+    radial-gradient(circle var(--notch) at 100% 0, #0000 calc(var(--notch) - 0.5px), #000 var(--notch)),
+    radial-gradient(circle var(--notch) at 100% 100%, #0000 calc(var(--notch) - 0.5px), #000 var(--notch));
+  -webkit-mask-composite: source-in;
+  mask:
+    radial-gradient(circle var(--notch) at 100% 0, #0000 calc(var(--notch) - 0.5px), #000 var(--notch)),
+    radial-gradient(circle var(--notch) at 100% 100%, #0000 calc(var(--notch) - 0.5px), #000 var(--notch));
+  mask-composite: intersect;
+}
+.piece-stub {
+  -webkit-mask:
+    radial-gradient(circle var(--notch) at 0 0, #0000 calc(var(--notch) - 0.5px), #000 var(--notch)),
+    radial-gradient(circle var(--notch) at 0 100%, #0000 calc(var(--notch) - 0.5px), #000 var(--notch));
+  -webkit-mask-composite: source-in;
+  mask:
+    radial-gradient(circle var(--notch) at 0 0, #0000 calc(var(--notch) - 0.5px), #000 var(--notch)),
+    radial-gradient(circle var(--notch) at 0 100%, #0000 calc(var(--notch) - 0.5px), #000 var(--notch));
+  mask-composite: intersect;
+}
+@media (forced-colors: active) {
+  .piece-main,
+  .piece-stub {
+    -webkit-mask: none;
+    mask: none;
+  }
+}

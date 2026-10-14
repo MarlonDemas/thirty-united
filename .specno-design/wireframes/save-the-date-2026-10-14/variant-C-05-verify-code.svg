@@ -1,0 +1,184 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1860 1494" width="1860" height="1494">
+<rect x="0" y="0" width="1860" height="1494" fill="#FFFFFF" stroke="none" stroke-width="0" rx="0"/>
+<text x="0" y="22" font-family="Helvetica,Arial,sans-serif" font-size="16" fill="#000" font-weight="700" text-anchor="start">Moment 3 of 4: email code (scan)</text>
+<text x="1860" y="22" font-family="ui-monospace,Menlo,monospace" font-size="11" fill="#999" font-weight="400" text-anchor="end">Wireframe, low-fi, greyscale. Token names, not colours. Variant C (single variant).</text>
+<rect x="0" y="44" width="1440" height="1300" fill="#F7F7F7" stroke="#000" stroke-width="2" rx="0"/>
+<text x="8" y="1360" font-family="ui-monospace,Menlo,monospace" font-size="11" fill="#666" font-weight="400" text-anchor="start">DESKTOP 1440x900 (frame extended to 1300 to show the full scroll)</text>
+<text x="1432" y="60" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#666" font-weight="400" text-anchor="end">surface.page</text>
+<line x1="0" y1="944" x2="1440" y2="944" stroke="#999" stroke-width="1" stroke-dasharray="8 6"/>
+<text x="1434" y="940" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#999" font-weight="400" text-anchor="end">fold 900</text>
+<rect x="1470" y="44" width="390" height="844" fill="#F7F7F7" stroke="#000" stroke-width="2" rx="0"/>
+<text x="1470" y="904" font-family="ui-monospace,Menlo,monospace" font-size="11" fill="#666" font-weight="400" text-anchor="start">MOBILE 390x844</text>
+<text x="1852" y="60" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#666" font-weight="400" text-anchor="end">surface.page</text>
+<g transform="translate(0,44)">
+<rect x="392" y="52" width="656" height="136" fill="none" stroke="#333" stroke-width="1" rx="0"/>
+<rect x="400" y="60" width="438" height="120" fill="#E5E5E5" stroke="#333" stroke-width="1" rx="0"/>
+<rect x="412" y="72" width="240.9" height="45.6" fill="none" stroke="#999" stroke-width="1" rx="0" stroke-dasharray="4 3"/>
+<text x="418" y="98.8" font-family="ui-monospace,Menlo,monospace" font-size="9" fill="#666" font-weight="400" text-anchor="start">TITLE display-ticket (scaled)</text>
+<rect x="412" y="146" width="175.20000000000002" height="18" fill="none" stroke="#999" stroke-width="1" rx="0" stroke-dasharray="4 3"/>
+<text x="416" y="159" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#666" font-weight="400" text-anchor="start">data-stub: 21 DEC 2026</text>
+<line x1="838" y1="60" x2="838" y2="180" stroke="#333" stroke-width="1.5" stroke-dasharray="3 5"/>
+<rect x="848" y="60" width="192" height="120" fill="#E5E5E5" stroke="#333" stroke-width="1" rx="0"/>
+<circle cx="838" cy="60" r="7" fill="#F7F7F7" stroke="#333" stroke-width="1"/>
+<circle cx="838" cy="180" r="7" fill="#F7F7F7" stroke="#333" stroke-width="1"/>
+<text x="856" y="82" font-family="Helvetica,Arial,sans-serif" font-size="11" fill="#333" font-weight="700" text-anchor="start">SEAT</text>
+<text x="856" y="102" font-family="ui-monospace,Menlo,monospace" font-size="16" fill="#999" font-weight="400" text-anchor="start">---</text>
+<text x="856" y="172" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#999" font-weight="400" text-anchor="start">[msg: seat-pending]</text>
+<text x="400" y="202" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#999" font-weight="400" text-anchor="start">[msg: torn-ticket-main]</text>
+<text x="848" y="202" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#999" font-weight="400" text-anchor="start">[msg: stub waits]</text>
+<rect x="400" y="254" width="640" height="56" fill="none" stroke="#999" stroke-width="1" rx="0" stroke-dasharray="4 3"/>
+<text x="408" y="286.0" font-family="ui-monospace,Menlo,monospace" font-size="12" fill="#666" font-weight="400" text-anchor="start">HEADING  heading-view 56/56</text>
+<text x="1034" y="305" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#999" font-weight="400" text-anchor="end">[msg: view-title]</text>
+<rect x="400" y="354" width="640" height="330" fill="#E5E5E5" stroke="#333" stroke-width="1" rx="0"/>
+<rect x="416" y="342" width="92" height="24" fill="#333" stroke="#333" stroke-width="1" rx="0"/>
+<text x="462.0" y="358" font-family="Helvetica,Arial,sans-serif" font-size="12" fill="#FFF" font-weight="700" text-anchor="middle">YOUR CODE</text>
+<text x="1032" y="676" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#666" font-weight="400" text-anchor="end">surface.paper</text>
+<rect x="424" y="384" width="24" height="24" fill="#F7F7F7" stroke="#999" stroke-width="1" rx="0" stroke-dasharray="3 2"/>
+<text x="436.0" y="399.0" font-family="ui-monospace,Menlo,monospace" font-size="8" fill="#999" font-weight="400" text-anchor="middle">[i]</text>
+<text x="458" y="401" font-family="Helvetica,Arial,sans-serif" font-size="14" fill="#333" font-weight="600" text-anchor="start">Code sent to</text>
+<rect x="424" y="414" width="473.6" height="32" fill="#FFFFFF" stroke="#333" stroke-width="1" rx="0"/>
+<text x="430" y="434" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#666" font-weight="400" text-anchor="start">data-label mono: email address</text>
+<text x="905.6" y="434" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#999" font-weight="400" text-anchor="start">[msg: sent-to]</text>
+<rect x="424.0" y="466" width="92.0" height="64" fill="#FFFFFF" stroke="#333" stroke-width="1.5" rx="0"/>
+<rect x="524.0" y="466" width="92.0" height="64" fill="#FFFFFF" stroke="#333" stroke-width="1" rx="0"/>
+<rect x="624.0" y="466" width="92.0" height="64" fill="#FFFFFF" stroke="#333" stroke-width="1" rx="0"/>
+<rect x="724.0" y="466" width="92.0" height="64" fill="#FFFFFF" stroke="#333" stroke-width="1" rx="0"/>
+<rect x="824.0" y="466" width="92.0" height="64" fill="#FFFFFF" stroke="#333" stroke-width="1" rx="0"/>
+<rect x="924.0" y="466" width="92.0" height="64" fill="#FFFFFF" stroke="#333" stroke-width="1" rx="0"/>
+<text x="424" y="550" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#666" font-weight="400" text-anchor="start">ONE input underneath (autocomplete=one-time-code, numeric, paste 6) + six data-code cells</text>
+<rect x="424" y="562" width="592" height="28" fill="none" stroke="#999" stroke-width="1" rx="0" stroke-dasharray="4 3"/>
+<text x="430" y="581" font-family="Helvetica,Arial,sans-serif" font-size="11" fill="#666" font-weight="400" text-anchor="start">status line (live region)</text>
+<text x="1010" y="581" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#999" font-weight="400" text-anchor="end">[msg: status-line]</text>
+<rect x="424" y="608" width="325.6" height="44" fill="#FFFFFF" stroke="#999" stroke-width="1" rx="0" stroke-dasharray="5 4"/>
+<rect x="432" y="618" width="22" height="22" fill="#F7F7F7" stroke="#999" stroke-width="1" rx="0" stroke-dasharray="3 2"/>
+<text x="443.0" y="632.0" font-family="ui-monospace,Menlo,monospace" font-size="8" fill="#999" font-weight="400" text-anchor="middle">[i]</text>
+<text x="464" y="635" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#666" font-weight="700" text-anchor="start">Resend in 0:30</text>
+<text x="757.6" y="635" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#999" font-weight="400" text-anchor="start">[msg: resend-cooldown]</text>
+<text x="424" y="672" font-family="Helvetica,Arial,sans-serif" font-size="12" fill="#666" font-weight="400" text-anchor="start">Use a different email</text>
+<text x="614" y="672" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#999" font-weight="400" text-anchor="start">[msg: change-email (quiet link)]</text>
+<rect x="800" y="718" width="240" height="52" fill="#333" stroke="#333" stroke-width="1" rx="0"/>
+<text x="920.0" y="749.0" font-family="Helvetica,Arial,sans-serif" font-size="15" fill="#FFF" font-weight="700" text-anchor="middle">Check code</text>
+<text x="806" y="765" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#999" font-weight="400" text-anchor="start">[msg: check-code]</text>
+<text x="1034" y="765" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#666" font-weight="400" text-anchor="end">accent.primary</text>
+<rect x="400" y="814" width="640" height="430" fill="#E5E5E5" stroke="#333" stroke-width="1" rx="0"/>
+<rect x="416" y="802" width="164" height="24" fill="#333" stroke="#333" stroke-width="1" rx="0"/>
+<text x="498.0" y="818" font-family="Helvetica,Arial,sans-serif" font-size="12" fill="#FFF" font-weight="700" text-anchor="middle">STATUS LINE STATES</text>
+<text x="1032" y="1236" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#666" font-weight="400" text-anchor="end">surface.paper</text>
+<rect x="424" y="840" width="22" height="22" fill="#F7F7F7" stroke="#999" stroke-width="1" rx="0" stroke-dasharray="3 2"/>
+<text x="435.0" y="854.0" font-family="ui-monospace,Menlo,monospace" font-size="8" fill="#999" font-weight="400" text-anchor="middle">[i]</text>
+<text x="458" y="856" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#333" font-weight="600" text-anchor="start">sending</text>
+<text x="694" y="856" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#666" font-weight="400" text-anchor="start">status-warning? no: ink</text>
+<text x="1016" y="856" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#999" font-weight="400" text-anchor="end">[msg: otp-sending]</text>
+<line x1="424" y1="868" x2="1016" y2="868" stroke="#999" stroke-width="0.5"/>
+<rect x="424" y="878" width="22" height="22" fill="#F7F7F7" stroke="#999" stroke-width="1" rx="0" stroke-dasharray="3 2"/>
+<text x="435.0" y="892.0" font-family="ui-monospace,Menlo,monospace" font-size="8" fill="#999" font-weight="400" text-anchor="middle">[i]</text>
+<text x="458" y="894" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#333" font-weight="600" text-anchor="start">sent</text>
+<text x="694" y="894" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#666" font-weight="400" text-anchor="start">status-success</text>
+<text x="1016" y="894" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#999" font-weight="400" text-anchor="end">[msg: otp-sent]</text>
+<line x1="424" y1="906" x2="1016" y2="906" stroke="#999" stroke-width="0.5"/>
+<rect x="424" y="916" width="22" height="22" fill="#F7F7F7" stroke="#999" stroke-width="1" rx="0" stroke-dasharray="3 2"/>
+<text x="435.0" y="930.0" font-family="ui-monospace,Menlo,monospace" font-size="8" fill="#999" font-weight="400" text-anchor="middle">[i]</text>
+<text x="458" y="932" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#333" font-weight="600" text-anchor="start">cooldown</text>
+<text x="694" y="932" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#666" font-weight="400" text-anchor="start">ink-2 (dashed disabled)</text>
+<text x="1016" y="932" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#999" font-weight="400" text-anchor="end">[msg: otp-cooldown]</text>
+<line x1="424" y1="944" x2="1016" y2="944" stroke="#999" stroke-width="0.5"/>
+<rect x="424" y="954" width="22" height="22" fill="#F7F7F7" stroke="#999" stroke-width="1" rx="0" stroke-dasharray="3 2"/>
+<text x="435.0" y="968.0" font-family="ui-monospace,Menlo,monospace" font-size="8" fill="#999" font-weight="400" text-anchor="middle">[i]</text>
+<text x="458" y="970" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#333" font-weight="600" text-anchor="start">wrong code, N attempts left</text>
+<text x="694" y="970" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#666" font-weight="400" text-anchor="start">status-error + 2px rule</text>
+<text x="1016" y="970" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#999" font-weight="400" text-anchor="end">[msg: otp-wrong]</text>
+<line x1="424" y1="982" x2="1016" y2="982" stroke="#999" stroke-width="0.5"/>
+<rect x="424" y="992" width="22" height="22" fill="#F7F7F7" stroke="#999" stroke-width="1" rx="0" stroke-dasharray="3 2"/>
+<text x="435.0" y="1006.0" font-family="ui-monospace,Menlo,monospace" font-size="8" fill="#999" font-weight="400" text-anchor="middle">[i]</text>
+<text x="458" y="1008" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#333" font-weight="600" text-anchor="start">expired</text>
+<text x="694" y="1008" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#666" font-weight="400" text-anchor="start">status-error</text>
+<text x="1016" y="1008" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#999" font-weight="400" text-anchor="end">[msg: otp-expired]</text>
+<line x1="424" y1="1020" x2="1016" y2="1020" stroke="#999" stroke-width="0.5"/>
+<rect x="424" y="1030" width="22" height="22" fill="#F7F7F7" stroke="#999" stroke-width="1" rx="0" stroke-dasharray="3 2"/>
+<text x="435.0" y="1044.0" font-family="ui-monospace,Menlo,monospace" font-size="8" fill="#999" font-weight="400" text-anchor="middle">[i]</text>
+<text x="458" y="1046" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#333" font-weight="600" text-anchor="start">too many attempts</text>
+<text x="694" y="1046" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#666" font-weight="400" text-anchor="start">status-error</text>
+<text x="1016" y="1046" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#999" font-weight="400" text-anchor="end">[msg: otp-locked]</text>
+<line x1="424" y1="1058" x2="1016" y2="1058" stroke="#999" stroke-width="0.5"/>
+<rect x="424" y="1068" width="22" height="22" fill="#F7F7F7" stroke="#999" stroke-width="1" rx="0" stroke-dasharray="3 2"/>
+<text x="435.0" y="1082.0" font-family="ui-monospace,Menlo,monospace" font-size="8" fill="#999" font-weight="400" text-anchor="middle">[i]</text>
+<text x="458" y="1084" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#333" font-weight="600" text-anchor="start">rate-limited (too many sends)</text>
+<text x="694" y="1084" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#666" font-weight="400" text-anchor="start">status-warning</text>
+<text x="1016" y="1084" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#999" font-weight="400" text-anchor="end">[msg: otp-ratelimit]</text>
+<line x1="424" y1="1096" x2="1016" y2="1096" stroke="#999" stroke-width="0.5"/>
+<rect x="424" y="1106" width="22" height="22" fill="#F7F7F7" stroke="#999" stroke-width="1" rx="0" stroke-dasharray="3 2"/>
+<text x="435.0" y="1120.0" font-family="ui-monospace,Menlo,monospace" font-size="8" fill="#999" font-weight="400" text-anchor="middle">[i]</text>
+<text x="458" y="1122" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#333" font-weight="600" text-anchor="start">service unavailable</text>
+<text x="694" y="1122" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#666" font-weight="400" text-anchor="start">status-warning</text>
+<text x="1016" y="1122" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#999" font-weight="400" text-anchor="end">[msg: otp-down]</text>
+<line x1="424" y1="1134" x2="1016" y2="1134" stroke="#999" stroke-width="0.5"/>
+<rect x="424" y="1144" width="22" height="22" fill="#F7F7F7" stroke="#999" stroke-width="1" rx="0" stroke-dasharray="3 2"/>
+<text x="435.0" y="1158.0" font-family="ui-monospace,Menlo,monospace" font-size="8" fill="#999" font-weight="400" text-anchor="middle">[i]</text>
+<text x="458" y="1160" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#333" font-weight="600" text-anchor="start">saved (first RSVP)</text>
+<text x="694" y="1160" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#666" font-weight="400" text-anchor="start">status-success</text>
+<text x="1016" y="1160" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#999" font-weight="400" text-anchor="end">[msg: otp-saved]</text>
+<line x1="424" y1="1172" x2="1016" y2="1172" stroke="#999" stroke-width="0.5"/>
+<rect x="424" y="1182" width="22" height="22" fill="#F7F7F7" stroke="#999" stroke-width="1" rx="0" stroke-dasharray="3 2"/>
+<text x="435.0" y="1196.0" font-family="ui-monospace,Menlo,monospace" font-size="8" fill="#999" font-weight="400" text-anchor="middle">[i]</text>
+<text x="458" y="1198" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#333" font-weight="600" text-anchor="start">updated (re-verify)</text>
+<text x="694" y="1198" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#666" font-weight="400" text-anchor="start">status-success</text>
+<text x="1016" y="1198" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#999" font-weight="400" text-anchor="end">[msg: otp-updated]</text>
+<line x1="424" y1="1210" x2="1016" y2="1210" stroke="#999" stroke-width="0.5"/>
+</g>
+<g transform="translate(1470,44)">
+<rect x="8" y="32" width="374" height="112" fill="none" stroke="#333" stroke-width="1" rx="0"/>
+<rect x="16" y="40" width="241" height="96" fill="#E5E5E5" stroke="#333" stroke-width="1" rx="0"/>
+<rect x="28" y="52" width="132.55" height="36.480000000000004" fill="none" stroke="#999" stroke-width="1" rx="0" stroke-dasharray="4 3"/>
+<text x="34" y="74.24000000000001" font-family="ui-monospace,Menlo,monospace" font-size="9" fill="#666" font-weight="400" text-anchor="start">TITLE display-ticket (scaled)</text>
+<rect x="28" y="102" width="96.4" height="18" fill="none" stroke="#999" stroke-width="1" rx="0" stroke-dasharray="4 3"/>
+<text x="32" y="115" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#666" font-weight="400" text-anchor="start">data-stub: 21 DEC 2026</text>
+<line x1="257" y1="40" x2="257" y2="136" stroke="#333" stroke-width="1.5" stroke-dasharray="3 5"/>
+<rect x="267" y="40" width="107" height="96" fill="#E5E5E5" stroke="#333" stroke-width="1" rx="0"/>
+<circle cx="257" cy="40" r="7" fill="#F7F7F7" stroke="#333" stroke-width="1"/>
+<circle cx="257" cy="136" r="7" fill="#F7F7F7" stroke="#333" stroke-width="1"/>
+<text x="275" y="62" font-family="Helvetica,Arial,sans-serif" font-size="11" fill="#333" font-weight="700" text-anchor="start">SEAT</text>
+<text x="275" y="82" font-family="ui-monospace,Menlo,monospace" font-size="16" fill="#999" font-weight="400" text-anchor="start">---</text>
+<text x="275" y="128" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#999" font-weight="400" text-anchor="start">[msg: seat-pending]</text>
+<text x="16" y="158" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#999" font-weight="400" text-anchor="start">[msg: torn-ticket-main]</text>
+<text x="267" y="158" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#999" font-weight="400" text-anchor="start">[msg: stub waits]</text>
+<rect x="16" y="194" width="358" height="38" fill="none" stroke="#999" stroke-width="1" rx="0" stroke-dasharray="4 3"/>
+<text x="24" y="217.0" font-family="ui-monospace,Menlo,monospace" font-size="12" fill="#666" font-weight="400" text-anchor="start">HEADING  heading-view 36/38</text>
+<text x="368" y="227" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#999" font-weight="400" text-anchor="end">[msg: view-title]</text>
+<rect x="16" y="276" width="358" height="330" fill="#E5E5E5" stroke="#333" stroke-width="1" rx="0"/>
+<rect x="32" y="264" width="92" height="24" fill="#333" stroke="#333" stroke-width="1" rx="0"/>
+<text x="78.0" y="280" font-family="Helvetica,Arial,sans-serif" font-size="12" fill="#FFF" font-weight="700" text-anchor="middle">YOUR CODE</text>
+<text x="366" y="598" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#666" font-weight="400" text-anchor="end">surface.paper</text>
+<rect x="32" y="306" width="24" height="24" fill="#F7F7F7" stroke="#999" stroke-width="1" rx="0" stroke-dasharray="3 2"/>
+<text x="44.0" y="321.0" font-family="ui-monospace,Menlo,monospace" font-size="8" fill="#999" font-weight="400" text-anchor="middle">[i]</text>
+<text x="66" y="323" font-family="Helvetica,Arial,sans-serif" font-size="14" fill="#333" font-weight="600" text-anchor="start">Code sent to</text>
+<rect x="32" y="336" width="260.8" height="32" fill="#FFFFFF" stroke="#333" stroke-width="1" rx="0"/>
+<text x="38" y="356" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#666" font-weight="400" text-anchor="start">data-label mono: email address</text>
+<text x="300.8" y="356" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#999" font-weight="400" text-anchor="start">[msg: sent-to]</text>
+<rect x="32.0" y="388" width="47.666666666666664" height="64" fill="#FFFFFF" stroke="#333" stroke-width="1.5" rx="0"/>
+<rect x="87.66666666666666" y="388" width="47.666666666666664" height="64" fill="#FFFFFF" stroke="#333" stroke-width="1" rx="0"/>
+<rect x="143.33333333333331" y="388" width="47.666666666666664" height="64" fill="#FFFFFF" stroke="#333" stroke-width="1" rx="0"/>
+<rect x="199.0" y="388" width="47.666666666666664" height="64" fill="#FFFFFF" stroke="#333" stroke-width="1" rx="0"/>
+<rect x="254.66666666666666" y="388" width="47.666666666666664" height="64" fill="#FFFFFF" stroke="#333" stroke-width="1" rx="0"/>
+<rect x="310.3333333333333" y="388" width="47.666666666666664" height="64" fill="#FFFFFF" stroke="#333" stroke-width="1" rx="0"/>
+<text x="32" y="472" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#666" font-weight="400" text-anchor="start">ONE input underneath (autocomplete=one-time-code, numeric, paste 6) + six data-code cells</text>
+<rect x="32" y="484" width="326" height="28" fill="none" stroke="#999" stroke-width="1" rx="0" stroke-dasharray="4 3"/>
+<text x="38" y="503" font-family="Helvetica,Arial,sans-serif" font-size="11" fill="#666" font-weight="400" text-anchor="start">status line (live region)</text>
+<text x="352" y="503" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#999" font-weight="400" text-anchor="end">[msg: status-line]</text>
+<rect x="32" y="530" width="179.3" height="44" fill="#FFFFFF" stroke="#999" stroke-width="1" rx="0" stroke-dasharray="5 4"/>
+<rect x="40" y="540" width="22" height="22" fill="#F7F7F7" stroke="#999" stroke-width="1" rx="0" stroke-dasharray="3 2"/>
+<text x="51.0" y="554.0" font-family="ui-monospace,Menlo,monospace" font-size="8" fill="#999" font-weight="400" text-anchor="middle">[i]</text>
+<text x="72" y="557" font-family="Helvetica,Arial,sans-serif" font-size="13" fill="#666" font-weight="700" text-anchor="start">Resend in 0:30</text>
+<text x="219.3" y="557" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#999" font-weight="400" text-anchor="start">[msg: resend-cooldown]</text>
+<text x="32" y="594" font-family="Helvetica,Arial,sans-serif" font-size="12" fill="#666" font-weight="400" text-anchor="start">Use a different email</text>
+<text x="222" y="594" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#999" font-weight="400" text-anchor="start">[msg: change-email (quiet link)]</text>
+<rect x="16" y="640" width="358" height="52" fill="#333" stroke="#333" stroke-width="1" rx="0"/>
+<text x="195.0" y="671.0" font-family="Helvetica,Arial,sans-serif" font-size="15" fill="#FFF" font-weight="700" text-anchor="middle">Check code</text>
+<text x="22" y="687" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#999" font-weight="400" text-anchor="start">[msg: check-code]</text>
+<text x="368" y="687" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#666" font-weight="400" text-anchor="end">accent.primary</text>
+<text x="16" y="716" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#666" font-weight="400" text-anchor="start">10 status-line states: see desktop sheet / edge-cases file</text>
+</g>
+<rect x="0" y="1380" width="1860" height="108" fill="none" stroke="#999" stroke-width="1" rx="0" stroke-dasharray="4 4"/>
+<text x="12" y="1400" font-family="Helvetica,Arial,sans-serif" font-size="12" fill="#333" font-weight="700" text-anchor="start">Hypothesis: one real input with six visual cells keeps paste, autofill and screen readers working; every outcome is a named status line.</text>
+<text x="12" y="1417" font-family="Helvetica,Arial,sans-serif" font-size="12" fill="#666" font-weight="400" text-anchor="start">Anchors: Mundial desktop (ruled 1px boxes), Paperless Post (invite as a physical object), Premier League (tabular numerals) from references/rsvp-save-the-date-sports-ticket-2026-10-14.md.</text>
+<text x="12" y="1434" font-family="Helvetica,Arial,sans-serif" font-size="12" fill="#666" font-weight="400" text-anchor="start">Commitments: auto-check on the 6th digit, button stays as the fallback; resend is a dashed disabled control with a live countdown; no shake, no toast; the 10 status lines (right) are the OTP contract.</text>
+</svg>

@@ -1,0 +1,17 @@
+schemaVersion: "1.0"
+profileVersion: "1.0.0"
+compatiblePluginRange: ">=0.2.0,<1.0.0"
+clientName: thirty-united
+clientDisplayName: "Thirty United"
+stack: web-vite
+lastUpdated: "2026-10-14"
+direction: direction.md
+maintainers:
+  - marlon@specno.com
+files:
+  direction: direction.md
+  tokens: tokens.md
+  components: components.md
+  brand: brand.md
+  icons: icons.md
+  feedback: feedback.md

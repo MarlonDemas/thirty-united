@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1860 1094" width="1860" height="1094">
+<rect x="0" y="0" width="1860" height="1094" fill="#FFFFFF" stroke="none" stroke-width="0" rx="0"/>
+<text x="0" y="22" font-family="Helvetica,Arial,sans-serif" font-size="16" fill="#000" font-weight="700" text-anchor="start">Moment 1 of 4: the sealed ticket (glance)</text>
+<text x="1860" y="22" font-family="ui-monospace,Menlo,monospace" font-size="11" fill="#999" font-weight="400" text-anchor="end">Wireframe, low-fi, greyscale. Token names, not colours. Variant C (single variant).</text>
+<rect x="0" y="44" width="1440" height="900" fill="#F7F7F7" stroke="#000" stroke-width="2" rx="0"/>
+<text x="8" y="960" font-family="ui-monospace,Menlo,monospace" font-size="11" fill="#666" font-weight="400" text-anchor="start">DESKTOP 1440x900</text>
+<text x="1432" y="60" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#666" font-weight="400" text-anchor="end">surface.page</text>
+<rect x="1470" y="44" width="390" height="844" fill="#F7F7F7" stroke="#000" stroke-width="2" rx="0"/>
+<text x="1470" y="904" font-family="ui-monospace,Menlo,monospace" font-size="11" fill="#666" font-weight="400" text-anchor="start">MOBILE 390x844</text>
+<text x="1852" y="60" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#666" font-weight="400" text-anchor="end">surface.page</text>
+<g transform="translate(0,44)">
+<rect x="226" y="216" width="988" height="428" fill="none" stroke="#333" stroke-width="1" rx="0"/>
+<text x="230" y="212" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#666" font-weight="400" text-anchor="start">rule 1px ink (programme-cover frame)</text>
+<rect x="240" y="230" width="960" height="400" fill="#E5E5E5" stroke="#333" stroke-width="1" rx="0"/>
+<line x1="931.1999999999999" y1="230" x2="931.1999999999999" y2="630" stroke="#333" stroke-width="1.5" stroke-dasharray="3 5"/>
+<circle cx="931.1999999999999" cy="230" r="9" fill="#F7F7F7" stroke="#333" stroke-width="1"/>
+<circle cx="931.1999999999999" cy="630" r="9" fill="#F7F7F7" stroke="#333" stroke-width="1"/>
+<text x="935.1999999999999" y="660" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#666" font-weight="400" text-anchor="start">perforation: punched semicircles</text>
+<rect x="268" y="252" width="200" height="28" fill="none" stroke="#999" stroke-width="1" rx="0" stroke-dasharray="4 3"/>
+<text x="274" y="270" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#666" font-weight="400" text-anchor="start">data-stub: 21 DEC 2026</text>
+<text x="476" y="270" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#999" font-weight="400" text-anchor="start">[msg: date]</text>
+<rect x="268" y="314" width="640" height="112" fill="none" stroke="#999" stroke-width="1" rx="0" stroke-dasharray="4 3"/>
+<text x="276" y="374" font-family="ui-monospace,Menlo,monospace" font-size="12" fill="#666" font-weight="400" text-anchor="start">TITLE  display-ticket 120/104, caps, two words</text>
+<text x="880" y="420" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#999" font-weight="400" text-anchor="end">[msg: title]</text>
+<rect x="268" y="456" width="520" height="36" fill="none" stroke="#999" stroke-width="1" rx="0" stroke-dasharray="4 3"/>
+<text x="276" y="479" font-family="Helvetica,Arial,sans-serif" font-size="11" fill="#666" font-weight="400" text-anchor="start" font-style="italic">standfirst 24/32, serif italic: one line from Makes</text>
+<text x="796" y="479" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#999" font-weight="400" text-anchor="start">[msg: host-note]</text>
+<rect x="268" y="560" width="28" height="28" fill="#F7F7F7" stroke="#999" stroke-width="1" rx="0" stroke-dasharray="3 2"/>
+<text x="282.0" y="577.0" font-family="ui-monospace,Menlo,monospace" font-size="8" fill="#999" font-weight="400" text-anchor="middle">[i]</text>
+<rect x="304" y="564" width="160" height="20" fill="none" stroke="#999" stroke-width="1" rx="0" stroke-dasharray="4 3"/>
+<text x="472" y="579" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#999" font-weight="400" text-anchor="start">[msg: venue-tba]</text>
+<text x="304" y="602" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#666" font-weight="400" text-anchor="start">icon: map-pin dashed; muted ink</text>
+<rect x="1049.6" y="290" width="32" height="32" fill="#F7F7F7" stroke="#999" stroke-width="1" rx="0" stroke-dasharray="3 2"/>
+<text x="1065.6" y="309.0" font-family="ui-monospace,Menlo,monospace" font-size="8" fill="#999" font-weight="400" text-anchor="middle">[i]</text>
+<text x="1065.6" y="342" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#999" font-weight="400" text-anchor="middle">[msg: tear-handle-icon]</text>
+<text x="1065.6" y="410" font-family="Helvetica,Arial,sans-serif" font-size="12" fill="#333" font-weight="700" text-anchor="middle">SEAT</text>
+<text x="1065.6" y="436" font-family="ui-monospace,Menlo,monospace" font-size="22" fill="#999" font-weight="400" text-anchor="middle">---</text>
+<text x="1065.6" y="456" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#999" font-weight="400" text-anchor="middle">[msg: seat-pending]</text>
+<rect x="922.1999999999999" y="404.0" width="18" height="52" fill="#FFFFFF" stroke="#333" stroke-width="1.5" rx="9"/>
+<text x="949.1999999999999" y="424.0" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#666" font-weight="400" text-anchor="start">drag handle (pointer)</text>
+<line x1="953.1999999999999" y1="436.0" x2="953.1999999999999" y2="490.0" stroke="#333" stroke-width="1"/>
+<text x="959.1999999999999" y="468.0" font-family="ui-monospace,Menlo,monospace" font-size="9" fill="#666" font-weight="400" text-anchor="start">drag along the line, top to bottom</text>
+<rect x="560" y="690" width="320" height="60" fill="#333" stroke="#333" stroke-width="1" rx="0"/>
+<text x="700" y="726" font-family="Helvetica,Arial,sans-serif" font-size="16" fill="#FFF" font-weight="700" text-anchor="middle">Tear open</text>
+<rect x="580" y="708" width="24" height="24" fill="#F7F7F7" stroke="#999" stroke-width="1" rx="0" stroke-dasharray="3 2"/>
+<text x="592.0" y="723.0" font-family="ui-monospace,Menlo,monospace" font-size="8" fill="#999" font-weight="400" text-anchor="middle">[i]</text>
+<text x="870" y="744" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#666" font-weight="400" text-anchor="end">accent.primary</text>
+<text x="574" y="744" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#999" font-weight="400" text-anchor="start">[msg: tear-cta]</text>
+<text x="720" y="780" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#666" font-weight="400" text-anchor="middle">keyboard: Enter or Space = same tear; Tab reaches it first</text>
+<text x="720" y="800" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#999" font-weight="400" text-anchor="middle">[msg: tear-result: live region "ticket opened"]</text>
+<text x="240" y="140" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#666" font-weight="400" text-anchor="start">width cap 960: ticket never exceeds this; centred</text>
+</g>
+<g transform="translate(1470,44)">
+<rect x="16" y="176" width="358" height="228" fill="none" stroke="#333" stroke-width="1" rx="0"/>
+<text x="20" y="172" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#666" font-weight="400" text-anchor="start">rule 1px ink (programme-cover frame)</text>
+<rect x="30" y="190" width="330" height="200" fill="#E5E5E5" stroke="#333" stroke-width="1" rx="0"/>
+<line x1="261.0" y1="190" x2="261.0" y2="390" stroke="#333" stroke-width="1.5" stroke-dasharray="3 5"/>
+<circle cx="261.0" cy="190" r="9" fill="#F7F7F7" stroke="#333" stroke-width="1"/>
+<circle cx="261.0" cy="390" r="9" fill="#F7F7F7" stroke="#333" stroke-width="1"/>
+<rect x="42" y="202" width="110" height="20" fill="none" stroke="#999" stroke-width="1" rx="0" stroke-dasharray="4 3"/>
+<text x="44" y="216" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#666" font-weight="400" text-anchor="start">data-stub date</text>
+<rect x="42" y="236" width="200" height="100" fill="none" stroke="#999" stroke-width="1" rx="0" stroke-dasharray="4 3"/>
+<text x="48" y="282" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#666" font-weight="400" text-anchor="start">TITLE display-ticket</text>
+<text x="48" y="296" font-family="ui-monospace,Menlo,monospace" font-size="9" fill="#666" font-weight="400" text-anchor="start">64/60, wraps to two lines</text>
+<rect x="42" y="354" width="20" height="20" fill="#F7F7F7" stroke="#999" stroke-width="1" rx="0" stroke-dasharray="3 2"/>
+<text x="52.0" y="367.0" font-family="ui-monospace,Menlo,monospace" font-size="8" fill="#999" font-weight="400" text-anchor="middle">[i]</text>
+<rect x="68" y="358" width="90" height="14" fill="none" stroke="#999" stroke-width="1" rx="0" stroke-dasharray="4 3"/>
+<text x="164" y="369" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#999" font-weight="400" text-anchor="start">[msg: venue-tba]</text>
+<rect x="298.5" y="214" width="24" height="24" fill="#F7F7F7" stroke="#999" stroke-width="1" rx="0" stroke-dasharray="3 2"/>
+<text x="310.5" y="229.0" font-family="ui-monospace,Menlo,monospace" font-size="8" fill="#999" font-weight="400" text-anchor="middle">[i]</text>
+<text x="310.5" y="298" font-family="Helvetica,Arial,sans-serif" font-size="10" fill="#333" font-weight="700" text-anchor="middle">SEAT</text>
+<text x="310.5" y="318" font-family="ui-monospace,Menlo,monospace" font-size="16" fill="#999" font-weight="400" text-anchor="middle">---</text>
+<rect x="253.0" y="268.0" width="16" height="44" fill="#FFFFFF" stroke="#333" stroke-width="1.5" rx="8"/>
+<rect x="30" y="430" width="330" height="56" fill="none" stroke="#999" stroke-width="1" rx="0" stroke-dasharray="4 3"/>
+<text x="38" y="452" font-family="Helvetica,Arial,sans-serif" font-size="11" fill="#666" font-weight="400" text-anchor="start" font-style="italic">standfirst 20/28, serif italic</text>
+<text x="38" y="478" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#999" font-weight="400" text-anchor="start">[msg: host-note]</text>
+<rect x="16" y="540" width="358" height="56" fill="#333" stroke="#333" stroke-width="1" rx="0"/>
+<text x="195" y="574" font-family="Helvetica,Arial,sans-serif" font-size="16" fill="#FFF" font-weight="700" text-anchor="middle">Tear open</text>
+<rect x="30" y="556" width="24" height="24" fill="#F7F7F7" stroke="#999" stroke-width="1" rx="0" stroke-dasharray="3 2"/>
+<text x="42.0" y="571.0" font-family="ui-monospace,Menlo,monospace" font-size="8" fill="#999" font-weight="400" text-anchor="middle">[i]</text>
+<text x="26" y="592" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#999" font-weight="400" text-anchor="start">[msg: tear-cta]</text>
+<text x="366" y="592" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#666" font-weight="400" text-anchor="end">accent.primary</text>
+<text x="195" y="630" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#666" font-weight="400" text-anchor="middle">ticket fills the width; handle and line visible above fold</text>
+<text x="195" y="646" font-family="ui-monospace,Menlo,monospace" font-size="10" fill="#666" font-weight="400" text-anchor="middle">handle touch-action isolated; page still scrolls</text>
+</g>
+<rect x="0" y="980" width="1860" height="108" fill="none" stroke="#999" stroke-width="1" rx="0" stroke-dasharray="4 4"/>
+<text x="12" y="1000" font-family="Helvetica,Arial,sans-serif" font-size="12" fill="#333" font-weight="700" text-anchor="start">Hypothesis: one object, one action. The ticket is the largest thing on the page; the only red is the Tear open button.</text>
+<text x="12" y="1017" font-family="Helvetica,Arial,sans-serif" font-size="12" fill="#666" font-weight="400" text-anchor="start">Anchors: Mundial desktop (ruled 1px boxes), Paperless Post (invite as a physical object), Premier League (tabular numerals) from references/rsvp-save-the-date-sports-ticket-2026-10-14.md.</text>
+<text x="12" y="1034" font-family="Helvetica,Arial,sans-serif" font-size="12" fill="#666" font-weight="400" text-anchor="start">Commitments: ticket never wider than 960 and sized by content (grows at 200% text); perforation is cut-outs; drag handle on the line AND a real button; reduced motion = button only, instant swap.</text>
+<text x="12" y="1051" font-family="Helvetica,Arial,sans-serif" font-size="12" fill="#666" font-weight="400" text-anchor="start">Channels: date/title by type; venue by icon + muted type; next step by icon + short label on the one red action; tear result by motion, announced by a live region.</text>
+</svg>
