@@ -2,6 +2,15 @@
   command = "npx convex deploy --cmd 'pnpm build'"
   publish = "dist"
 
+# Preview of feature/3d-ticket only: frontend build, no `convex deploy`.
+# Points at the existing production Convex backend (public URL, not a secret).
+# CONVEX_DEPLOY_KEY is Production-scoped in the Netlify UI and must stay that way.
+[context."feature/3d-ticket"]
+  command = "pnpm build"
+
+[context."feature/3d-ticket".environment]
+  VITE_CONVEX_URL = "https://incredible-crane-757.convex.cloud"
+
 [[redirects]]
   from = "/*"
   to = "/index.html"

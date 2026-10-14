@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useRef } from "react"
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react"
 import { animate, m, useMotionValue, useTransform } from "motion/react"
+import { cn } from "cn"
 import { MapPin, Scissors } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { StatusLine } from "@/components/StatusLine"
@@ -7,6 +8,10 @@ import { MISSING_KEY_MESSAGE } from "@/lib/inviteKey"
 import { Ticket } from "@/components/Ticket"
 import { useFocusOnMount } from "@/hooks/useFocusOnMount"
 import { useReducedMotion } from "@/hooks/useReducedMotion"
+import { hasWebGL } from "@/lib/webgl"
+
+// SPIKE: 3D lanyard ticket. Separate chunk, fetched only once the sealed view is idle.
+const LanyardTicket = lazy(() => import("@/components/three/LanyardTicket"))
 
 export const HOST_LINE = "Thirty feels like half time. Come for the oranges."
 
@@ -47,6 +52,7 @@ export function SealedView({
   const busy = useRef(false)
   const dragging = useRef<{ startY: number; startP: number; t: number; lastY: number; v: number } | null>(null)
   const interacted = useRef(false)
+  const [lanyard, setLanyard] = useState<"off" | "loading" | "ready">("off")
 
   const rotate = useTransform([progress, hint], ([p, h]: number[]) => -p * 12 - h)
   const x = useTransform(progress, (p) => p * 16)
@@ -85,10 +91,27 @@ export function SealedView({
     }
   }, [reduced, hint])
 
+  // SPIKE: load the 3D layer after first paint, when idle. Never for reduced motion, no key, or no WebGL.
+  useEffect(() => {
+    if (reduced || missingKey || !hasWebGL()) {
+      setLanyard("off")
+      return
+    }
+    const go = () => setLanyard((s) => (s === "off" ? "loading" : s))
+    const w = window as Window & { requestIdleCallback?: typeof requestIdleCallback; cancelIdleCallback?: typeof cancelIdleCallback }
+    if (w.requestIdleCallback) {
+      const id = w.requestIdleCallback(go, { timeout: 1500 })
+      return () => w.cancelIdleCallback?.(id)
+    }
+    const t = setTimeout(go, 600)
+    return () => clearTimeout(t)
+  }, [reduced, missingKey])
+
   const finish = useCallback(() => {
     if (busy.current) return // a second press during the tear is absorbed
     busy.current = true
     interacted.current = true
+    setLanyard("off") // the DOM ticket takes over for the tear
     if (reduced) {
       onTorn()
       return
@@ -122,6 +145,9 @@ export function SealedView({
 
   return (
     <section aria-labelledby="sealed-title" className="flex flex-col items-center gap-8">
+      <div className={cn("relative w-full", lanyard === "ready" && "h-[min(30rem,60svh)]")}>
+      {/* The DOM ticket stays in the accessibility tree; it is only visually replaced by the canvas. */}
+      <div className={cn(lanyard === "ready" && "pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 opacity-0")}>
       <Ticket
         ticketRef={ticketRef}
         stubStyle={reduced ? undefined : { rotate, x, opacity }}
@@ -171,6 +197,21 @@ export function SealedView({
           </m.div>
         )}
       </Ticket>
+      </div>
+      {lanyard !== "off" && (
+        <div
+          aria-hidden="true"
+          className={cn(
+            "absolute inset-x-0 top-1/2 h-[min(30rem,60svh)] -translate-y-1/2",
+            lanyard !== "ready" && "pointer-events-none opacity-0",
+          )}
+        >
+          <Suspense fallback={null}>
+            <LanyardTicket hostLine={HOST_LINE} onReady={() => setLanyard("ready")} onFail={() => setLanyard("off")} />
+          </Suspense>
+        </div>
+      )}
+      </div>
       {missingKey ? (
         <StatusLine className="max-w-sm justify-center text-center md:max-w-none">{MISSING_KEY_MESSAGE}</StatusLine>
       ) : (
