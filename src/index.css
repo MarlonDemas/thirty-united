@@ -312,11 +312,11 @@
   }
 }
 
-/* Cursor on the 3D canvas: grab, grabbing while pressed (pointer capture keeps :active during a drag). */
-.lanyard-canvas {
+/* Cursor on the 3D pass's hit box: grab, grabbing while pressed (pointer capture keeps :active during a drag). */
+.lanyard-hit {
   cursor: grab;
 }
-.lanyard-canvas:active {
+.lanyard-hit:active {
   cursor: grabbing;
 }
 

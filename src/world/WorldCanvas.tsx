@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { advance, Canvas, useThree } from "@react-three/fiber"
 import {
   AdditiveBlending,
@@ -37,6 +37,8 @@ import { ANCHORS, LAYERS, layerUrl, type Layer } from "@/world/layers"
 import { MOON } from "@/world/draw"
 import { PARALLAX, parallaxDepth } from "@/world/parallax"
 import { demote, type Tier } from "@/world/tier"
+import { usePass } from "@/world/pass"
+import LanyardPass from "@/components/three/LanyardTicket"
 
 /**
  * The WebGL world for T3 and T2 (phase 4): the same plates as the DOM still, as planes in poster space, with the
@@ -47,7 +49,8 @@ import { demote, type Tier } from "@/world/tier"
  * transform, pushes and keyboard reframes included) carry it exactly as they carry the DOM layers and overlays. The
  * DOM keeps everything that is not a plate: the moon disc, the title lockups, the code lamps, the shirt lettering and
  * the stamp, drawn over the canvas. WorldStage cross-fades the canvas in once its first frame is drawn, then hides
- * the DOM plates under it.
+ * the DOM plates under it. On the cover it also hangs the lanyard pass (B2, phase 5) when the sealed view asks for it
+ * (`@/world/pass`), so the cover has one WebGL context.
  *
  * Its own chunk: three and R3F load only on T3 and T2.
  */
@@ -394,6 +397,8 @@ function bindTextures(built: Built, textures: ReadonlyMap<string, Texture>) {
 }
 
 function Scene({ beat, attending, tier, still, mounted, live, onReady, glTier, cfg }: SceneProps) {
+  const pass = usePass()
+  const passBusy = useRef<() => boolean>(() => false)
   const get = useThree((s) => s.get)
   const gl = useThree((s) => s.gl)
   const built = useMemo(() => build(glTier, cfg), [glTier, cfg])
@@ -412,6 +417,7 @@ function Scene({ beat, attending, tier, still, mounted, live, onReady, glTier, c
   const [settled] = useState(() => settledClock(beat, attending))
   const clock = useRef<Clock>(settled)
   const wake = useRef<() => void>(() => {})
+  const wakeLoop = useCallback(() => wake.current(), [])
   useEffect(() => {
     const c = clock.current
     if (c.beat === beat && c.attending === attending) return
@@ -562,7 +568,7 @@ function Scene({ beat, attending, tier, still, mounted, live, onReady, glTier, c
       const bursting = flying(valueOf(c, "swirl", now)) || flying(valueOf(c, "burst", now))
       // Until the first frame with the base plates is drawn (the textures effect wakes the loop as they land).
       const waiting = !readied.current && readyRef.current
-      return tweening || bursting || p.x !== p.tx || p.y !== p.ty || waiting
+      return tweening || bursting || p.x !== p.tx || p.y !== p.ty || waiting || passBusy.current()
     }
 
     const tick = (now: number) => {
@@ -619,5 +625,10 @@ function Scene({ beat, attending, tier, still, mounted, live, onReady, glTier, c
     wake.current()
   }, [tier, still, live])
 
-  return <primitive object={built.group} dispose={null} />
+  return (
+    <>
+      <primitive object={built.group} dispose={null} />
+      {pass && beat === "cover" && <LanyardPass request={pass} live={live} wake={wakeLoop} busyRef={passBusy} />}
+    </>
+  )
 }

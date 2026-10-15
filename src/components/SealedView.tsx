@@ -1,10 +1,9 @@
-import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react"
+import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
 import { createPortal } from "react-dom"
 import { animate, m, useMotionValue, useTransform } from "motion/react"
 import { cn } from "cn"
 import { CalendarDays, MapPin, Scissors } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { ErrorBoundary } from "@/components/ErrorBoundary"
 import { StatusLine } from "@/components/StatusLine"
 import { MISSING_KEY_MESSAGE } from "@/lib/inviteKey"
 import { Ticket } from "@/components/Ticket"
@@ -16,10 +15,11 @@ import { getSoundOn, playTearSeparate, playTearTick, unlockAudio } from "@/lib/s
 import { forcedColors } from "@/lib/motionPrefs"
 import { hasWebGL } from "@/lib/webgl"
 import { demote, isWebGLTier, useTier } from "@/world/tier"
-import type { SettleFn } from "@/components/three/LanyardTicket"
+import { clearPass, setPass, type SettleFn } from "@/world/pass"
 
-// 3D lanyard ticket. Separate chunk, fetched once the sealed view is idle.
-const LanyardTicket = lazy(() => import("@/components/three/LanyardTicket"))
+// `?debug=1` only: the pass's readout (fps, renderer, frame times), in its own small chunk.
+const DebugOverlay = lazy(() => import("@/components/three/DebugOverlay").then((m) => ({ default: m.DebugOverlay })))
+const debug = () => new URLSearchParams(window.location.search).get("debug") === "1"
 
 export const HOST_LINE = "Thirty feels like half time. Come for the oranges."
 
@@ -62,8 +62,9 @@ export function DateVenue() {
 
 /**
  * The cover beat. The panel carries the heading, the host's line, the date and "Tear open"; the pass (the DOM
- * ticket, and the 3D lanyard on T3 and T2) hangs in the world, portalled into `passSlot`. Drag the handle down the
- * perforation, or press "Tear open": same finish.
+ * ticket) hangs in the world, portalled into `passSlot`. On T3 and T2 the world canvas draws the 3D lanyard pass over
+ * it (B2: one WebGL context), asked for through `@/world/pass`. Drag the handle down the perforation, or press
+ * "Tear open": same finish.
  */
 export function SealedView({
   onTorn,
@@ -96,19 +97,27 @@ export function SealedView({
   const interacted = useRef(false)
   const speed = useRef(1)
   const timers = useRef<ReturnType<typeof setTimeout>[]>([])
+  const alive = useRef(true)
   const [lanyard, setLanyard] = useState<"off" | "loading" | "ready">("off")
   const [boxed, setBoxed] = useState(false) // the 30rem stage box stays until the view is left, so nothing jumps at the hand-off
   const [domShown, setDomShown] = useState(false) // the DOM ticket cross-fades in over the 3D one
   const [peeling, setPeeling] = useState(false)
   const settleRef = useRef<SettleFn | null>(null)
+  const hostRef = useRef<HTMLDivElement>(null)
+  const hitRef = useRef<HTMLDivElement>(null)
+  const lanyardNow = useRef(lanyard)
+  useLayoutEffect(() => {
+    lanyardNow.current = lanyard
+  })
   // 3D is for guests who can take motion and effects, on a WebGL tier (T3, T2); WebGL is probed once per mount.
   const [glOk] = useState(hasWebGL)
+  const [debugOn] = useState(debug)
   const { tier } = useTier()
   const canLanyard = !reduced && !missingKey && glOk && !forcedColors() && isWebGLTier(tier)
-  // The 3D layer failed (chunk import rejected, context lost, or it threw while rendering): step down to the DOM
-  // ticket, and the session to T1.
+  // The 3D pass failed (its textures failed; a lost context or a world chunk failure demotes the tier, below): step
+  // down to the DOM ticket, and the session to T1.
   const failLanyard = useCallback(() => {
-    demote("T1", "lanyard failed (WebGL context lost or error)")
+    demote("T1", "lanyard failed (ticket textures failed)")
     setLanyard("off")
     setBoxed(false)
     setDomShown(true)
@@ -118,6 +127,29 @@ export function SealedView({
     if (!isWebGLTier(tier) && lanyard !== "off" && !busy.current) failLanyard()
   }, [tier, lanyard, failLanyard])
   const tilt = useTilt(!reduced && lanyard !== "ready" && !peeling)
+
+  // The world canvas drew the pass: it takes over from the DOM one (which fades out under it).
+  const onLanyardReady = useCallback(() => {
+    if (lanyardNow.current !== "loading") return
+    setLanyard("ready")
+    setBoxed(true)
+  }, [])
+  // The pass left the world canvas while up (a hidden tab or a demotion unmounts the canvas): the DOM pass shows
+  // again until the canvas hangs it anew. A running tear goes on in the DOM (the pass resolves its settle on the way out).
+  const onLanyardGone = useCallback(() => {
+    if (busy.current || lanyardNow.current !== "ready") return
+    setLanyard("loading")
+    setBoxed(false)
+  }, [])
+  const shown = lanyard === "ready" && !domShown
+  useEffect(() => {
+    const host = hostRef.current
+    const hit = hitRef.current
+    if (lanyard === "off" || !host || !hit) return
+    const req = { hostLine: HOST_LINE, host, hit, settleRef, shown, onReady: onLanyardReady, onFail: failLanyard, onGone: onLanyardGone }
+    setPass(req)
+    return () => clearPass(req)
+  }, [lanyard, shown, onLanyardReady, failLanyard, onLanyardGone])
 
   // The free part above the scissors tip pivots at the tip; the real stub below it never moves.
   const tip = useTransform([progress, trackH], ([p, h]: number[]) => Math.round(tipAt(p, h)))
@@ -182,8 +214,12 @@ export function SealedView({
   }, [progress, trackH])
 
   useEffect(() => {
+    alive.current = true
     const pending = timers.current
-    return () => pending.forEach(clearTimeout)
+    return () => {
+      alive.current = false // the pass resolves its settle as it unmounts: the tear must not go on after this view
+      pending.forEach(clearTimeout)
+    }
   }, [])
 
   // Load the 3D layer after first paint, when idle. Never for reduced motion, forced colors, no key, or no WebGL.
@@ -236,6 +272,7 @@ export function SealedView({
         // A resize mid-hand-off cannot align the two tickets: swap instantly instead of cross-fading.
         settleRef.current(rect).then(() => {
           window.removeEventListener("resize", onResize)
+          if (!alive.current) return
           setDomShown(true)
           endStage()
           wait(resized ? 0 : STAGE_FADE_MS, () => {
@@ -364,29 +401,16 @@ export function SealedView({
       </Ticket>
       </div>
       {lanyard !== "off" && (
-        // The canvas spans the frame from its top (the strap hangs from above) to the bottom of the pass zone.
-        <div
-          aria-hidden="true"
-          className={cn(
-            "absolute inset-x-0 bottom-0 top-[calc(var(--zone-top,0px)*-1)]",
-            "transition-opacity duration-160 ease-(--ease-fade)",
-            (lanyard !== "ready" || domShown) && "pointer-events-none opacity-0",
-          )}
-        >
-          <ErrorBoundary fallback={null} onError={failLanyard}>
-          <Suspense fallback={null}>
-            <LanyardTicket
-              hostLine={HOST_LINE}
-              settleRef={settleRef}
-              onReady={() => {
-                setLanyard("ready")
-                setBoxed(true)
-              }}
-              onFail={failLanyard}
-            />
-          </Suspense>
-          </ErrorBoundary>
+        // The pass's box: from the top of the frame (the strap hangs from above) to the bottom of the pass zone. The
+        // world canvas draws the pass here; only the hit box over the card takes the pointer.
+        <div ref={hostRef} aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 top-[calc(var(--zone-top,0px)*-1)]">
+          <div ref={hitRef} data-testid="lanyard-hit" hidden className="lanyard-hit pointer-events-auto absolute touch-none" />
         </div>
+      )}
+      {debugOn && lanyard !== "off" && (
+        <Suspense fallback={null}>
+          <DebugOverlay />
+        </Suspense>
       )}
     </div>
   )
