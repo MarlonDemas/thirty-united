@@ -4,8 +4,19 @@ compatiblePluginRange: ">=0.2.0,<1.0.0"
 clientName: thirty-united
 clientDisplayName: "Thirty United"
 stack: web-vite
-lastUpdated: "2026-10-14"
+lastUpdated: "2026-10-15"
 direction: direction.md
+chosenDirection: D
+chosenDirectionName: "Matchday: The Signing"
+colorScheme: dark
+pendingOwnerDecisions:
+  - "Owner decision: keep the photo-real G1 attempt, or have it repainted in the painted poster style (G1 is in review, not approved)."
+acceptedOwnerDecisions:
+  - "Likeness on every shared poster (owner: \"likeness yes\", 2026-10-15)."
+  - "Wireframes approved (owner: \"wireframes ok\", 2026-10-15)."
+  - "Moon at about 93 percent waxing gibbous on 21 Dec 2026 (default accepted; the phase is still an estimate)."
+  - "Four shipped faces plus SVG title lockups; brush font picked in the asset phase."
+  - "Draft copy stays as drafts until the owner rewrites it."
 maintainers:
   - marlon@specno.com
 files:
@@ -15,3 +26,5 @@ files:
   brand: brand.md
   icons: icons.md
   feedback: feedback.md
+  luxNote: lux-notes/save-the-date-2026-10-15.md
+  wireframes: wireframes/save-the-date-signing-2026-10-15/

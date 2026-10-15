@@ -4,181 +4,290 @@ schemaVersion: "1.0"
 profileVersion: "1.0.0"
 clientName: thirty-united
 stack: web-vite
-direction: A
-lastUpdated: "2026-10-14"
+direction: D
+lastUpdated: "2026-10-15"
 ---
 
-# Tokens: Thirty United (Direction A, Matchday Programme)
+# Tokens: Thirty United (Direction D, Matchday: The Signing)
 
-Projected from `direction.md` (typographic identity, color thesis, motion philosophy). One light theme only, except the sealed screen's night stage (scene tokens below, sealed state only): set `color-scheme: light` on `:root`, remove the `.dark` block from `src/index.css` at build. Contrast ratios below were computed (WCAG relative luminance), not estimated.
+Projected from `direction.md` Direction D (typographic identity, colour thesis, motion philosophy) and the owner decisions of 2026-10-15. One dark scheme: set `color-scheme: dark` on `:root`. There is no light theme.
+
+**Build status.** `src/index.css` still carries the Direction A values. Migrating it to these tokens is nova's lane; this file is the source of truth it migrates to. Contrast ratios below were computed with the WCAG relative-luminance formula on 2026-10-15, not estimated.
 
 ## Color
 
-### Palette roles
+### Where each value comes from
 
-| Token | Hex | Role | Notes |
+- **Sampled** from the owner's reference image 4 (median of a named region, Pillow, `audits/cinematic-audit-2026-10-15.md` section 1) and proposed in the recommendation: `panel`, `moonlight`, `shirt-red`, `poster-red`, `scene-floodlight`, `scene-smoke-red`, `scene-ember`.
+- **Candidate from the recommendation** (picked, not sampled): `status-error`.
+- **Derived for this contract** (picked on 2026-10-15 to fill the roles the recommendation left open, then measured): `void`, `panel-raised`, `line`, `shirt-red-hover`, `shirt-red-pressed`, `status-success`, `status-warning`, `scene-moon-core` (sampled from image 1's moon, not image 4).
+
+Scene values are starting points. Re-sample `scene-*` from G1 to G3 once Makes approves G1, and re-measure the title band against its brightest pixel on every plate.
+
+### Palette roles (UI layer)
+
+| Token | Hex | Role | Source |
 |---|---|---|---|
-| `paper` | `#F3EDE1` | Ticket stock, ruled-box surface | The material of the Signature |
-| `page` | `#E8E0CF` | Page background behind the ticket | |
-| `paper-raised` | `#FBF8F1` | Input fill, select popup, text on red | Lighter than paper so fields read as fields |
-| `ink` | `#1B1A17` | Text, 1px rules, input borders, icons | 14.93:1 on paper, 13.25:1 on page |
-| `ink-2` | `#4A463D` | Secondary text, labels | 8.06:1 on paper, 7.16:1 on page |
-| `muted` | `#5E5A50` | Helper text, "optional" tags, disabled-but-readable text | 5.90:1 on paper, 5.24:1 on page, 6.48:1 on paper-raised |
-| `rule-soft` | `#D9D0BE` | Decorative hairlines inside a box only | 1.31:1 on paper: never a control border, never text |
-| `red` | `#B3261E` | The ADMIT ONE stamp, the primary action, the focus ring. Nothing else. | 5.61:1 on paper, 4.98:1 on page |
-| `red-pressed` | `#8F1D17` | Primary action hover and active fill | 8.40:1 with `paper-raised` text |
+| `void` | `#0E0B13` | Page background on desktop around the poster frame; `html` background before the cover still paints | Derived |
+| `panel` | `#18131F` | The step panel and the two chips (Sound, Still). Every readable word sits on this or on `panel-raised` | Sampled (image 4 night sky) |
+| `panel-raised` | `#241D2E` | Input fill, attendance tile fill, disabled button fill | Derived |
+| `text` | `#FFFFFF` | Headings, body, labels, button labels | n/a |
+| `moonlight` | `#B7D3FA` | Muted and helper text, "optional" tags, the focus ring, the primary button's ring, the panel's top rule, the selected tile's border | Sampled (image 4 moon) |
+| `line` | `#8A8FB0` | Control edges: inputs, tiles, checkboxes, the code cells, group rules; disabled button label | Derived |
+| `shirt-red` | `#9F0B19` | Primary button fill. Nothing else on the UI layer | Sampled (image 4 shirt) |
+| `shirt-red-hover` | `#B3101F` | Primary button hover | Derived |
+| `shirt-red-pressed` | `#850914` | Primary button active | Derived |
+| `poster-red` | `#F81E24` | In the scene only: the "UNITED" lockup, the Yes stamp, decoration. Large display type and decoration only, never a button fill, never body text | Sampled (image 4 "08" script) |
 
-Rules of use:
-- Text on a red fill is `paper-raised` (6.16:1). Never put ink on red (2.66:1).
-- Red is never a block fill other than the primary button and the stamp's outline and text. Direction A: no red fills, no red text blocks.
-- Never use `muted` below 14px, never use anything lighter than `muted` for text. `#7A7468` (3.98:1) and `#8C8472` (3.18:1) fail AA and are banned.
+### Status colours
 
-### Status colours (deliberately not stock Material)
+| Token | Hex | Use |
+|---|---|---|
+| `status-error` | `#FF9E8F` | Error text, the alert icon, the 2 px error rule on a field. Always with `circle-alert`, so red-ish colour is never the only signal |
+| `status-success` | `#8EDDA9` | Check icon and short status line ("Saved", "Your answer is updated", "New code sent") |
+| `status-warning` | `#FFC978` | Cooldown and "tries left" lines, with `timer` or `circle-alert`. Status lines only, never a fill or a border (keeps it away from dark-plus-gold) |
 
-Material 3's baseline error is `#B3261E`, the same hex as our red. Using it for errors would blur the one-meaning rule for red, so errors use a darker oxblood that reads as ink with a red cast.
+### Scene tokens (code-drawn parts of the world; not UI paints)
 
-| Token | Hex | Use | Contrast |
+Used by the shaders, glow sprites, ember points and the poster compositor. No readable text uses them.
+
+| Token | Hex | Drawn for |
+|---|---|---|
+| `scene-moon-core` | `#E8F5FD` | The moon disc (drawn at its 21 December 2026 phase, about 93 percent waxing gibbous; default accepted, the phase itself is still an estimate) |
+| `scene-moon-halo` | `#B7D3FA` | The moon's halo (same value as `moonlight`, on purpose: the UI's cold colour is the moon's) |
+| `scene-floodlight` | `#FEFCFB` | Lamp heads, glow sprites, beam cards |
+| `scene-smoke-red` | `#DB312B` | Smoke tint for the noise quads and the T1 CSS layer |
+| `scene-ember` | `#F03F36` | Ember points |
+
+### Contrast, every pair (measured 2026-10-15)
+
+Text and control pairs on the UI layer:
+
+| Foreground | Background | Ratio | Needs | Result |
+|---|---|---|---|---|
+| `text` `#FFFFFF` | `panel` `#18131F` | 18.23:1 | 4.5 | Pass |
+| `text` | `panel-raised` `#241D2E` | 16.28:1 | 4.5 | Pass |
+| `text` | `void` `#0E0B13` | 19.52:1 | 4.5 | Pass |
+| `moonlight` `#B7D3FA` | `panel` | 11.90:1 | 4.5 | Pass |
+| `moonlight` | `panel-raised` | 10.63:1 | 4.5 | Pass |
+| `moonlight` | `void` | 12.74:1 | 4.5 | Pass |
+| `line` `#8A8FB0` | `panel` | 5.76:1 | 3 (control edge) | Pass |
+| `line` | `panel-raised` | 5.14:1 | 3 (control edge); 4.5 as disabled label | Pass |
+| `text` | `shirt-red` `#9F0B19` | 8.28:1 | 4.5 | Pass |
+| `text` | `shirt-red-hover` `#B3101F` | 6.98:1 | 4.5 | Pass |
+| `text` | `shirt-red-pressed` `#850914` | 10.26:1 | 4.5 | Pass |
+| `moonlight` ring | `shirt-red` | 5.41:1 | 3 | Pass |
+| `moonlight` ring | `shirt-red-hover` | 4.55:1 | 3 | Pass |
+| `moonlight` ring | `shirt-red-pressed` | 6.70:1 | 3 | Pass |
+| `status-error` `#FF9E8F` | `panel` | 9.15:1 | 4.5 | Pass |
+| `status-error` | `panel-raised` | 8.17:1 | 4.5 | Pass |
+| `status-success` `#8EDDA9` | `panel` | 11.34:1 | 4.5 | Pass |
+| `status-success` | `panel-raised` | 10.13:1 | 4.5 | Pass |
+| `status-warning` `#FFC978` | `panel` | 12.05:1 | 4.5 | Pass |
+| `status-warning` | `panel-raised` | 10.76:1 | 4.5 | Pass |
+| `poster-red` `#F81E24` | `panel` | 4.52:1 | 3 (large display) | Pass, large display only. The same pair is the Yes stamp: `panel` text on `poster-red`, 4.52:1 (passes 4.5:1) |
+| `poster-red` | `void` | 4.84:1 | 3 (large display) | Pass, large display only |
+
+Pairs that fail, and why the design still holds:
+
+| Pair | Ratio | Fails | What carries it |
 |---|---|---|---|
-| `status-error` | `#7F1D17` | Error text, alert icon, 2px error rule on the field. Never a fill. | 8.62:1 paper, 7.65:1 page, 9.47:1 paper-raised |
-| `status-success` | `#2F5D3A` | Check icon and short status line ("saved", "updated", "new code sent") | 6.56:1 paper, 5.82:1 page, 7.21:1 paper-raised |
-| `status-warning` | `#8A5A00` | Cooldown and "attempts left" lines, on paper or paper-raised only | 5.08:1 paper, 5.59:1 paper-raised, 4.51:1 page (use on page only for 18px+ bold) |
+| `shirt-red` on `panel` (the button's edge) | 2.20:1 | 3:1 for a control edge | The 2 px `moonlight` ring on every primary button (11.90:1 against the panel, 5.41:1 against the fill). Required, not decoration |
+| `text` on `poster-red` | 4.04:1 | 4.5:1 for normal text | Not used. The Yes stamp sets `panel` text on `poster-red` instead (4.52:1, passes). `poster-red` is never a button fill or a text background on the UI layer; the stamp is in the scene, `aria-hidden`, and its meaning is on the panel |
+| `moonlight` on `scene-floodlight` `#FEFCFB` | 1.50:1 | 3:1 for focus and control edges over the scene | Controls that sit over the scene (the Sound and Still chips) are solid `panel` chips, and their focus ring gets a 2 px `panel` halo outside it (`panel` on floodlight 17.83:1) |
+| `moonlight` on `scene-moon-core` `#E8F5FD` | 1.38:1 | same | Same fix as above. No control is placed over the moon's patch of sky |
+| `moonlight` on `scene-smoke-red` `#DB312B` | 3.06:1 | passes 3:1, with little margin | Covered by the same `panel` halo |
+| `panel-raised` on `panel` | 1.12:1 | n/a (fills are not the boundary) | Inputs and tiles are identified by their 1 px `line` edge (5.76:1), not by the fill |
+| `panel` on `void` | 1.07:1 | n/a (decorative) | On desktop the panel column is separated from the void by its 1 px `moonlight` rule |
 
-State is never colour alone: every status pairs an icon, a short line and (for errors) the 2px rule.
+Decorative art over the scene (not text, `aria-hidden`, so no WCAG requirement, measured for legibility): white on `scene-smoke-red` 4.68:1; white on `scene-ember` 3.84:1; `panel` on `scene-smoke-red` 3.90:1; `poster-red` on `scene-smoke-red` 1.16:1, so "UNITED" never sits on smoke: it sits in the empty sky band, measured against that band's brightest pixel on every plate.
+
+### Rules of use
+
+- Every word a guest must read is DOM text on `panel` or `panel-raised`. Nothing readable sits on the moving scene.
+- `shirt-red` is a fill for the primary button only, always with its 2 px `moonlight` ring. There is one primary button per beat.
+- `poster-red` never appears on the UI layer as a fill, a border or body text. It lives in the scene.
+- Red in the UI layer is limited to the primary button. Errors use `status-error`, a pale coral, with an icon.
+- Never use anything dimmer than `moonlight` for text, except the disabled button label (`line`, 5.14:1 on `panel-raised`).
+- State is never colour alone: each status pairs an icon and a line; errors add the 2 px rule; the selected tile adds a 2 px `moonlight` border and a filled icon.
 
 ### Focus
 
 | Token | Value |
 |---|---|
-| `focus-ring` | 3px `red`, offset 2px, on every interactive element (`:focus-visible`). 4.98:1 on page, 5.61:1 on paper |
-| `focus-rule` | The owning ruled box thickens to 2px (inset shadow, no layout shift) while a field inside it has focus |
+| `focus-ring` | 3 px `moonlight`, offset 2 px, on every interactive element (`:focus-visible`). 11.90:1 on `panel` |
+| `focus-halo` | Over the scene only (the chips): a 2 px `panel` ring outside the focus ring, so the indicator holds against floodlight glare (17.83:1 against `scene-floodlight`) |
+| `focus-group` | The owning group's top rule thickens from 1 px `line` to 2 px `moonlight` while a field inside it has focus (inset shadow, no layout shift) |
 
-### Scene tokens: the sealed screen's night stage (stadium A, owner decision 2026-10-14)
+The primary button wears a 2 px `moonlight` ring at rest. Focus adds the 3 px ring 2 px outside it, so the focused state differs from rest by a band of `panel` turning `moonlight` (11.90:1 change).
 
-Used only by the sealed screen's backdrop and the 3D scene lights. No form, code or stub view uses them; the `.dark` block stays removed and `:root` stays `color-scheme: light` (the stage is a painted layer, not a theme). Define as CSS custom properties in `src/index.css`. Contrast ratios computed (WCAG relative luminance).
-
-| Token | Hex | Role | Contrast |
-|---|---|---|---|
-| `scene-night-deep` | `#0B1411` | Page edge, sky | paper on it 16.05:1 |
-| `scene-night-mid` | `#16231E` | Terrace body, footer scrim | paper 13.93:1 |
-| `scene-night-lift` | `#22342D` | Bowl centre, behind the ticket (keeps the contact shadow visible) | paper 11.28:1 |
-| `scene-floodlight` | `#FFF6DC` | Floodlight glow and key light colour | 17.34:1 on night-deep |
-| `scene-pitch` | `#2F5D3A` | Pitch glow, mowing stripes at lower opacity | paper 6.56:1 |
-| `scene-pitch-lit` | `#2A4A31` | Pitch band under the footer | paper 8.49:1 (footer text passes) |
-| `scene-ambient` | `#9FB4AA` | Cool green ambient light colour in three (not a CSS paint) | n/a |
-
-Required fixes on the stage (without them the Direction A parts fail):
-
-| Element | Problem | Fix | Result |
-|---|---|---|---|
-| "Tear open" button edge | `red` on `scene-night-deep` 2.86:1, on `night-lift` 2.01:1, on `pitch-lit` 1.51:1 (needs 3:1) | 2px `paper` outer ring around the red button (`box-shadow: 0 0 0 2px var(--paper)`, not a layout change). Label stays `paper-raised` on red, 6.16:1 | ring 16.05:1 on deep, 11.28:1 on lift, 8.49:1 on pitch-lit |
-| Focus ring on the stage | 3px `red` alone is 2.86:1 or less on night | Two-tone: 3px `red` ring (offset 2px) plus a 2px `paper` ring outside it. The paper edge carries the 3:1. Off the stage, `focus-ring` is unchanged | 16.05:1 on deep |
-| Strap (ink cloth) | `ink` on `scene-night-deep` 1.08:1, on `night-lift` 1.32:1 | 1.5px stitched edge lines in `paper`, and "THIRTY UNITED" caps in `paper` at about 55% (about 5.3:1 on the ink cloth); key light catches the upper-left edge. If it still reads weak, lift the strap fill to `ink-2` `#4A463D` (1.99:1 on night; the stitching does the work) | stitching 16.05:1 on deep, 11.28:1 on lift |
-| Footer text on the stage | n/a | `paper` on `scene-pitch-lit` or `scene-night-mid` | 8.49:1 / 13.93:1 |
-| Ticket edge vs stage | n/a | paper ticket on night, no change | 16.05:1 |
-
-Forced colors: the backdrop layer is `display: none`; the ticket, button and focus ring use their forced-colour borders and `Highlight`, as today. The scene tokens are ignored.
-
-### shadcn variable mapping (for the build, `src/index.css`)
+### shadcn variable mapping (for nova, `src/index.css`)
 
 | shadcn variable | Value |
 |---|---|
-| `--background` | `#E8E0CF` (page) |
-| `--foreground` | `#1B1A17` |
-| `--card`, `--popover` | `#F3EDE1`, `#FBF8F1` |
-| `--card-foreground`, `--popover-foreground` | `#1B1A17` |
-| `--primary` / `--primary-foreground` | `#B3261E` / `#FBF8F1` |
-| `--secondary` / `--secondary-foreground` | `#F3EDE1` / `#1B1A17` |
-| `--muted` / `--muted-foreground` | `#E8E0CF` / `#5E5A50` |
-| `--accent` / `--accent-foreground` | `#1B1A17` / `#F3EDE1` (hover: ink fill, paper text) |
-| `--destructive` | `#7F1D17` (used for errors; there is no destructive action) |
-| `--border`, `--input` | `#1B1A17` (a visible control border needs 3:1, so it is ink, not `rule-soft`) |
-| `--ring` | `#B3261E` |
+| `color-scheme` | `dark` on `:root` |
+| `--background` | `#0E0B13` (void) |
+| `--foreground` | `#FFFFFF` |
+| `--card`, `--popover` | `#18131F`, `#241D2E` |
+| `--card-foreground`, `--popover-foreground` | `#FFFFFF` |
+| `--primary` / `--primary-foreground` | `#9F0B19` / `#FFFFFF` |
+| `--secondary` / `--secondary-foreground` | `#241D2E` / `#FFFFFF` |
+| `--muted` / `--muted-foreground` | `#241D2E` / `#B7D3FA` |
+| `--accent` / `--accent-foreground` | `#241D2E` / `#FFFFFF` (hover on secondary controls: raised fill, `moonlight` edge) |
+| `--destructive` | `#FF9E8F` (used for errors; there is no destructive action) |
+| `--border`, `--input` | `#8A8FB0` (a control edge needs 3:1) |
+| `--ring` | `#B7D3FA` |
 | `--radius` | `0` |
-| Extra tokens | `--paper-raised`, `--ink-2`, `--rule-soft`, `--status-success`, `--status-warning`, `--red-pressed` |
+| Extra tokens | `--panel`, `--panel-raised`, `--moonlight`, `--line`, `--shirt-red-hover`, `--shirt-red-pressed`, `--poster-red`, `--status-success`, `--status-warning`, and the `--scene-*` set |
 
 ### Forced colors
 
-Under `@media (forced-colors: active)`: ink maps to `CanvasText`, paper and page to `Canvas`, focus ring to `Highlight`. The stamp keeps its 1px inner rule and text in `CanvasText` with a 2px `CanvasText` border; Yes, Maybe and No stay distinguishable by wording and icon, not colour. The perforation is drawn with borders or SVG strokes in `currentColor`, never a background-image. The paper grain is removed.
+Under `@media (forced-colors: active)`: the world stage is `display: none` (no poster, no canvas, no still); the panel uses `Canvas` and `CanvasText`; the focus ring maps to `Highlight`; the primary button uses `ButtonText` and `ButtonFace` with its border; Yes, Maybe and No stay distinct by wording and icon. Save your poster and Share still work, and the poster image keeps its alt text. The grain and vignette overlay is removed.
 
 ## Typography
 
-All sizes are authored in `rem` (16px root) so 200% text works. The ticket and boxes size by content (`min-height`, no fixed aspect ratio), so enlarged text grows the object instead of clipping it.
+All sizes are authored in `rem` (16 px root) so 200 percent text works. The panel sizes by content up to its cap and then scrolls inside itself; it never clips.
 
-### Faces (build dependency, none are installed yet; the repo has Geist only)
+### Faces (all four already self-hosted; no new font file for them, owner accepted; the brush font for the SVG lockups is picked in the asset phase)
 
 | Role | Face | Weight and style | Use |
 |---|---|---|---|
-| Display | Barlow Condensed | 700, caps, tracking +2% | Ticket title, view headings, label tabs |
-| Standfirst | Source Serif 4 | 400 italic | One line per view ("a note from Makes") |
-| Body | Inter | 400 and 500 | Everything else, all inputs and buttons |
-| Data | JetBrains Mono | 500, `font-variant-numeric: tabular-nums` | Seat, date, email address, code boxes, countdown |
+| Display | Barlow Condensed | 700, caps, tracking +2% | Panel headings, chip labels, group labels; in the scene, the guest's name and number on the shirt, the poster's fixture and credit lines |
+| Title lockups | An OFL brush display font, outlined to SVG paths at build time | n/a | "THIRTY" and "UNITED" only. No font file ships. Font to be picked in the asset phase; until then Barlow Condensed 700 stands in on greybox |
+| Standfirst | Source Serif 4 | 400 italic | One line per beat at most, as built |
+| Body | Inter | 400 and 500 | Everything else on the panel, all inputs and buttons |
+| Data | JetBrains Mono | 500, `tabular-nums` | Seat ("017"), the code cells, the email address, the cooldown |
 
-Five font files in total (Barlow Condensed 700, Source Serif 4 italic, Inter 400/500, JetBrains Mono 500). Latin subset, `woff2`, `font-display: swap` with size-adjusted fallbacks (Arial Narrow for Barlow Condensed, Georgia for Source Serif 4, system-ui for Inter, ui-monospace for JetBrains Mono) so the ticket does not jump when fonts arrive.
+Fallbacks stay size-adjusted (Arial Narrow, Georgia, system-ui, ui-monospace), `font-display: swap`.
 
-### Scale
+### Scale (panel)
 
-| Token | Desktop (px / line) | Mobile (px / line) | rem (desktop / mobile) | Face |
-|---|---|---|---|---|
-| `display-ticket` | 120 / 104 | 64 / 60 | 7.5 / 6.5 and 4 / 3.75 | Barlow Condensed 700 caps. Mobile wraps to two lines (THIRTY / UNITED) |
-| `heading-view` | 56 / 56 | 36 / 38 | 3.5 / 3.5 and 2.25 / 2.375 | Barlow Condensed 700 caps |
-| `standfirst` | 24 / 32 | 20 / 28 | 1.5 / 2 and 1.25 / 1.75 | Source Serif 4 italic 400 |
-| `body` | 17 / 26 | 16 / 24 | 1.0625 / 1.625 and 1 / 1.5 | Inter 400 |
-| `body-strong` | 17 / 26 | 16 / 24 | same | Inter 500 (field labels, buttons) |
-| `input` | 16 / 24 | 16 / 24 | 1 / 1.5 | Inter 400. Never below 16px (stops iOS zoom on focus) |
-| `helper` | 14 / 20 | 14 / 20 | 0.875 / 1.25 | Inter 400, `muted` |
-| `label-tab` | 14 / 16 | 14 / 16 | 0.875 / 1 | Barlow Condensed 700 caps, tracking +6% |
-| `data-stub` | 20 / 28 | 20 / 28 | 1.25 / 1.75 | JetBrains Mono 500 tabular |
-| `data-label` | 14 / 20 | 14 / 20 | 0.875 / 1.25 | JetBrains Mono 500 tabular |
-| `data-code` | 32 / 40 | 28 / 36 | 2 / 2.5 and 1.75 / 2.25 | JetBrains Mono 500, one digit per cell |
+| Token | Desktop (px / line) | Mobile (px / line) | Face |
+|---|---|---|---|
+| `heading-panel` | 44 / 46 | 32 / 34 | Barlow Condensed 700 caps |
+| `standfirst` | 20 / 28 | 18 / 26 | Source Serif 4 italic 400 |
+| `body` | 17 / 26 | 16 / 24 | Inter 400 |
+| `body-strong` | 17 / 26 | 16 / 24 | Inter 500 (labels, buttons) |
+| `input` | 16 / 24 | 16 / 24 | Inter 400, never below 16 px (stops iOS zoom on focus) |
+| `helper` | 14 / 20 | 14 / 20 | Inter 400, `moonlight` |
+| `label-group` | 14 / 16 | 14 / 16 | Barlow Condensed 700 caps, tracking +6%, `moonlight` |
+| `chip` | 14 / 16 | 14 / 16 | Barlow Condensed 700 caps, tracking +6%, `text` |
+| `data-stub` | 20 / 28 | 20 / 28 | JetBrains Mono 500 tabular ("Seat 017 · Shirt 17" line) |
+| `data-code` | 32 / 40 | 28 / 36 | JetBrains Mono 500, one digit per cell |
 
-Minimum text size anywhere is 14px. Measure for any paragraph is 66 characters at most.
+`heading-panel` steps down from the old 56 / 36 px so the heading, the controls and the action fit the 40 to 45 percent panel on a 390 × 844 phone. Minimum text anywhere is 14 px.
+
+### Scene type (art, `aria-hidden`; sizes on the 1080 × 1920 poster)
+
+| Element | Face | Starting size | Colour |
+|---|---|---|---|
+| "THIRTY" lockup | SVG brush lockup | About 80 percent of the poster width, inside the empty sky band (top 20 percent), with its top edge below the chip zone at the cover shot (about poster y 160, so the solid chips cover sky, not the word; see `wireframes/save-the-date-signing-2026-10-15/variant-C.md`) | `text` |
+| "UNITED" lockup | SVG brush lockup | Under "THIRTY", same band | `poster-red` |
+| Shirt name | Barlow Condensed 700 caps | Fits 80 percent of the shirt quad's width, never above 22 percent of its height | `text` on the painted shirt |
+| Shirt number | Barlow Condensed 700 | About 40 percent of the shirt quad's height | `text` |
+| Fixture line | Barlow Condensed 700 caps, tracking +6% | 44 px | `text` ("MON 21 DEC 2026 · VENUE TBA") |
+| Credit line | Barlow Condensed 700 caps | 32 px | `moonlight` (team, "+ name") |
+| Stamp | Barlow Condensed 700 caps | 28 px or more | Yes: `panel` on `poster-red` (4.52:1). Maybe: `text` on `panel` with a 2 px `text` border |
+
+Scene sizes are starting values to tune on G5 and G6 once the shirt quads are measured.
 
 ## Spacing and layout
 
-- Base unit 4px. Scale: 4, 8, 12, 16, 24, 32, 48, 64, 96.
-- Grid: 4 columns on mobile (page margin 16px, gap 16px), 12 columns from 768px (page margin 32px, gap 24px). Content width caps at 1200px; the sealed ticket caps at 960px wide; form boxes sit in a 6-column (about 560px) centred column.
-- Inside a ruled box: 24px padding (20px at 360px wide), 16px between fields, 24px between a field group and the box's action row.
-- Touch targets: 48px minimum height for inputs and buttons, 56px for the Yes / Maybe / No tiles and the code cells, 8px minimum between targets (WCAG 2.2 target size minimum is 24px; we exceed it).
-- Breakpoints (Tailwind defaults): 640, 768, 1024, 1280. Design holds at 360, 390, 768 and 1440.
+- Base unit 4 px. Scale: 4, 8, 12, 16, 24, 32, 48, 64, 96.
+- **Phone (portrait):** the world stage is fixed and fills the layout viewport behind everything. The panel docks at the bottom: height from 40 to 45 percent of the layout viewport, sized by content inside that range; content that needs more (Chapter 2) scrolls inside the panel. Padding 24 px (20 px at 360 px wide), plus `env(safe-area-inset-bottom)`. 16 px between fields, 24 px between a group and the action row.
+- **Keyboard open:** `visualViewport.height` drives the shot. The shirt strip takes the top of the visual viewport (at least 120 px (est.)); the panel fills the rest and scrolls the focused field into view. `scroll-padding-block: 6rem` stays.
+- **Desktop (from 1024 px):** the poster stands as a 9:16 frame, its height `100dvh` minus 64 px, centred in the left part of the `void`; the panel is a 420 px column on the right, full height, with its 1 px `moonlight` rule on the left edge.
+- **Chips:** Sound and Still sit top right inside the safe area, 48 px tall, 8 px apart.
+- Targets: 48 px minimum height for inputs, buttons and chips; 56 px for the Yes / Maybe / No tiles and the code cells; 8 px minimum between targets.
+- Breakpoints (Tailwind defaults): 640, 768, 1024, 1280. Design holds at 360, 390, 768 and 1440, and at 200 percent text.
 
 ## Rules, borders, radius, shadow
 
 | Token | Value |
 |---|---|
-| `rule` | 1px solid `ink`: every ruled box, input, tile and the ticket frame |
-| `rule-active` | 2px (inset shadow, no layout shift): focused box, selected tile, hovered tab |
-| `radius-0` | 0: ticket, boxes, inputs, buttons, tiles, tabs (print is square) |
-| `radius-mark` | 2px: the stamp, the "optional" and "MAYBE" tags |
-| `radius-full` | 50%: only the perforation punches and the radio dot |
-| `shadow` | None. Cards with shadows are rejected; rules do the grouping |
-| `grain` | Static SVG noise at 4% opacity, on the ticket and stub only; removed under `forced-colors` |
-| `stamp` | Rotated -4deg, 2px `red` border plus a 1px inner rule, `data-stub` caps text in red on transparent; the stamp is the only rotated element |
+| `rule-panel` | 1 px solid `moonlight` on the panel's top edge (left edge on desktop). The only edge the panel has. Straight, never torn or deckled (rejected B) |
+| `rule` | 1 px solid `line`: inputs, tiles, checkboxes, code cells, and the top rule of each field group |
+| `rule-active` | 2 px (inset shadow, no layout shift): selected tile (`moonlight`), focused group (`moonlight`), field in error (`status-error`) |
+| `ring-primary` | 2 px solid `moonlight` around the primary button, at rest and in every state |
+| `radius-0` | 0: panel, chips, inputs, buttons, tiles |
+| `radius-full` | 50 percent: the radio dot and the code-step lamps only |
+| `shadow` | None on the UI layer. Depth lives in the poster |
+| `overlay-grain` | Static CSS grain and vignette over the poster (not the panel); removed under `forced-colors` |
+| `stamp` | Rotated -4deg. Yes: solid `poster-red` with `panel` text (4.52:1). Maybe: `panel` fill, 2 px `text` border, `pencil` icon, "PENCILLED IN" |
 
-Hierarchy: ticket (largest, framed) > ruled boxes (1px) > fields inside boxes (1px, smaller) > tags (2px radius). No other nesting.
+Hierarchy: the poster (everything) > the panel (one surface) > field groups (top rule only, no four-sided box inside the panel) > fields (1 px `line`).
 
 ## Motion
 
-Budget: signature (the tear), instant for everyone who asks for reduced motion. Use the `motion` library for the tear and the stamp, CSS for fades and colour. Animate transform and opacity only (never width, height or border-width).
+Budget: signature. The `motion` library drives the DOM (panel content, stamp), R3F drives the world canvas on T3 and T2, CSS transforms drive the T1 layer stack. In the DOM, animate transform and opacity only.
+
+### Beat tokens (all durations estimates for T3 and T2, to tune on a device)
 
 | Token | Duration | Easing | Used for |
 |---|---|---|---|
-| `fade-view` | 160ms | `cubic-bezier(0.2, 0, 0, 1)` | Crossfade between views |
-| `tear-drag` | follows pointer | none (1:1) | Drag along the stub line |
-| `tear-finish` | 700ms | `cubic-bezier(0.33, 1, 0.68, 1)` (ease-out cubic, no overshoot) | Completing the tear, from drag or button |
-| `tear-cancel` | 200ms | same ease-out | Release before the 35% threshold: stub returns |
-| `stamp-land` | 180ms | `cubic-bezier(0.22, 1, 0.36, 1)` (no bounce) | Stamp scales 1.15 to 1 and fades in at -4deg |
-| `hint-nudge` | 600ms | `ease-in-out` | One 4px lift of the stub edge after 3s idle, twice at most, then still |
-| `tab-fill` | 120ms | `ease-out` | Label tab fill on hover (colour only) |
-| `lights-on` | 600ms | `cubic-bezier(0.2, 0, 0, 1)` | One-shot floodlight glow opacity fade-in during the ticket's drop entrance; settles, never loops. Off under reduced motion (glow simply present) |
-| `stage-fade` | 160ms | same as `fade-view` | After "Tear open" settles, the night stage cross-fades to `page`; instant under reduced motion |
+| `world-reveal` | 400 ms | `cubic-bezier(0.2, 0, 0, 1)` | The canvas cross-fades over the identical cover still |
+| `tear-drag` | follows pointer | none (1:1) | Drag down the perforation (as built) |
+| `tear-finish` | about 800 ms (823 ms measured on the built tear) | `cubic-bezier(0.33, 1, 0.68, 1)` | Completing the tear (as built) |
+| `tear-cancel` | 200 ms | same | Release before the threshold (as built) |
+| `hint-nudge` | 600 ms | `ease-in-out` | One 4 px nudge of the tear handle at 2.5 s if untouched (as built) |
+| `tear-embers` | 600 ms | one-shot | Embers spill from the tear line |
+| `bank-strike` | 600 ms | `cubic-bezier(0.2, 0, 0, 1)`, one way | A bank's lamps come on (small area) and the stand under it lifts from dark to lit |
+| `push-in` | 1,200 ms | `cubic-bezier(0.33, 1, 0.68, 1)` | 3 percent push and ease out after the tear; 4 percent at the signing. Never more |
+| `panel-change` | 250 ms | `cubic-bezier(0.2, 0, 0, 1)` | Panel content out and in between beats; focus moves to the new heading |
+| `flags-lift` | 400 ms | same | Yes: the crowd's flags lift about 6 px |
+| `pose-swap` | 250 ms (wave), 350 ms (signing) | linear cross-fade | Makes's plate changes pose |
+| `shirt-swing` | 600 ms | ease-out, no overshoot | The hanging shirt swings in beside Makes |
+| `letter-paint` | 150 ms per letter, after a 120 ms pause in typing | ease-out | The guest's name lettered onto the shirt |
+| `lamp-on` | 80 ms | ease-out | One code lamp per digit |
+| `lamps-out` | 200 ms | ease-in | Wrong code: all six lamps together |
+| `finale-dim` | 300 ms | ease-in-out, one way | The poster dims about 20 percent (held breath) |
+| `number-land` | 220 ms | `cubic-bezier(0.22, 1, 0.36, 1)` | The shirt number scales 1.15 to 1.0 |
+| `brush-reveal` | 500 ms | linear along the stroke | "UNITED" paints in |
+| `ignition` | 600 ms | `cubic-bezier(0.2, 0, 0, 1)`, one way | All banks to full |
+| `ember-burst` | 1,200 ms | one-shot | Finale burst from the ground |
+| `stamp-land` | spring, contact at 90 ms, 1.5 px recoil | as built | The stamp |
 
-Decisions that tighten the brief to the direction's "one clean tear, then still":
-- Wrong code: no shake. The field rule goes to 2px `status-error` with the alert icon and message (a shake is the one extra movement the direction does not allow, and it is hard on vestibular conditions).
-- Verified success: the stamp lands (`stamp-land`) and the stub fades in (`fade-view`). It does not drop in.
-- Nothing loops. The resend countdown changes text, not position.
+### Ambient
 
-Reduced motion (`prefers-reduced-motion: reduce`): the tear and the hint are removed; a visible "Tear open" button swaps ticket and stub instantly; the stamp appears in place; view changes are instant; focus still moves to the new heading and a live region announces the result. Colour changes (hover fill) stay instant, not animated.
+- 30 Hz on demand on T3 and T2: clouds slide across the moon, smoke rolls along the ground, embers rise (about 300 at start on T3, up to 1,500; up to 500 on T2). T1: up to 20 CSS embers or none. T0: none.
+- Paused on `visibilitychange` (hidden) and for the whole code beat. The canvas releases its big textures when hidden; the still layer covers the rebuild.
+- The **Still** chip stops every ambient loop for the session and drops the guest to T1, without an OS setting.
+
+### Rules
+
+- Every large-area brightness change is one-way and lasts 300 ms or more. At most three flashes in any second, with red flashes counted separately (WCAG 2.3.1). Floodlight strikes are small areas; there is no white-out and nothing strobes.
+- No forward camera travel, no gyro, no idle camera drift. Touch-drag parallax up to 8 px (T1) or a few pixels of depth offset (T3).
+- No wipes and no page fades between beats: beat changes are camera shots and light changes in one continuous world.
+- Wrong code does not shake anything.
+
+### Haptics (Android only; iPhones have no web vibration)
+
+| Moment | Pattern |
+|---|---|
+| Tear tick | 4 ms every 40 px (as built) |
+| Tear separation | [10, 30, 18] (as built) |
+| Bank strike (Yes, Chapter 2, bank four) | 12 ms |
+| Maybe, No | 8 ms |
+| Code digit | 4 ms |
+| Wrong code | [10, 30, 10] |
+| Number lands | 22 ms |
+| Stamp | 22 ms (Yes), 12 ms (Maybe), as built |
+
+Fires only after the first user activation, never under reduced motion.
+
+### Sound (opt-in, off by default, synthesised, no files)
+
+Kept as built (tear ticks, rip, stamp) and extended: floodlight clunk with a 120 Hz hum swell (nothing below 100 Hz), crowd swell (shaped noise, 1.2 s), a softer swell for Maybe, a quiet crackle for No, a soft tick per code digit, crowd hush, drum hit. Sound follows only its own opt-in: it stays available under reduced motion if the guest turned it on (a change from the build, where reduced motion silences it).
+
+### Reduced motion (`prefers-reduced-motion: reduce`) = T0
+
+No parallax, particles, push-ins or loops. The cover is the still in its pre-match state with "Tear open" only; on press the poster swaps instantly to bank one lit. Every beat swaps to its final state at once; the finale appears with the stamp in place. Focus still moves to the new heading and the live region still announces.
 
 ## Z-index and layering
 
-Only two layers: base, and the select popup (`z-10`). No modals, no toasts (status lives inline, where it can be announced and found again).
+| Layer | z | Contents |
+|---|---|---|
+| World stage | 0 | `StillLayer` (always rendered) and the lazy world canvas; `aria-hidden`, a sibling of `<main>`, never in the tab order |
+| Panel | 10 | `<main>`: the step panel and everything readable |
+| Chips | 20 | Sound and Still |
+| Poster viewer | 30 | Save your poster: the poster full screen as an `<img>`, "Press and hold the poster to save it", and a close button. Modal (`role="dialog"`, focus moved in and returned, Esc closes). The one overlay in the product; still no toasts and no other dialogs |

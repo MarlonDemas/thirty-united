@@ -1,6 +1,6 @@
 {
   "agent": "specno-design",
-  "updatedAt": "2026-10-14T16:30:00Z",
+  "updatedAt": "2026-10-15T18:00:00Z",
   "projectSlug": null,
   "stackProfile": "web-vite",
   "stack": {
@@ -9,45 +9,245 @@
     "router": "none (single-page state machine in InvitePage)",
     "uiLibrary": "shadcn/ui base-nova on Base UI (@base-ui/react), lucide-react",
     "styling": "Tailwind CSS 4 with CSS variables (src/index.css)",
-    "animations": "motion 14 (LazyMotion, domAnimation) for the tear and stamp; CSS for fades; three 0.186 + @react-three/fiber 9 (lazy chunk) for the sealed-screen lanyard ticket; Web Audio (synthesized, opt-in) and navigator.vibrate",
+    "animations": "motion 14 (LazyMotion) for the DOM; three 0.186 + @react-three/fiber 9 (lazy chunk) for the world canvas on T3/T2 (planned, Direction D; as built it renders the sealed-screen lanyard ticket); CSS transforms for T1; Web Audio (synthesized, opt-in) and navigator.vibrate",
     "forms": "react-hook-form + zod 4 (jitless) + input-otp",
     "backend": "Convex (rsvps, email code challenges), nodemailer",
     "packageManager": "pnpm"
   },
   "screens": [
-    { "route": "/", "view": "sealed", "file": "src/components/SealedView.tsx", "layout": false, "states": ["default", "missing-key", "stage-3d", "stage-dom-fallback"] },
-    { "route": "/", "view": "attendance", "file": "src/components/AttendanceView.tsx", "layout": false },
-    { "route": "/", "view": "form", "file": "src/components/DetailsView.tsx", "layout": false, "states": ["default", "invalid_link"] },
-    { "route": "/", "view": "code", "file": "src/components/CodeView.tsx", "layout": false, "states": ["default", "invalid_link"] },
-    { "route": "/", "view": "stub", "file": "src/components/StubView.tsx", "layout": false }
+    {
+      "route": "/",
+      "view": "sealed",
+      "file": "src/components/SealedView.tsx",
+      "layout": false,
+      "states": [
+        "default",
+        "missing-key",
+        "stage-3d",
+        "stage-dom-fallback"
+      ]
+    },
+    {
+      "route": "/",
+      "view": "attendance",
+      "file": "src/components/AttendanceView.tsx",
+      "layout": false
+    },
+    {
+      "route": "/",
+      "view": "form",
+      "file": "src/components/DetailsView.tsx",
+      "layout": false,
+      "states": [
+        "default",
+        "invalid_link"
+      ]
+    },
+    {
+      "route": "/",
+      "view": "code",
+      "file": "src/components/CodeView.tsx",
+      "layout": false,
+      "states": [
+        "default",
+        "invalid_link"
+      ]
+    },
+    {
+      "route": "/",
+      "view": "stub",
+      "file": "src/components/StubView.tsx",
+      "layout": false
+    }
   ],
   "components": [
-    { "name": "InvitePage", "path": "src/components/InvitePage.tsx", "props": ["api", "missingKey"] },
-    { "name": "SealedView", "path": "src/components/SealedView.tsx", "props": ["onTorn", "onStageEnd", "staged", "focusHeading", "missingKey"] },
-    { "name": "LanyardTicket", "path": "src/components/three/LanyardTicket.tsx", "props": ["hostLine", "onReady", "onFail", "settleRef"] },
-    { "name": "AttendanceView", "path": "src/components/AttendanceView.tsx", "props": ["initial", "onContinue"] },
-    { "name": "DetailsView", "path": "src/components/DetailsView.tsx", "props": ["initial", "serverErrors", "onChangeValues", "onSubmit", "onChangeAttending"] },
-    { "name": "CodeView", "path": "src/components/CodeView.tsx", "props": ["email", "attending", "initialStatus", "initialSentAt", "initialRetryAfterMs", "onRequestCode", "onVerify", "onSaved", "onInvalidPayload", "onBack"] },
-    { "name": "StubView", "path": "src/components/StubView.tsx", "props": ["result", "payload", "onChange"] },
-    { "name": "Ticket", "path": "src/components/Ticket.tsx", "props": ["main", "stub", "stubStyle", "stubRef", "ticketRef", "className", "mainClassName", "stubClassName"] },
-    { "name": "HeaderTicket", "path": "src/components/HeaderTicket.tsx", "props": ["attending"] },
-    { "name": "Stub", "path": "src/components/Stub.tsx", "props": ["rows", "className"] },
-    { "name": "Stamp", "path": "src/components/Stamp.tsx", "props": ["variant", "className"] },
-    { "name": "RuledBox", "path": "src/components/RuledBox.tsx", "props": ["legend", "className"] },
-    { "name": "StatusLine", "path": "src/components/StatusLine.tsx", "props": ["icon", "tone", "className", "id", "alert"] },
-    { "name": "Announcer", "path": "src/components/StatusLine.tsx", "props": ["message"] },
-    { "name": "TextField", "path": "src/components/fields.tsx", "props": ["name", "label", "optional", "helper", "error", "reg", "type", "autoComplete", "inputMode"] },
-    { "name": "ErrorBoundary", "path": "src/components/ErrorBoundary.tsx", "props": ["children"] }
+    {
+      "name": "InvitePage",
+      "path": "src/components/InvitePage.tsx",
+      "props": [
+        "api",
+        "missingKey"
+      ]
+    },
+    {
+      "name": "SealedView",
+      "path": "src/components/SealedView.tsx",
+      "props": [
+        "onTorn",
+        "onStageEnd",
+        "staged",
+        "focusHeading",
+        "missingKey"
+      ]
+    },
+    {
+      "name": "LanyardTicket",
+      "path": "src/components/three/LanyardTicket.tsx",
+      "props": [
+        "hostLine",
+        "onReady",
+        "onFail",
+        "settleRef"
+      ]
+    },
+    {
+      "name": "AttendanceView",
+      "path": "src/components/AttendanceView.tsx",
+      "props": [
+        "initial",
+        "onContinue"
+      ]
+    },
+    {
+      "name": "DetailsView",
+      "path": "src/components/DetailsView.tsx",
+      "props": [
+        "initial",
+        "serverErrors",
+        "onChangeValues",
+        "onSubmit",
+        "onChangeAttending"
+      ]
+    },
+    {
+      "name": "CodeView",
+      "path": "src/components/CodeView.tsx",
+      "props": [
+        "email",
+        "attending",
+        "initialStatus",
+        "initialSentAt",
+        "initialRetryAfterMs",
+        "onRequestCode",
+        "onVerify",
+        "onSaved",
+        "onInvalidPayload",
+        "onBack"
+      ]
+    },
+    {
+      "name": "StubView",
+      "path": "src/components/StubView.tsx",
+      "props": [
+        "result",
+        "payload",
+        "onChange"
+      ]
+    },
+    {
+      "name": "Ticket",
+      "path": "src/components/Ticket.tsx",
+      "props": [
+        "main",
+        "stub",
+        "stubStyle",
+        "stubRef",
+        "ticketRef",
+        "className",
+        "mainClassName",
+        "stubClassName"
+      ]
+    },
+    {
+      "name": "HeaderTicket",
+      "path": "src/components/HeaderTicket.tsx",
+      "props": [
+        "attending"
+      ]
+    },
+    {
+      "name": "Stub",
+      "path": "src/components/Stub.tsx",
+      "props": [
+        "rows",
+        "className"
+      ]
+    },
+    {
+      "name": "Stamp",
+      "path": "src/components/Stamp.tsx",
+      "props": [
+        "variant",
+        "className"
+      ]
+    },
+    {
+      "name": "RuledBox",
+      "path": "src/components/RuledBox.tsx",
+      "props": [
+        "legend",
+        "className"
+      ]
+    },
+    {
+      "name": "StatusLine",
+      "path": "src/components/StatusLine.tsx",
+      "props": [
+        "icon",
+        "tone",
+        "className",
+        "id",
+        "alert"
+      ]
+    },
+    {
+      "name": "Announcer",
+      "path": "src/components/StatusLine.tsx",
+      "props": [
+        "message"
+      ]
+    },
+    {
+      "name": "TextField",
+      "path": "src/components/fields.tsx",
+      "props": [
+        "name",
+        "label",
+        "optional",
+        "helper",
+        "error",
+        "reg",
+        "type",
+        "autoComplete",
+        "inputMode"
+      ]
+    },
+    {
+      "name": "ErrorBoundary",
+      "path": "src/components/ErrorBoundary.tsx",
+      "props": [
+        "children"
+      ]
+    }
   ],
   "designSystem": {
     "profile": "web-vite",
-    "direction": "A",
-    "directionName": "Matchday Programme",
+    "direction": "D",
+    "directionName": "Matchday: The Signing",
+    "colorScheme": "dark",
     "contract": ".specno-design/",
     "customTokens": true,
     "customComponents": true,
-    "sealedStage": "Floodlit Night Stand (treatment A), sealed screen only; fades to paper after Tear open; stub stays on paper",
-    "sceneLights": { "key": 4.2, "ambient": 1.6, "note": "owner-approved amendment 2026-10-14, replaces brief 1.0 / 1.4, tuned on the built scene" }
+    "buildStatus": "src/ still ships Direction A until nova migrates it; components listed in plannedComponents do not exist yet",
+    "pendingDecisions": [
+      "Owner decision: keep the photo-real G1 attempt, or have it repainted in the painted poster style (G1 is in review, not approved). Likeness consent given (\"likeness yes\", 2026-10-15)."
+    ],
+    "plannedComponents": [
+      "TierProvider",
+      "WorldStage",
+      "StillLayer",
+      "WorldCanvas",
+      "shots.ts",
+      "StepPanel",
+      "WorldChip",
+      "ShirtLettering",
+      "PosterCompositor",
+      "SavePoster",
+      "PosterViewer",
+      "OgCompositor"
+    ],
+    "wireframes": ".specno-design/wireframes/save-the-date-signing-2026-10-15/",
+    "luxNote": ".specno-design/lux-notes/save-the-date-2026-10-15.md"
   },
   "lastVerifiedAt": "2026-10-14T11:38:00Z"
 }

@@ -4,7 +4,36 @@ Date: 2026-10-14. Stack: web-vite. Direction A. Inputs: `briefs/save-the-date-br
 
 Classification key: **WILL** = applies, will implement. **LATER** = applies, later. **N/A** = not applicable, with a reason.
 
-## Approach proposal
+## Direction D overrides (2026-10-15)
+
+Direction D "Matchday: The Signing" replaced Direction A on 2026-10-15 (`direction.md`). Everything below this section is the Direction A record as built on 2026-10-14. Its backend states (code limits, invite key, offline replay, validation timing, focus to the heading) still apply. Its visual treatment (paper ticket, ruled stub table, ink borders, the sealed-screen stage, the 160 ms page crossfade) is superseded by `tokens.md` and `components.md`. These rows override the matching rows below:
+
+| # | Was | Now |
+|---|---|---|
+| D-7 | Dark mode N/A, light only | WILL. Dark only, `color-scheme: dark` |
+| D-10 | Buttons carry 1px ink borders | Controls carry a 1 px `line` edge; the primary button a 2 px `moonlight` ring |
+| D-12 | Low power N/A, nothing loops | WILL. Ambient loops on T3 and T2 only; `saveData` and slow frames demote; the Still chip stops loops |
+| H-1 to H-3 | No haptics, no sound | WILL. Built in round 2; Direction D values in `tokens.md` |
+| Tier 3 "share, save as image" | LATER | WILL for Yes and Maybe: Save your poster (long-press) and Share (`navigator.share({ files })` where `canShare` is true). A No gets no poster |
+| Code-step reload | Returns to the prefilled form | WILL (nova): persist `{ view: "code", sentAt }` in `sessionStorage`, never the code, so a reload lands on the code step with the cooldown intact |
+
+World edge cases added by Direction D (the brief's Tier 1 and Tier 2 world items, made specific):
+
+| # | Case | Class | Treatment |
+|---|---|---|---|
+| W-1 | No WebGL2, context lost, or the world chunk fails | WILL | T1 on the same files; the beat, the answers and the lit bank count are kept |
+| W-2 | Slow frames on low-end Android | WILL | Demote one tier, never promote within the session |
+| W-3 | Keyboard open on Chapter 2 | WILL | `visualViewport` reframes the shot to the shirt strip; the panel scrolls the focused field into view |
+| W-4 | Tab hidden (guest goes to their email for the code) | WILL | Canvas stops and releases big textures; the still layer shows on return while the canvas rebuilds |
+| W-5 | WhatsApp opens a WebView without `navigator.share` | WILL | Share does not render; Save your poster (long-press) is co-primary. Settled on real phones in phase 0a |
+| W-6 | Long or accented preferred name on the shirt | WILL | Barlow Condensed 700 fits 80 percent of the shirt width, then steps down; the panel shows the full name |
+| W-7 | Plus-one | WILL | "+ name" on the poster's credit line; no second figure |
+| W-8 | Re-verify after finishing | WILL | Cover as a first visit; the new poster keeps the same number (`ticketNo` is kept on update) |
+| W-9 | Reduced motion | WILL | T0: the still, instant beats, nothing loops |
+| W-10 | Forced colours | WILL | No poster; the panel in system colours; Save and Share still work |
+| W-11 | Flash safety | WILL | Large-area brightness changes are one-way and 300 ms or longer; no more than three flashes in any second |
+
+## Approach proposal (Direction A, 2026-10-14)
 
 ### Component breakdown
 - `InvitePage`: a small state machine (`sealed`, `attendance`, `details`, `no-details`, `code`, `stub-yes`, `stub-maybe`, `stub-no`). One heading per view; focus moves to it on every change; 160ms crossfade between views.
