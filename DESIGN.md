@@ -79,7 +79,7 @@ _No entries yet._ There is no light theme in Direction D.
 | `status-success` | `#8EDDA9` | Saved, updated, new code sent (11.34:1) |
 | `status-warning` | `#FFC978` | Cooldown and tries-left lines only (12.05:1) |
 
-**Scene tokens** (drawn in code by shaders, sprites and the poster compositor; no readable text uses them): `scene-moon-core` `#E8F5FD`, `scene-moon-halo` `#B7D3FA`, `scene-floodlight` `#FEFCFB`, `scene-smoke-red` `#DB312B`, `scene-ember` `#F03F36`. They are starting values, re-sampled from the plates once Makes approves G1.
+**Scene tokens** (drawn in code by shaders, sprites and the poster compositor; no readable text uses them): `scene-moon-core` `#E8F5FD`, `scene-moon-halo` `#B7D3FA`, `scene-floodlight` `#F1C7A0`, `scene-smoke-red` `#B22C28`, `scene-ember` `#E03D2B`. The last three were re-sampled from the approved plates on 2026-10-15 (smoke from its lit top quartile; region and method in `tokens.md`).
 
 **Pairs that fail, and what carries them:**
 
@@ -87,9 +87,9 @@ _No entries yet._ There is no light theme in Direction D.
 |---|---|---|
 | `shirt-red` on `panel` (button edge) | 2.20:1 | The 2 px `moonlight` ring on every primary button (5.41:1 on the fill, 11.90:1 on the panel) |
 | `text` on `poster-red` | 4.04:1 | Not used. The Yes stamp sets `panel` text on `poster-red` instead (4.52:1, passes); `poster-red` is never a text background on the UI layer, and the stamp is in the scene, `aria-hidden` |
-| `moonlight` on `scene-floodlight` | 1.50:1 | Chips are solid `panel`; their focus ring gets a 2 px `panel` halo (17.83:1 on floodlight) |
+| `moonlight` on `scene-floodlight` | 1.02:1 | Chips are solid `panel`; their focus ring gets a 2 px `panel` halo (11.65:1 on floodlight) |
 | `moonlight` on `scene-moon-core` | 1.38:1 | Same halo; no control sits over the moon |
-| `moonlight` on `scene-smoke-red` | 3.06:1 | Passes 3:1 narrowly; covered by the same halo |
+| `moonlight` on `scene-smoke-red` | 4.18:1 | Passes 3:1; covered by the same halo |
 | `panel-raised` on `panel`; `panel` on `void` | 1.12:1; 1.07:1 | Not boundaries: inputs carry a `line` edge, the desktop panel a `moonlight` rule |
 
 **Rules:** every readable word is DOM text on `panel` or `panel-raised`, never on the moving scene. One primary button per beat, the only red on the UI layer. Nothing dimmer than `moonlight` for text, except the disabled label (`line`). State is never colour alone: each status pairs an icon and a line, errors add the 2 px rule, the selected tile adds a 2 px edge and a filled icon. Dark plus red must not drift toward a betting or gaming app: no neon, no glow, no gold.
@@ -121,7 +121,7 @@ Sizes are `rem`, so 200% text grows the panel, which scrolls inside itself inste
 | `data-stub` | 20 / 28 | 20 / 28 | JetBrains Mono 500 ("Seat 017 · Shirt 17") |
 | `data-code` | 32 / 40 | 28 / 36 | JetBrains Mono 500, one digit per cell |
 
-Scene type (art, `aria-hidden`, on the 1080 × 1920 poster): "THIRTY" about 80% of the poster width in the empty sky band, its top edge below the chip zone at the cover shot; "UNITED" under it in `poster-red`; the shirt name fits 80% of the shirt quad's width; the shirt number about 40% of its height; the fixture line 44px; the credit line 32px in `moonlight`; the AI credit line "Poster art made with AI" 24px in `moonlight` under it, on a `panel` scrim at 85% or more (7.66:1 worst case over white art; 11.90:1 on solid `panel`), saved poster only (not in the page, not on the OG image); the stamp 28px or more.
+Scene type (art, `aria-hidden`, on the 1080 × 1920 poster): "THIRTY" about 80% of the poster width at about y 50 to 180 and "UNITED" under it in `poster-red` at about y 196 to 276, both fully above Makes's hairline (y about 315) on every beat; the shirt name fits 80% of the shirt quad's width; the shirt number about 40% of its height; the fixture line 44px; the credit line 32px in `moonlight`; the AI credit line "Poster art made with AI" 24px in `moonlight` under it, on a `panel` scrim at 85% or more (7.66:1 worst case over white art; 11.90:1 on solid `panel`), saved poster only (not in the page, not on the OG image); the stamp 28px or more.
 
 ## 6. Spacing & Layout
 
@@ -272,7 +272,7 @@ The paper `Ticket` and `HeaderTicket` as page objects, the `Stub` ruled table, t
 - `public/favicon.svg`: favicon
 - `public/og.png`: 1200×630 Open Graph image, still the Direction A sealed ticket (the Direction D teaser composite is planned)
 - Fonts: self-hosted from `@fontsource/barlow-condensed`, `source-serif-4`, `inter`, `jetbrains-mono`
-- Poster plates (planned): six generations (G1 master, G2 to G5 edits, G6 the shirt), made by Makes and processed by Claude; none is approved yet; the first G1 attempt (2026-10-15) is in review, not approved: photo-real is kept (owner, 2026-10-15), and it still needs a file of at least 1080 x 1920 and a lights-off edit (likeness consent given)
+- Poster plates (planned): six generations (G1 master, G2 to G5 edits, G6 the shirt), made by Makes and processed by Claude; all approved by the owner on 2026-10-15 (photo-real; G3 dropped, the lights-on G1 is the lit stadium) and processed to 1080 x 1920 in a git-excluded `.specno-design/plates/` folder (likeness consent given)
 - Wireframes: `.specno-design/wireframes/save-the-date-signing-2026-10-15/` (Direction D, one phone frame per beat); `.specno-design/wireframes/save-the-date-2026-10-14/` (Direction A, history)
 - References: `.specno-design/references/immersive-night-world-rsvp-2026-10-15.md` and `.specno-design/references/immersive-night-world-rsvp/`
 - Consults: `.specno-design/audits/consults/atlas-render-budget.md`, `.specno-design/audits/consults/r3f-technique-catalogue.md`
@@ -285,4 +285,5 @@ The paper `Ticket` and `HeaderTicket` as page objects, the `Stub` ruled table, t
 - **2026-10-14 (3D ticket and stadium A)**: Contract amended for the 3D lanyard ticket (option C), opt-in sound, haptics and the soft contact shadow and sheen on the ticket and stamp, then for the sealed-screen stage (treatment A, "Floodlit Night Stand"). Owner decisions recorded: scene lights stay at the built key 4.2 and ambient 1.6 (replacing 1.0 and 1.4, tuned on the built scene); the stage fades to paper after "Tear open"; the stub stays on paper; the strap reads "THIRTY UNITED", repeated; the Netlify badge stays. DESIGN.md and `.agents/specno-design.json` regenerated from the contract. Sections 1, 3, 4, 7, 9, 10, 11 and 12 changed.
 - **2026-10-15 (Direction D, Matchday: The Signing)**: The owner replied "defaults" to the cinematic recommendation, choosing Direction D and its eight decisions (no crests ever; the shirt number is `ticketNo`; no poster for a No; preferred or first name only; ambient at 30 Hz with a Still chip; lanyard B2 with B3 as the cut line; Makes generates the plates; "Monday 21 December 2026 · Venue TBA"). Contract rewritten: dark scheme with every pair re-measured, illustration and red in the scene, the poster and step panel layout, render tiers, the planned world components, a new lux note, phone wireframes per beat and the copied consults. Follow-up the same day: "likeness yes" and "wireframes ok". The first G1 attempt (2026-10-15) is in review, not approved. `src/` still ships Direction A until nova migrates it. All 12 sections changed.
 - **2026-10-15 (owner decisions after the first G1 attempt)**: plates stay photo-real (style locks in `direction.md`); G1 in review, not approved, pending a 1080 x 1920 file and a lights-off edit; footer line removed; team and sport not shown after saving or on the poster; draft copy and timing as built; shirt shows only the first word of the name until Surname has a value.
+- **2026-10-15 (plate colours and title position)**: owner "defaults": the title lockup moves up above Makes's hairline (THIRTY about y 50 to 180, UNITED about y 196 to 276); bank strikes use code effects (glow sprites, beam cards, a CSS glow per bank on T1), not a new generation; `scene-floodlight` `#FEFCFB` to `#F1C7A0`, `scene-smoke-red` `#DB312B` to `#B22C28`, `scene-ember` `#F03F36` to `#E03D2B`, re-sampled from the plates (method in `tokens.md`). Contrast rows re-measured; `panel` on smoke is now 2.85:1 (decorative only).
 - **2026-10-15 (AI credit on the saved poster)**: owner decision: the saved 1080 × 1920 poster carries "Poster art made with AI" in small `moonlight` type under the credit line, on a `panel` scrim; not in the live page, not on the OG image. The owner keeps the original ChatGPT exports (C2PA metadata) outside the repo as provenance.

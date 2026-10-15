@@ -18,11 +18,12 @@ Projected from `direction.md` Direction D (typographic identity, colour thesis, 
 
 ### Where each value comes from
 
-- **Sampled** from the owner's reference image 4 (median of a named region, Pillow, `audits/cinematic-audit-2026-10-15.md` section 1) and proposed in the recommendation: `panel`, `moonlight`, `shirt-red`, `poster-red`, `scene-floodlight`, `scene-smoke-red`, `scene-ember`.
+- **Sampled** from the owner's reference image 4 (median of a named region, Pillow, `audits/cinematic-audit-2026-10-15.md` section 1) and proposed in the recommendation: `panel`, `moonlight`, `shirt-red`, `poster-red`.
+- **Re-sampled from the approved plates** (2026-10-15, owner "defaults", decision 3): `scene-floodlight`, `scene-smoke-red`, `scene-ember`. Region and method are in "Scene token provenance" below. The owner's image 4 values they replace were `#FEFCFB`, `#DB312B` and `#F03F36`.
 - **Candidate from the recommendation** (picked, not sampled): `status-error`.
 - **Derived for this contract** (picked on 2026-10-15 to fill the roles the recommendation left open, then measured): `void`, `panel-raised`, `line`, `shirt-red-hover`, `shirt-red-pressed`, `status-success`, `status-warning`, `scene-moon-core` (sampled from image 1's moon, not image 4).
 
-Scene values are starting points. Re-sample `scene-*` from G1 to G3 once Makes approves G1, and re-measure the title band against its brightest pixel on every plate.
+`scene-floodlight`, `scene-smoke-red` and `scene-ember` were re-sampled from the approved, processed plates on 2026-10-15 (see "Scene token provenance"). Re-measure the title band against its brightest pixel on every plate.
 
 ### Palette roles (UI layer)
 
@@ -55,9 +56,19 @@ Used by the shaders, glow sprites, ember points and the poster compositor. No re
 |---|---|---|
 | `scene-moon-core` | `#E8F5FD` | The moon disc (drawn at its 21 December 2026 phase, about 93 percent waxing gibbous; default accepted, the phase itself is still an estimate) |
 | `scene-moon-halo` | `#B7D3FA` | The moon's halo (same value as `moonlight`, on purpose: the UI's cold colour is the moon's) |
-| `scene-floodlight` | `#FEFCFB` | Lamp heads, glow sprites, beam cards |
-| `scene-smoke-red` | `#DB312B` | Smoke tint for the noise quads and the T1 CSS layer |
-| `scene-ember` | `#F03F36` | Ember points |
+| `scene-floodlight` | `#F1C7A0` | Lamp heads, glow sprites, beam cards, the T1 CSS glow per bank. Warm, because the lit plate's lamps are warm, not white. Was `#FEFCFB` |
+| `scene-smoke-red` | `#B22C28` | Smoke tint for the noise quads and the T1 CSS layer. The lit part of the smoke, not the shadowed median. Was `#DB312B` |
+| `scene-ember` | `#E03D2B` | Ember points: a saturated glowing red-orange, not the blown core. Was `#F03F36` |
+
+**Scene token provenance** (re-sampled 2026-10-15, owner decision 3; sRGB medians of named regions on the processed 1080 x 1920 plates in `plates/work/`; script and values in the session notes, not in the repo):
+
+| Token | Plate and region (poster px) | Method | Result |
+|---|---|---|---|
+| `scene-floodlight` | `g1-on` lamp-core pixels in an 80 x 80 window around each tower head: (69,591), (212,735), (872,810), (1010,680) | Median of pixels that are bright and brighter than the same pixel in `g1-off` (the processing report's own selection, n=275, gave `#F1C7A0`). Kept as the report measured it. A re-run with luminance above 0.3 and lit-versus-off above 0.2 gave `#EDC09A` (n=314), within 4 levels per channel | `#F1C7A0` |
+| `scene-smoke-red` | `g2-bg` right bank x800 to 1000, y1290 to 1440, plus centre bank x430 to 650, y1330 to 1450 | Median of the top quartile by luminance of the two regions pooled (n=14,104). Right bank alone `#BA2A26`, centre bank alone `#A62D2A`, shadow-inclusive medians `#881F1C` and `#7A2321` | `#B22C28` |
+| `scene-ember` | `g2-bg` foreground rubble x100 to 500, y1750 to 1920, around the defocused ember (x290 to 312, y1874 to 1896, `#BB2B1F`) and the blown core (x165 to 200, y1810 to 1850, `#FA8E62` in g2, `#FCCFA0` in the report) | Median of saturated glowing pixels: saturation above 0.6, red at least 190, red at least 1.8 times green (n=870). The ring of saturated pixels just outside the blown core gives `#E8402D`, so the value sits between the dim defocused embers and the ring | `#E03D2B` |
+
+These tint effects drawn over the plates, so they must sit inside the plates' own colours. Additive glow brightens them on screen; the token is the base colour, not the peak.
 
 ### Contrast, every pair (measured 2026-10-15)
 
@@ -94,13 +105,13 @@ Pairs that fail, and why the design still holds:
 |---|---|---|---|
 | `shirt-red` on `panel` (the button's edge) | 2.20:1 | 3:1 for a control edge | The 2 px `moonlight` ring on every primary button (11.90:1 against the panel, 5.41:1 against the fill). Required, not decoration |
 | `text` on `poster-red` | 4.04:1 | 4.5:1 for normal text | Not used. The Yes stamp sets `panel` text on `poster-red` instead (4.52:1, passes). `poster-red` is never a button fill or a text background on the UI layer; the stamp is in the scene, `aria-hidden`, and its meaning is on the panel |
-| `moonlight` on `scene-floodlight` `#FEFCFB` | 1.50:1 | 3:1 for focus and control edges over the scene | Controls that sit over the scene (the Sound and Still chips) are solid `panel` chips, and their focus ring gets a 2 px `panel` halo outside it (`panel` on floodlight 17.83:1) |
+| `moonlight` on `scene-floodlight` `#F1C7A0` | 1.02:1 (was 1.50:1 on `#FEFCFB`) | 3:1 for focus and control edges over the scene | Controls that sit over the scene (the Sound and Still chips) are solid `panel` chips, and their focus ring gets a 2 px `panel` halo outside it (`panel` on floodlight 11.65:1, was 17.83:1; still passes 3:1 by a wide margin). The halo is now more clearly required, not less: without it the ring is invisible over a lit lamp |
 | `moonlight` on `scene-moon-core` `#E8F5FD` | 1.38:1 | same | Same fix as above. No control is placed over the moon's patch of sky |
-| `moonlight` on `scene-smoke-red` `#DB312B` | 3.06:1 | passes 3:1, with little margin | Covered by the same `panel` halo |
+| `moonlight` on `scene-smoke-red` `#B22C28` | 4.18:1 (was 3.06:1) | 3:1 | Passes with more margin than before; the same `panel` halo still covers it |
 | `panel-raised` on `panel` | 1.12:1 | n/a (fills are not the boundary) | Inputs and tiles are identified by their 1 px `line` edge (5.76:1), not by the fill |
 | `panel` on `void` | 1.07:1 | n/a (decorative) | On desktop the panel column is separated from the void by its 1 px `moonlight` rule |
 
-Decorative art over the scene (not text, `aria-hidden`, so no WCAG requirement, measured for legibility): white on `scene-smoke-red` 4.68:1; white on `scene-ember` 3.84:1; `panel` on `scene-smoke-red` 3.90:1; `poster-red` on `scene-smoke-red` 1.16:1, so "UNITED" never sits on smoke: it sits in the empty sky band, measured against that band's brightest pixel on every plate.
+Decorative art over the scene (not text, `aria-hidden`, so no WCAG requirement, measured for legibility): white on `scene-smoke-red` `#B22C28` 6.39:1 (was 4.68:1); white on `scene-ember` `#E03D2B` 4.31:1 (was 3.84:1); `panel` on `scene-smoke-red` 2.85:1 (was 3.90:1, now below 3:1: acceptable only because nothing readable sits on smoke; do not set `panel` text or a `panel` mark on smoke and expect it to read); `poster-red` on `scene-smoke-red` 1.58:1 (was 1.16:1), so "UNITED" never sits on smoke: it sits in the empty sky band, measured against that band's brightest pixel on every plate.
 
 ### Rules of use
 
@@ -116,7 +127,7 @@ Decorative art over the scene (not text, `aria-hidden`, so no WCAG requirement, 
 | Token | Value |
 |---|---|
 | `focus-ring` | 3 px `moonlight`, offset 2 px, on every interactive element (`:focus-visible`). 11.90:1 on `panel` |
-| `focus-halo` | Over the scene only (the chips): a 2 px `panel` ring outside the focus ring, so the indicator holds against floodlight glare (17.83:1 against `scene-floodlight`) |
+| `focus-halo` | Over the scene only (the chips): a 2 px `panel` ring outside the focus ring, so the indicator holds against floodlight glare (11.65:1 against `scene-floodlight`, was 17.83:1) |
 | `focus-group` | The owning group's top rule thickens from 1 px `line` to 2 px `moonlight` while a field inside it has focus (inset shadow, no layout shift) |
 
 The primary button wears a 2 px `moonlight` ring at rest. Focus adds the 3 px ring 2 px outside it, so the focused state differs from rest by a band of `panel` turning `moonlight` (11.90:1 change).
@@ -181,8 +192,8 @@ Fallbacks stay size-adjusted (Arial Narrow, Georgia, system-ui, ui-monospace), `
 
 | Element | Face | Starting size | Colour |
 |---|---|---|---|
-| "THIRTY" lockup | SVG brush lockup | About 80 percent of the poster width, inside the empty sky band (top 20 percent), with its top edge below the chip zone at the cover shot (about poster y 160, so the solid chips cover sky, not the word; see `wireframes/save-the-date-signing-2026-10-15/variant-C.md`) | `text` |
-| "UNITED" lockup | SVG brush lockup | Under "THIRTY", same band | `poster-red` |
+| "THIRTY" lockup | SVG brush lockup | About 80 percent of the poster width, inside the empty sky band (top 20 percent), set at about poster y 50 to 180 so the whole word sits above Makes's hairline (poster y about 315) on every beat (owner decision 2026-10-15, "defaults", decision 1; was about y 160 and below). Open check for nova on a device: the solid chips (top right, safe-area top + 12 px) now overlap the top-right of the word at the cover shot; the older wireframe note kept the word clear of them (`wireframes/save-the-date-signing-2026-10-15/variant-C.md`, history) | `text` |
+| "UNITED" lockup | SVG brush lockup | Under "THIRTY" at about poster y 196 to 276, also fully above Makes's hairline (poster y about 315) | `poster-red` |
 | Shirt name | Barlow Condensed 700 caps | Fits 80 percent of the shirt quad's width, never above 22 percent of its height | `text` on the shirt |
 | Shirt number | Barlow Condensed 700 | About 40 percent of the shirt quad's height | `text` |
 | Fixture line | Barlow Condensed 700 caps, tracking +6% | 44 px | `text` ("MON 21 DEC 2026 · VENUE TBA") |
