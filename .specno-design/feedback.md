@@ -174,3 +174,35 @@ Makes read `audits/cinematic-recommendation-2026-10-15.md` and replied "defaults
 - ACCEPTED: Floodlight bank strikes get their drama from code effects, not from a new generation: glow sprites and beam cards on T2 and T3, a CSS glow per bank on T1. The lit plate has lamp heads but no beam cones. (Owner, "defaults", 2026-10-15.)
 - ACCEPTED: The `scene-*` tokens are re-sampled from the approved plates; smoke is taken from its lit parts, not the shadow-inclusive median; floodlight and ember stay true to the plates. (Owner, "defaults", 2026-10-15.) Result: `scene-floodlight` `#FEFCFB` to `#F1C7A0`, `scene-smoke-red` `#DB312B` to `#B22C28`, `scene-ember` `#F03F36` to `#E03D2B`. Method in `tokens.md`.
 - INSIGHT: With the warm floodlight the `panel` focus halo over a lit lamp measures 11.65:1 instead of 17.83:1, and `moonlight` on floodlight is 1.02:1, so the halo is the only thing that makes a chip's focus ring visible over a lamp. `panel` on `scene-smoke-red` is now 2.85:1, below 3:1; no readable text sits on smoke, so this is decorative only.
+
+## 2026-10-15, real plates in the app: chips, title, signing shot, moon (owner decisions)
+
+### Context
+The real plates are in the app (commit f0a1af8). On phones the labelled Sound and Still chips took 194 of 360 px across the top, so the implementer had shrunk the title to a small left-set THIRTY at about 28% of the poster width, against the contract's about 80%. This closes the open chip/title device check recorded in the "plate colours and title position" section above.
+
+### Decisions
+- ACCEPTED: Chips, option B. Sound and Still become icon-only buttons, at least 44 x 44 CSS px, stacked vertically in a narrow column at the top right (safe-area top + 12 px). They stay solid `panel` chips with the focus ring and the 2 px `panel` halo. Accessible names and states stay: an `aria-label` naming the action and state, and `aria-pressed` on Still. The visible words "SOUND" and "STILL" go. (Owner: "B".)
+- ACCEPTED: Title. The THIRTY / UNITED lockup returns to a headline at about 80% of the poster width, above Makes's hairline (poster y about 315), clear of the chip column at every phone width. The 28% left-set title is withdrawn.
+- ACCEPTED: Two-stage signing shot. On the signed beats the camera starts wide enough for all four floodlight banks to fire on screen at phone width, then pushes in to the face-and-shirt framing. Reduced motion cuts straight to the final framing. (Owner: "yes", to the default.)
+- ACCEPTED: Moon. A soft halo (`scene-moon-halo`) and subtle surface texture so the code-drawn moon sits in the photo sky. Phase and position are unchanged.
+- ACCEPTED: The chapter 1 to chapter 2 push-in is 1.03 to 1.12, above the earlier 3 to 4 percent, because it lets the title leave the frame whole.
+- ACCEPTED: Android device test deferred. The owner has no Android phone now. (Owner: "I do not have a phone at the moment. Can this be skipped".) Skipped for now, with the risk recorded.
+- INSIGHT: Risk. Unknown Android devices start on T2 and demote on slow frames, so the worst case is a plainer world. A real-device check (any Android phone, or a real-device cloud service) is required in phase 8, before merging to main. The two probe screenshots received so far were Chrome device emulation on a Mac (Apple M5 Pro GPU), not phones.
+
+### Resolved
+- The "Open check: the top-right chips overlap the word's top-right at the cover shot" note (2026-10-15, plate colours and title position) is closed by option B.
+
+## 2026-10-15, as built: title width, title over the lanyard cord (owner "defaults")
+
+The chip column (two 44 x 44 icon buttons, 12 px from the top and right, 8 px apart) and the title were built and checked against the contract. Two decisions follow, and three contract lines are brought into line with the build.
+
+### Decisions
+- ACCEPTED: Title width. The THIRTY / UNITED lockup is accepted at about 58% of the poster width (THIRTY [114, 50, 630, 130], UNITED [114, 196, 630, 79] in poster px), left-set, not about 80%. On screen that is 277 of 390 px at the 390 cover (about 71%). It is the widest that clears the chip column in every shot at 360 to 430 px. Supersedes the "about 80%" Title decision in the section above. (Owner: "defaults", decision 1.)
+- ACCEPTED: Title layering on the WebGL (T2/T3) cover. The title draws in front of the lanyard cord: the cord passes behind the letters and reappears below them. (Owner: "defaults", decision 2.)
+
+### Corrections to the contract (not owner decisions)
+- CORRECTION: Chip accessible names. The contract's examples ("Turn sound on", "Pause the animation") → as built: the Sound chip is named "Sound off" / "Sound on" and has no `aria-pressed` (the name carries the state); the Still chip is named "Still" and has `aria-pressed`. `aria-pressed` applies to Still only. Reason: a pressed state on a name that already changes says the state twice.
+- CORRECTION: Title face. The contract said an OFL brush font, to be picked later → as built: Barlow Condensed 700, outlined to SVG. No brush font ships.
+- CORRECTION: The `chip` text style in `tokens.md` has no user now that the chips carry no words. It is retired.
+- INSIGHT: Chip sizes live in one module (`src/world/chips.ts`) that the CSS and the title-clearance tests both read, so the title width and the chips cannot drift apart unnoticed.
+- INSIGHT: Signing shot as built: 0 to 1200 ms pull back to a wide shot fitting all four lamp cores, 1400 to 2000 ms banks fire, 2000 to 3200 ms push in to the signing framing (about 1.23x); T0 cuts to the final framing.

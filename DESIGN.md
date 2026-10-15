@@ -79,7 +79,7 @@ _No entries yet._ There is no light theme in Direction D.
 | `status-success` | `#8EDDA9` | Saved, updated, new code sent (11.34:1) |
 | `status-warning` | `#FFC978` | Cooldown and tries-left lines only (12.05:1) |
 
-**Scene tokens** (drawn in code by shaders, sprites and the poster compositor; no readable text uses them): `scene-moon-core` `#E8F5FD`, `scene-moon-halo` `#B7D3FA`, `scene-floodlight` `#F1C7A0`, `scene-smoke-red` `#B22C28`, `scene-ember` `#E03D2B`. The last three were re-sampled from the approved plates on 2026-10-15 (smoke from its lit top quartile; region and method in `tokens.md`).
+**Scene tokens** (drawn in code by shaders, sprites and the poster compositor; no readable text uses them): `scene-moon-core` `#E8F5FD`, `scene-moon-halo` `#B7D3FA` (a soft halo plus subtle surface texture so the moon sits in the photo sky), `scene-floodlight` `#F1C7A0`, `scene-smoke-red` `#B22C28`, `scene-ember` `#E03D2B`. The last three were re-sampled from the approved plates on 2026-10-15 (smoke from its lit top quartile; region and method in `tokens.md`).
 
 **Pairs that fail, and what carries them:**
 
@@ -99,11 +99,11 @@ Under `forced-colors: active`: the world stage is hidden, the panel uses `Canvas
 ## 5. Typography
 
 - **Display:** Barlow Condensed 700, caps, tracking +2% (panel headings, chips, group labels; in the scene the guest's name and number on the shirt and the poster's fixture and credit lines)
-- **Title lockups:** "THIRTY" and "UNITED" as an OFL brush display font outlined to SVG paths at build time, so no font file ships (font to be picked in the asset phase)
+- **Title lockups:** "THIRTY" and "UNITED" as Barlow Condensed 700 outlined to SVG paths, so no extra font file ships (as built; no brush font)
 - **Standfirst:** Source Serif 4 italic 400, one line per beat at most
 - **Body:** Inter 400 and 500
 - **Data:** JetBrains Mono 500, tabular numerals (seat, code cells, email address, cooldown)
-- **Loaded from:** `@fontsource/*` packages, self-hosted, latin subset; nothing new to load. Keeping the four shipped faces is accepted by the owner; the brush font for the SVG lockups is picked in the asset phase
+- **Loaded from:** `@fontsource/*` packages, self-hosted, latin subset; nothing new to load. Keeping the four shipped faces is accepted by the owner; the SVG title lockups are outlined Barlow Condensed 700
 - **Fallback stack:** Arial Narrow (display), Georgia (serif), system-ui (body), ui-monospace (data), size-adjusted, `font-display: swap`
 
 Sizes are `rem`, so 200% text grows the panel, which scrolls inside itself instead of clipping. Minimum text 14px, inputs never below 16px.
@@ -117,11 +117,10 @@ Sizes are `rem`, so 200% text grows the panel, which scrolls inside itself inste
 | `input` | 16 / 24 | 16 / 24 | Inter 400 |
 | `helper` | 14 / 20 | 14 / 20 | Inter 400, `moonlight` |
 | `label-group` | 14 / 16 | 14 / 16 | Barlow Condensed 700 caps, +6%, `moonlight` |
-| `chip` | 14 / 16 | 14 / 16 | Barlow Condensed 700 caps, +6% |
 | `data-stub` | 20 / 28 | 20 / 28 | JetBrains Mono 500 ("Seat 017 · Shirt 17") |
 | `data-code` | 32 / 40 | 28 / 36 | JetBrains Mono 500, one digit per cell |
 
-Scene type (art, `aria-hidden`, on the 1080 × 1920 poster): "THIRTY" about 80% of the poster width at about y 50 to 180 and "UNITED" under it in `poster-red` at about y 196 to 276, both fully above Makes's hairline (y about 315) on every beat; the shirt name fits 80% of the shirt quad's width; the shirt number about 40% of its height; the fixture line 44px; the credit line 32px in `moonlight`; the AI credit line "Poster art made with AI" 24px in `moonlight` under it, on a `panel` scrim at 85% or more (7.66:1 worst case over white art; 11.90:1 on solid `panel`), saved poster only (not in the page, not on the OG image); the stamp 28px or more.
+Scene type (art, `aria-hidden`, on the 1080 × 1920 poster): "THIRTY" left-set at about 58% of the poster width (poster px [114, 50, 630, 130]; 277 of 390 px at the 390 cover; the widest that clears the chip column in every shot at 360 to 430 px; owner, 2026-10-15) and "UNITED" under it, same left edge, in `poster-red` (poster px [114, 196, 630, 79]), both fully above Makes's hairline (y about 315) on every beat; the shirt name fits 80% of the shirt quad's width; the shirt number about 40% of its height; the fixture line 44px; the credit line 32px in `moonlight`; the AI credit line "Poster art made with AI" 24px in `moonlight` under it, on a `panel` scrim at 85% or more (7.66:1 worst case over white art; 11.90:1 on solid `panel`), saved poster only (not in the page, not on the OG image); the stamp 28px or more.
 
 ## 6. Spacing & Layout
 
@@ -131,11 +130,11 @@ Scene type (art, `aria-hidden`, on the 1080 × 1920 poster): "THIRTY" about 80% 
 - **Phone (portrait):** the world stage is fixed and fills the screen behind everything. The step panel docks at the bottom, 40 to 45% of the layout viewport, sized by content inside that range; longer content (Chapter 2) scrolls inside the panel. Padding 24px (20px at 360px) plus `env(safe-area-inset-bottom)`; 16px between fields, 24px between a group and the action row. Each beat has one camera shot that keeps Makes's face and the shirt above the panel.
 - **Keyboard open:** `visualViewport.height` drives the shot. A shirt strip takes the top of the visual viewport (at least 120px (est.)); the panel fills the rest and scrolls the focused field into view. `scroll-padding-block: 6rem` stays.
 - **Desktop (from 1024px):** the poster stands as a 9:16 frame, height `100dvh` minus 64px, centre-left in the `void`; the panel is a 420px column on the right with a 1px `moonlight` rule on its left edge.
-- **Chips:** Sound and Still sit top right inside the safe area, 48px tall, 8px apart.
+- **Chips:** Sound and Still are icon-only, at least 44 × 44px, stacked vertically at the top right (safe-area top + 12px), 8px apart.
 
 **Breakpoints:** 640, 768, 1024, 1280. Holds at 360, 390, 768 and 1440, and at 200% text.
 
-**Targets:** 48px minimum for inputs, buttons and chips; 56px for the attendance tiles and code cells; 8px between targets.
+**Targets:** 48px minimum for inputs and buttons, at least 44 × 44px for the icon-only chips; 56px for the attendance tiles and code cells; 8px between targets.
 
 **Safe areas:** `viewport-fit=cover` (as built); the panel and chips respect the safe-area insets.
 
@@ -168,7 +167,7 @@ Hierarchy: the poster > the panel (one surface) > field groups (top rule only) >
 
 ## 9. Motion & Animation
 
-Budget: signature. "The lights answer you": every answer is a one-way floodlight strike, camera moves are shots (push-ins of 3 to 4% at most), and the finale runs about 3.2 s. All durations are estimates for T3 and T2, to tune on a device.
+Budget: signature. "The lights answer you": every answer is a one-way floodlight strike, camera moves are shots (Chapter 1 to Chapter 2 push-in 1.03 to 1.12; the signed beats start wide, all four banks on screen, then push in; no other push-in beyond 3 to 4%), and the finale runs about 3.2 s. All durations are estimates for T3 and T2, to tune on a device.
 
 | Token | Duration | Easing | Use |
 |---|---|---|---|
@@ -177,7 +176,7 @@ Budget: signature. "The lights answer you": every answer is a one-way floodlight
 | `hint-nudge` | 600ms | ease-in-out | One 4px nudge at 2.5 s if untouched |
 | `tear-embers` | 600ms | one-shot | Embers spill from the tear line |
 | `bank-strike` | 600ms | `cubic-bezier(0.2, 0, 0, 1)`, one way | A bank of floodlights comes on |
-| `push-in` | 1,200ms | `cubic-bezier(0.33, 1, 0.68, 1)` | 3% after the tear, 4% at the signing |
+| `push-in` | 1,200ms | `cubic-bezier(0.33, 1, 0.68, 1)` | 1.03 to 1.12 from Chapter 1 to Chapter 2; the signed beats start wide and push in to the face-and-shirt framing (reduced motion cuts to it) |
 | `panel-change` | 250ms | `cubic-bezier(0.2, 0, 0, 1)` | Panel content out and in; focus to the new heading |
 | `flags-lift` | 400ms | same | Yes: the crowd's flags lift about 6px |
 | `pose-swap` | 250ms / 350ms | linear | Makes's pose (wave / signing) |
@@ -209,8 +208,8 @@ Code is the source of truth for components that exist; `.specno-design/component
 - **TierProvider** (planned): picks T3, T2, T1, T0 or forced colours from WebGL2, texture size, renderer, `deviceMemory`, `hardwareConcurrency`, `saveData` and the media queries. No `detect-gpu`.
 - **StillLayer** (planned): the poster as DOM layers (WebP), always rendered; the T1 and T0 world and the cover for every rebuild.
 - **WorldCanvas** (planned, lazy): the same layers as WebGL planes with the bank-mask reveal, glow sprites, ember points, noise smoke, the code-drawn moon, the code lamps and the lanyard pass.
-- **shots.ts** (planned): one camera shot per beat (cover, Chapter 1, Chapter 2, Chapter 2 with the keyboard, code, signed, No end).
-- **LanyardTicket** (`src/components/three/LanyardTicket.tsx`, exists): moves into the world canvas as the cover's lanyard pass (B2); cut line B3 retires it to the DOM tear.
+- **shots.ts** (planned): one camera shot per beat (cover, Chapter 1, Chapter 2, Chapter 2 with the keyboard, code, signed, No end). Signing shot: 0 to 1200 ms pulls back to a wide shot that fits all four lamp cores, 1400 to 2000 ms the banks fire, 2000 to 3200 ms pushes in to the signing framing (about 1.23×); T0 cuts to the final framing.
+- **LanyardTicket** (`src/components/three/LanyardTicket.tsx`, exists): moves into the world canvas as the cover's lanyard pass (B2); cut line B3 retires it to the DOM tear. Stacking on the WebGL (T2/T3) cover: the title draws in front of the lanyard cord; the cord passes behind the letters and reappears below them (owner, 2026-10-15).
 - **StepPanel** (planned): the bottom-docked panel (phone) or 420px column (desktop); heading as focus target (`tabIndex=-1`), standfirst, controls, status.
 - **RuledBox** (`RuledBox.tsx`, exists): kept as the field-group `fieldset` with a `label-group` legend, restyled to a 1px `line` top rule.
 - **StatusLine** and **Announcer** (`StatusLine.tsx`, exist): inline status in an `aria-live="polite"` region; also announce world reactions that carry meaning. No toasts.
@@ -218,7 +217,7 @@ Code is the source of truth for components that exist; `.specno-design/component
 ### Actions
 - **Button** (`ui/button.tsx`): square; the primary is the only red fill, with its 2px `moonlight` ring; one per beat.
 - **Tear open** (`SealedView.tsx`, exists): a real button beside the drag; works from first paint; strikes bank one. With no invite key the button and handle are removed and a neutral `StatusLine` explains.
-- **WorldChip** (planned): Sound (`volume-x` / `volume-2`) and Still (`pause`) as real buttons with `aria-pressed`, solid `panel`, 48px. Hidden under forced colours and while the on-screen keyboard is open; Still is not rendered under reduced motion.
+- **WorldChip** (built): Sound (`volume-x` / `volume-2`) and Still (`pause`) as real buttons, icon-only (no visible words), solid `panel`, 44 × 44px, 8px apart in a column 12px from the top (plus safe area) and right; sizes live in one shared module (`src/world/chips.ts`) that the CSS and the title-clearance tests both read. Sound's `aria-label` carries its state ("Sound off" / "Sound on") and it has no `aria-pressed`; Still is named "Still" and is the only chip with `aria-pressed`. Hidden under forced colours and while the on-screen keyboard is open; Still is not rendered under reduced motion.
 - **SavePoster** (planned): "Save your poster" opens the viewer; "Share" calls `navigator.share({ files })` in the tap and renders only where `canShare({ files })` is true.
 
 ### Inputs
@@ -251,7 +250,7 @@ The paper `Ticket` and `HeaderTicket` as page objects, the `Stub` ruled table, t
 
 - **Accessibility floor:** WCAG 2.2 AA on every beat and tier. Text 4.5:1, control edges and focus 3:1 against both the surface and the brightest scene pixels behind them. Every readable word is DOM text on the panel or a solid chip; the scene, title and stamp are `aria-hidden` art. Keyboard completion of every beat; `forced-colors` and 200% text supported. The 2026-10-14 axe results cover the Direction A build only; Direction D is unverified.
 - **Focus:** on every beat change focus moves to the new heading (`tabIndex=-1`); a live region announces the result and any world reaction that carries meaning.
-- **Touch targets:** 48px (56px for tiles and code cells), 8px apart.
+- **Touch targets:** 48px (56px for tiles and code cells; at least 44 × 44px for the icon-only chips), 8px apart.
 - **Responsive:** mobile-first. Phone: poster behind, panel docked at 40 to 45%. Desktop: poster frame plus a 420px panel column. Orientation is not locked.
 - **Forms:** visible label above every field, no placeholder-only labels; optional fields carry a muted "optional" tag, no red asterisks. Error text sits under the field with the 2px `status-error` rule and `circle-alert`. After a failed submit, fields revalidate on change and radio errors clear on selection; focus goes to the first invalid field; answers survive every failure. The world answers on Continue, never on selection.
 - **Code step (as built):** six digits, paste strips spaces and dashes; code valid 10 minutes, 5 attempts, resend cooldown 60 seconds with a live countdown. Every outcome has its own icon, line and next action (sending, sent, cooldown, wrong code, expired, too many tries, rate-limited, service unavailable, saved, updated). The backend replays a correct, already-used code. **Invite key:** the link carries a secret `?k=...`; a wrong key shows one neutral line and keeps the answers. Direction D adds: ambient stops for the whole beat, one lamp per digit, and the canvas stops when the guest leaves for their email.
@@ -287,3 +286,5 @@ The paper `Ticket` and `HeaderTicket` as page objects, the `Stub` ruled table, t
 - **2026-10-15 (owner decisions after the first G1 attempt)**: plates stay photo-real (style locks in `direction.md`); G1 in review, not approved, pending a 1080 x 1920 file and a lights-off edit; footer line removed; team and sport not shown after saving or on the poster; draft copy and timing as built; shirt shows only the first word of the name until Surname has a value.
 - **2026-10-15 (plate colours and title position)**: owner "defaults": the title lockup moves up above Makes's hairline (THIRTY about y 50 to 180, UNITED about y 196 to 276); bank strikes use code effects (glow sprites, beam cards, a CSS glow per bank on T1), not a new generation; `scene-floodlight` `#FEFCFB` to `#F1C7A0`, `scene-smoke-red` `#DB312B` to `#B22C28`, `scene-ember` `#F03F36` to `#E03D2B`, re-sampled from the plates (method in `tokens.md`). Contrast rows re-measured; `panel` on smoke is now 2.85:1 (decorative only).
 - **2026-10-15 (AI credit on the saved poster)**: owner decision: the saved 1080 × 1920 poster carries "Poster art made with AI" in small `moonlight` type under the credit line, on a `panel` scrim; not in the live page, not on the OG image. The owner keeps the original ChatGPT exports (C2PA metadata) outside the repo as provenance.
+- **2026-10-15 (real plates in the app: chips, title, signing shot, moon)**: owner decisions: Sound and Still become icon-only, stacked chips (option B), the title returns to about 80% of the poster width (superseded the same day: see the next entry), the signed beats use a two-stage shot (wide with all four banks on screen, then push in), the moon gets a halo and surface texture, the Chapter 1 to Chapter 2 push-in is 1.03 to 1.12, and the Android device test is deferred (real-device check required in phase 8, before merging to main). See `.specno-design/feedback.md`.
+- **2026-10-15 (as built: title width and layering)**: owner "defaults": the title is accepted at about 58% of the poster width, left-set, because it has to clear the chip column in every shot (this supersedes the 80% above); on the WebGL cover the title draws in front of the lanyard cord. The chips are named "Sound off" / "Sound on" (no `aria-pressed`) and "Still" (`aria-pressed`). The `chip` text style is retired. See `.specno-design/feedback.md`.

@@ -30,7 +30,7 @@ Projected from `direction.md` Direction D (typographic identity, colour thesis, 
 | Token | Hex | Role | Source |
 |---|---|---|---|
 | `void` | `#0E0B13` | Page background on desktop around the poster frame; `html` background before the cover still paints | Derived |
-| `panel` | `#18131F` | The step panel and the two chips (Sound, Still). Every readable word sits on this or on `panel-raised` | Sampled (image 4 night sky) |
+| `panel` | `#18131F` | The step panel and the two icon-only chips (Sound, Still). Every readable word sits on this or on `panel-raised` | Sampled (image 4 night sky) |
 | `panel-raised` | `#241D2E` | Input fill, attendance tile fill, disabled button fill | Derived |
 | `text` | `#FFFFFF` | Headings, body, labels, button labels | n/a |
 | `moonlight` | `#B7D3FA` | Muted and helper text, "optional" tags, the focus ring, the primary button's ring, the panel's top rule, the selected tile's border | Sampled (image 4 moon) |
@@ -55,7 +55,7 @@ Used by the shaders, glow sprites, ember points and the poster compositor. No re
 | Token | Hex | Drawn for |
 |---|---|---|
 | `scene-moon-core` | `#E8F5FD` | The moon disc (drawn at its 21 December 2026 phase, about 93 percent waxing gibbous; default accepted, the phase itself is still an estimate) |
-| `scene-moon-halo` | `#B7D3FA` | The moon's halo (same value as `moonlight`, on purpose: the UI's cold colour is the moon's) |
+| `scene-moon-halo` | `#B7D3FA` | The moon's soft halo, drawn so the code-made moon sits in the photo sky, with a subtle surface texture on the disc (phase and position unchanged; same value as `moonlight`, on purpose: the UI's cold colour is the moon's) |
 | `scene-floodlight` | `#F1C7A0` | Lamp heads, glow sprites, beam cards, the T1 CSS glow per bank. Warm, because the lit plate's lamps are warm, not white. Was `#FEFCFB` |
 | `scene-smoke-red` | `#B22C28` | Smoke tint for the noise quads and the T1 CSS layer. The lit part of the smoke, not the shadowed median. Was `#DB312B` |
 | `scene-ember` | `#E03D2B` | Ember points: a saturated glowing red-orange, not the blown core. Was `#F03F36` |
@@ -159,12 +159,12 @@ Under `@media (forced-colors: active)`: the world stage is `display: none` (no p
 
 All sizes are authored in `rem` (16 px root) so 200 percent text works. The panel sizes by content up to its cap and then scrolls inside itself; it never clips.
 
-### Faces (all four already self-hosted; no new font file for them, owner accepted; the brush font for the SVG lockups is picked in the asset phase)
+### Faces (all four already self-hosted; no new font file for them, owner accepted; the SVG title lockups are outlined Barlow Condensed 700)
 
 | Role | Face | Weight and style | Use |
 |---|---|---|---|
-| Display | Barlow Condensed | 700, caps, tracking +2% | Panel headings, chip labels, group labels; in the scene, the guest's name and number on the shirt, the poster's fixture and credit lines |
-| Title lockups | An OFL brush display font, outlined to SVG paths at build time | n/a | "THIRTY" and "UNITED" only. No font file ships. Font to be picked in the asset phase; until then Barlow Condensed 700 stands in on greybox |
+| Display | Barlow Condensed | 700, caps, tracking +2% | Panel headings, group labels; in the scene, the guest's name and number on the shirt, the poster's fixture and credit lines |
+| Title lockups | Barlow Condensed 700, outlined to SVG paths | n/a | "THIRTY" and "UNITED" only. No font file ships for them. As built; no brush font |
 | Standfirst | Source Serif 4 | 400 italic | One line per beat at most, as built |
 | Body | Inter | 400 and 500 | Everything else on the panel, all inputs and buttons |
 | Data | JetBrains Mono | 500, `tabular-nums` | Seat ("017"), the code cells, the email address, the cooldown |
@@ -182,7 +182,6 @@ Fallbacks stay size-adjusted (Arial Narrow, Georgia, system-ui, ui-monospace), `
 | `input` | 16 / 24 | 16 / 24 | Inter 400, never below 16 px (stops iOS zoom on focus) |
 | `helper` | 14 / 20 | 14 / 20 | Inter 400, `moonlight` |
 | `label-group` | 14 / 16 | 14 / 16 | Barlow Condensed 700 caps, tracking +6%, `moonlight` |
-| `chip` | 14 / 16 | 14 / 16 | Barlow Condensed 700 caps, tracking +6%, `text` |
 | `data-stub` | 20 / 28 | 20 / 28 | JetBrains Mono 500 tabular ("Seat 017 · Shirt 17" line) |
 | `data-code` | 32 / 40 | 28 / 36 | JetBrains Mono 500, one digit per cell |
 
@@ -192,8 +191,8 @@ Fallbacks stay size-adjusted (Arial Narrow, Georgia, system-ui, ui-monospace), `
 
 | Element | Face | Starting size | Colour |
 |---|---|---|---|
-| "THIRTY" lockup | SVG brush lockup | About 80 percent of the poster width, inside the empty sky band (top 20 percent), set at about poster y 50 to 180 so the whole word sits above Makes's hairline (poster y about 315) on every beat (owner decision 2026-10-15, "defaults", decision 1; was about y 160 and below). Open check for nova on a device: the solid chips (top right, safe-area top + 12 px) now overlap the top-right of the word at the cover shot; the older wireframe note kept the word clear of them (`wireframes/save-the-date-signing-2026-10-15/variant-C.md`, history) | `text` |
-| "UNITED" lockup | SVG brush lockup | Under "THIRTY" at about poster y 196 to 276, also fully above Makes's hairline (poster y about 315) | `poster-red` |
+| "THIRTY" lockup | SVG, outlined Barlow Condensed 700 | Left-set, poster px [114, 50, 630, 130]: about 58 percent of the poster width (277 of 390 px on screen at the 390 cover), set at about poster y 50 to 180 so the whole word sits above Makes's hairline (poster y about 315) on every beat. About 58 percent is the widest that clears the icon-only chip column in every shot at 360 to 430 px (owner decision 2026-10-15, "defaults"; supersedes the earlier about 80 percent, centred). On the WebGL cover it draws in front of the lanyard cord | `text` |
+| "UNITED" lockup | SVG, outlined Barlow Condensed 700 | Left-set under "THIRTY", poster px [114, 196, 630, 79] (about y 196 to 275), also fully above Makes's hairline (poster y about 315) | `poster-red` |
 | Shirt name | Barlow Condensed 700 caps | Fits 80 percent of the shirt quad's width, never above 22 percent of its height | `text` on the shirt |
 | Shirt number | Barlow Condensed 700 | About 40 percent of the shirt quad's height | `text` |
 | Fixture line | Barlow Condensed 700 caps, tracking +6% | 44 px | `text` ("MON 21 DEC 2026 · VENUE TBA") |
@@ -211,8 +210,8 @@ Scene sizes are starting values to tune on G5 and G6 once the shirt quads are me
 - **Phone (portrait):** the world stage is fixed and fills the layout viewport behind everything. The panel docks at the bottom: height from 40 to 45 percent of the layout viewport, sized by content inside that range; content that needs more (Chapter 2) scrolls inside the panel. Padding 24 px (20 px at 360 px wide), plus `env(safe-area-inset-bottom)`. 16 px between fields, 24 px between a group and the action row.
 - **Keyboard open:** `visualViewport.height` drives the shot. The shirt strip takes the top of the visual viewport (at least 120 px (est.)); the panel fills the rest and scrolls the focused field into view. `scroll-padding-block: 6rem` stays.
 - **Desktop (from 1024 px):** the poster stands as a 9:16 frame, its height `100dvh` minus 64 px, centred in the left part of the `void`; the panel is a 420 px column on the right, full height, with its 1 px `moonlight` rule on the left edge.
-- **Chips:** Sound and Still sit top right inside the safe area, 48 px tall, 8 px apart.
-- Targets: 48 px minimum height for inputs, buttons and chips; 56 px for the Yes / Maybe / No tiles and the code cells; 8 px minimum between targets.
+- **Chips:** Sound and Still are icon-only, at least 44 × 44 px, stacked vertically at the top right (safe-area top + 12 px), 8 px apart.
+- Targets: 48 px minimum height for inputs and buttons, and at least 44 × 44 px for the icon-only chips; 56 px for the Yes / Maybe / No tiles and the code cells; 8 px minimum between targets.
 - Breakpoints (Tailwind defaults): 640, 768, 1024, 1280. Design holds at 360, 390, 768 and 1440, and at 200 percent text.
 
 ## Rules, borders, radius, shadow
@@ -246,7 +245,7 @@ Budget: signature. The `motion` library drives the DOM (panel content, stamp), R
 | `hint-nudge` | 600 ms | `ease-in-out` | One 4 px nudge of the tear handle at 2.5 s if untouched (as built) |
 | `tear-embers` | 600 ms | one-shot | Embers spill from the tear line |
 | `bank-strike` | 600 ms | `cubic-bezier(0.2, 0, 0, 1)`, one way | A bank's lamps come on (small area) and the stand under it lifts from dark to lit |
-| `push-in` | 1,200 ms | `cubic-bezier(0.33, 1, 0.68, 1)` | 3 percent push and ease out after the tear; 4 percent at the signing. Never more |
+| `push-in` | 1,200 ms | `cubic-bezier(0.33, 1, 0.68, 1)` | Chapter 1 to Chapter 2 runs 1.03 to 1.12 (owner, 2026-10-15). The signed beats start wide (all four banks on screen at phone width) and push in to the face-and-shirt framing; reduced motion cuts to the final framing. Nothing else pushes more than 3 to 4 percent |
 | `panel-change` | 250 ms | `cubic-bezier(0.2, 0, 0, 1)` | Panel content out and in between beats; focus moves to the new heading |
 | `flags-lift` | 400 ms | same | Yes: the crowd's flags lift about 6 px |
 | `pose-swap` | 250 ms (wave), 350 ms (signing) | linear cross-fade | Makes's plate changes pose |
