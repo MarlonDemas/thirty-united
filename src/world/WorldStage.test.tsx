@@ -3,7 +3,17 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { setReducedMotion } from "@/test-utils"
 import { layoutFor, placeShot, placeSignedWide, SHOTS } from "@/world/shots"
 import { resetTier } from "@/world/tier"
-import { SIGNED_PUSH_AT_MS, WorldStage } from "@/world/WorldStage"
+import type { WorldCanvasProps } from "@/world/WorldCanvas"
+import { GL_FADE_MS, SIGNED_PUSH_AT_MS, WorldStage } from "@/world/WorldStage"
+
+// jsdom has no WebGL: the world canvas is a marker that hands its props to the test.
+const canvas = vi.hoisted(() => ({ props: null as WorldCanvasProps | null }))
+vi.mock("@/world/WorldCanvas", () => ({
+  default: (props: WorldCanvasProps) => {
+    canvas.props = props
+    return <div data-testid="world-gl" />
+  },
+}))
 
 const layout = layoutFor({ w: 390, h: 844, vvTop: 0, vvH: 844, keyboard: false })
 const frame = { w: 390, h: 844 }
@@ -71,6 +81,7 @@ describe("the title over the lanyard", () => {
     resetTier()
   }
   afterEach(() => {
+    vi.useRealTimers()
     vi.unstubAllGlobals()
   })
 
@@ -88,10 +99,40 @@ describe("the title over the lanyard", () => {
     expect([...front.querySelectorAll("[data-layer]")].map((e) => e.getAttribute("data-layer"))).toEqual(["thirty", "united"])
   })
 
+  it("on T2 the world canvas is the poster's first child, fades in on its first frame, then the plates hide", async () => {
+    onT2()
+    cover()
+    const gl = await screen.findByTestId("world-gl") // the lazy chunk resolves on real timers
+    vi.useFakeTimers()
+    expect(world().querySelector(".poster")!.firstElementChild).toBe(gl)
+    expect(world()).toHaveAttribute("data-gl", "off")
+    expect(canvas.props).toMatchObject({ beat: "cover", tier: "T2", live: false })
+    act(() => canvas.props!.onReady())
+    expect(world()).toHaveAttribute("data-gl", "fading")
+    act(() => vi.advanceTimersByTime(GL_FADE_MS))
+    expect(world()).toHaveAttribute("data-gl", "live")
+    expect(canvas.props!.live).toBe(true)
+  })
+
+  it("a hidden tab unmounts the world canvas (it lets go of its textures) and the DOM plates are the world again", async () => {
+    onT2()
+    cover()
+    await screen.findByTestId("world-gl")
+    act(() => canvas.props!.onReady())
+    const vis = vi.spyOn(document, "visibilityState", "get").mockReturnValue("hidden")
+    act(() => {
+      document.dispatchEvent(new Event("visibilitychange"))
+    })
+    expect(screen.queryByTestId("world-gl")).toBeNull()
+    expect(world()).toHaveAttribute("data-gl", "off")
+    vis.mockRestore()
+  })
+
   it("T1 keeps the one title in the poster", () => {
     cover()
     expect(world()).toHaveAttribute("data-tier", "T1")
     expect(screen.queryByTestId("title-front")).toBeNull()
     expect(world().querySelectorAll("[data-layer=thirty]")).toHaveLength(1)
+    expect(screen.queryByTestId("world-gl")).toBeNull()
   })
 })

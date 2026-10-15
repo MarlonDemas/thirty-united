@@ -1,14 +1,15 @@
-import { lazy, Suspense, useEffect, useRef, useState, type CSSProperties } from "react"
+import { lazy, Suspense, useCallback, useEffect, useRef, useState, useSyncExternalStore, type CSSProperties } from "react"
 import { ErrorBoundary } from "@/components/ErrorBoundary"
 import { Stamp } from "@/components/Stamp"
 import type { Attending } from "@/lib/schemas/rsvp"
 import { banksFor, poseFor, shirtHangs, type Beat, type Pose } from "@/world/beats"
 import { ANCHORS, LAYERS, layerUrl } from "@/world/layers"
-import { StillLayer } from "@/world/StillLayer"
+import { parallaxDepth } from "@/world/parallax"
+import { OVER_CANVAS_Z, StillLayer, type GLPhase } from "@/world/StillLayer"
 import { placementFor, placeShot, SHOTS, STAMP_LIVE, toScreen, type Layout } from "@/world/shots"
 import { demote, isStillTier, isWebGLTier, useTier } from "@/world/tier"
 
-// Phase 4: the WebGL world. Its own chunk, fetched only on T3 and T2.
+// Phase 4: the WebGL world. Its own chunk, fetched only on T3 and T2; drawn inside the poster, so the shot carries it.
 const WorldCanvas = lazy(() => import("@/world/WorldCanvas"))
 
 /** The finale on T1: the stamp lands at 1800 ms (tokens.md beat timings). T0 shows the final state at once. */
@@ -26,6 +27,17 @@ const TITLE = LAYERS.filter((l) => l.name === "thirty" || l.name === "united")
 
 /** Plates fetched ahead of the beat that shows them, so a pose change is a cross-fade, not a pop-in. */
 const PRELOAD: Partial<Record<Beat, Pose[]>> = { chapter1: ["l6-makes-wave"], code: ["l7-makes-signing"] }
+
+/** The world canvas cross-fades in over the DOM plates (then they hide under it). */
+export const GL_FADE_MS = 400
+
+const subscribeVisibility = (l: () => void) => {
+  document.addEventListener("visibilitychange", l)
+  return () => document.removeEventListener("visibilitychange", l)
+}
+const pageHidden = () => document.visibilityState === "hidden"
+/** Hidden tab: the world canvas lets go of its textures (tokens.md, ambient); the still layer covers the rebuild. */
+const usePageHidden = () => useSyncExternalStore(subscribeVisibility, pageHidden, () => false)
 
 function useDelayed(on: boolean, ms: number) {
   const [ready, setReady] = useState(false)
@@ -93,6 +105,19 @@ export function WorldStage({
   const posterTransform = `translate(${p.tx}px, ${p.ty}px) scale(${p.s})`
   const titleFront = beat === "cover" && isWebGLTier(tier)
 
+  // The world canvas: mounted on T3 and T2 while the tab is visible. It reports its first frame, fades in over the
+  // DOM plates, then they hide under it (index.css, `data-gl`). Unmounted, it is off again and the DOM is the world.
+  const hidden = usePageHidden()
+  const glOn = isWebGLTier(tier) && !hidden
+  const [gl, setGl] = useState<GLPhase>("off")
+  if (!glOn && gl !== "off") setGl("off")
+  const onGlReady = useCallback(() => setGl((g) => (g === "off" ? "fading" : g)), [])
+  useEffect(() => {
+    if (gl !== "fading") return
+    const id = setTimeout(() => setGl("live"), GL_FADE_MS)
+    return () => clearTimeout(id)
+  }, [gl])
+
   // The pass sits between Makes's face and the panel at the cover shot, outside the transformed poster.
   const cover = layout.mode === "desktop" ? p : placeShot(SHOTS.cover, frame)
   const faceBottom = toScreen(cover, [ANCHORS.face.x, ANCHORS.face.y + ANCHORS.face.r])[1]
@@ -121,10 +146,27 @@ export function WorldStage({
       data-reframe={last.reframe}
       data-wide={wide}
       data-title-front={titleFront}
+      data-gl={gl}
       data-testid="world-stage"
     >
       <div className="world-frame" style={{ left: frame.x, top: frame.y, width: frame.w, height: frame.h }}>
         <div className="poster" style={{ transform: posterTransform }}>
+          {glOn && (
+            <ErrorBoundary fallback={null} onError={() => demote("T1", "world canvas failed")}>
+              <Suspense fallback={null}>
+                <WorldCanvas
+                  beat={beat}
+                  attending={attending}
+                  tier={tier}
+                  still={still}
+                  mounted={mounted}
+                  frame={frame}
+                  live={gl === "live"}
+                  onReady={onGlReady}
+                />
+              </Suspense>
+            </ErrorBoundary>
+          )}
           <StillLayer
             tier={tier}
             still={still}
@@ -136,7 +178,10 @@ export function WorldStage({
             shirtName={shirtName}
             shirtNumber={shirtNumber}
             digits={digits}
+            gl={gl}
           />
+          {/* finale-dim: the held breath before the ignition, on the WebGL tiers (index.css). */}
+          {signed && isWebGLTier(tier) && <div className="world-dim" />}
         </div>
         <div className="world-vignette" />
         <div ref={zoneRef} className="pass-zone" style={zoneStyle} hidden={beat !== "cover"} />
@@ -155,8 +200,17 @@ export function WorldStage({
                 draggable={false}
                 decoding="async"
                 data-layer={l.name}
-                className={l.name === "united" ? "layer layer-united" : "layer"}
-                style={{ left: l.bbox[0], top: l.bbox[1], width: l.bbox[2], height: l.bbox[3] }}
+                className={l.name === "united" ? "layer layer-united par" : "layer par"}
+                style={
+                  {
+                    left: l.bbox[0],
+                    top: l.bbox[1],
+                    width: l.bbox[2],
+                    height: l.bbox[3],
+                    zIndex: OVER_CANVAS_Z,
+                    "--par-d": parallaxDepth(l.name, l.depth, tier),
+                  } as CSSProperties
+                }
               />
             ))}
           </div>
@@ -165,13 +219,6 @@ export function WorldStage({
           <div className="world-stamp" style={stampStyle}>
             <Stamp variant={attending === "maybe" ? "maybe" : "yes"} />
           </div>
-        )}
-        {isWebGLTier(tier) && (
-          <ErrorBoundary fallback={null} onError={() => demote("T1", "world canvas failed")}>
-            <Suspense fallback={null}>
-              <WorldCanvas beat={beat} />
-            </Suspense>
-          </ErrorBoundary>
         )}
       </div>
     </div>

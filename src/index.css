@@ -566,6 +566,51 @@
     opacity: 0;
   }
 }
+/* The world canvas on T3 and T2 (phase 4), inside the poster so the shot carries it: over every plate, under the
+   drawn overlays (StillLayer, OVER_CANVAS_Z). It cross-fades in over the DOM plates once its first frame is drawn,
+   then the plates, glows and halo it redraws hide under it. */
+.world-gl {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 400ms var(--ease-fade);
+}
+.world:is([data-gl="fading"], [data-gl="live"]) .world-gl {
+  opacity: 1;
+}
+.world[data-gl="live"] .poster:not(.poster-front) :is(img.layer:not([data-layer="thirty"], [data-layer="united"]), .bank-glow, .moon-halo) {
+  visibility: hidden;
+}
+/* Parallax (T3 every layer, T2 the hero): the canvas sets --par-x/--par-y on .world; overlays follow by depth. */
+.world[data-gl="live"] .par {
+  translate: calc(var(--par-x, 0px) * var(--par-d, 0)) calc(var(--par-y, 0px) * var(--par-d, 0));
+}
+/* finale-dim (tokens.md): the poster dims about 20 percent from 250 ms (300 ms, ease-in-out), holds its breath, and
+   the ignition at 1400 ms lifts it again over 600 ms. Both changes are one way and 300 ms or longer. */
+.world-dim {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  pointer-events: none;
+  background: #000;
+  opacity: 0;
+  animation: finale-dim 2000ms ease-in-out both;
+}
+@keyframes finale-dim {
+  0%,
+  12.5% {
+    opacity: 0;
+  }
+  27.5%,
+  70% {
+    opacity: 0.2;
+  }
+  100% {
+    opacity: 0;
+  }
+}
 /* Static grain and vignette over the poster, never over the panel. */
 .world-vignette {
   position: absolute;

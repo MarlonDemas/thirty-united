@@ -8,7 +8,7 @@ import { MOON, moonPath } from "@/world/draw"
  * its limb and carries a faint static surface texture (one SVG turbulence filter, fixed seed, never animated), and
  * its edge is softened by a fraction of a pixel, so it reads as a moon in the photograph rather than a flat disc.
  */
-export function Moon() {
+export function Moon({ z = 1, parD = 0 }: { /** The disc's z (over the world canvas when it is on). */ z?: number; /** Parallax depth. */ parD?: number }) {
   const { x, y, r } = ANCHORS.moon
   const R = r * MOON.haloScale
   const pad = 2 // room for the edge softening
@@ -20,8 +20,8 @@ export function Moon() {
         data-layer="moon-halo"
       />
       <svg
-        className="layer"
-        style={{ left: x - r - pad, top: y - r - pad, width: 2 * (r + pad), height: 2 * (r + pad), zIndex: 1 }}
+        className="layer par"
+        style={{ left: x - r - pad, top: y - r - pad, width: 2 * (r + pad), height: 2 * (r + pad), zIndex: z, "--par-d": parD } as CSSProperties}
         viewBox={`${-r - pad} ${-r - pad} ${2 * (r + pad)} ${2 * (r + pad)}`}
         data-layer="moon"
       >

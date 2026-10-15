@@ -3,6 +3,7 @@ import type { Banks, Beat, Pose } from "@/world/beats"
 import { ANCHORS, LAYERS, QUADS, layerUrl, plateSetFor, type Layer } from "@/world/layers"
 import { Moon } from "@/world/Moon"
 import { ShirtLettering } from "@/world/ShirtLettering"
+import { parallaxDepth } from "@/world/parallax"
 import { isStillTier, type Tier } from "@/world/tier"
 
 // Up to 20 CSS embers on T1 (here 14), rising from the ground in poster space. Fixed positions: no randomness.
@@ -16,6 +17,16 @@ const EMBERS = Array.from({ length: 14 }, (_, i) => ({
 
 const box = (l: Layer): CSSProperties => ({ left: l.bbox[0], top: l.bbox[1], width: l.bbox[2], height: l.bbox[3], zIndex: l.z })
 const isPose = (name: string) => name.startsWith("l5-") || name.startsWith("l6-") || name.startsWith("l7-")
+const isTitle = (name: string) => name === "thirty" || name === "united"
+const depthOf = (name: string) => LAYERS.find((l) => l.name === name)?.depth ?? 0
+
+/** The world canvas (WorldStage): off, fading in over the plates, or live (the DOM plates under it hidden). */
+export type GLPhase = "off" | "fading" | "live"
+/**
+ * While the world canvas is on (z 10 in the poster, over every plate) the overlays drawn in code sit over it: the
+ * moon disc, the title, the code lamps and the shirt lettering. None of them overlaps a plate that should cover it.
+ */
+export const OVER_CANVAS_Z = 11
 
 /**
  * The poster as DOM layers, in poster space (1080 x 1920). Always rendered: it is the whole world on T1 and T0
@@ -33,6 +44,7 @@ export function StillLayer({
   shirtName,
   shirtNumber,
   digits,
+  gl = "off",
 }: {
   tier: Tier
   still: boolean
@@ -45,8 +57,12 @@ export function StillLayer({
   shirtName: string
   shirtNumber: string | null
   digits: number
+  gl?: GLPhase
 }) {
   const t0 = isStillTier(tier)
+  const over = (z: number) => (gl === "off" ? z : OVER_CANVAS_Z)
+  // Parallax hooks for the overlays: index.css shifts `.par` by `--par-d` times the canvas's offset once it is live.
+  const parD = (name: string, depth = depthOf(name)) => ({ "--par-d": parallaxDepth(name, depth, tier) }) as CSSProperties
   const drawTier: Tier = tier === "forced-colors" ? "T0" : tier
   // The plate set is fixed for the visit: a later demotion (Still, context loss) keeps the files already fetched.
   const [plates] = useState(() => plateSetFor(tier))
@@ -62,9 +78,18 @@ export function StillLayer({
           const on = l.name === "l8-shirt" ? hangs : pose === l.name
           return <img key={l.name} {...common} className={l.name === "l8-shirt" ? "layer layer-shirt" : "layer layer-pose"} data-on={on} style={box(l)} />
         }
-        return <img key={l.name} {...common} className={l.name === "united" ? "layer layer-united" : "layer"} style={box(l)} />
+        if (isTitle(l.name))
+          return (
+            <img
+              key={l.name}
+              {...common}
+              className={l.name === "united" ? "layer layer-united par" : "layer par"}
+              style={{ ...box(l), zIndex: over(l.z), ...parD(l.name) }}
+            />
+          )
+        return <img key={l.name} {...common} className="layer" style={box(l)} />
       })}
-      <Moon />
+      <Moon z={over(1)} parD={parallaxDepth("moon", depthOf("l1-sky"), tier)} />
       {/* One glow per bank on its tower head, struck with that bank's plate (same opacity, same timing). */}
       {ANCHORS.banks.map(({ x, y, r, z }, i) => (
         <span
@@ -79,19 +104,30 @@ export function StillLayer({
         ANCHORS.lamps.map(([x, y], i) => (
           <span
             key={i}
-            className="code-lamp"
+            className="code-lamp par"
             data-on={i < digits}
-            style={{ left: x - ANCHORS.lampR, top: y - ANCHORS.lampR, width: 2 * ANCHORS.lampR, height: 2 * ANCHORS.lampR, zIndex: 4 }}
+            style={{
+              left: x - ANCHORS.lampR,
+              top: y - ANCHORS.lampR,
+              width: 2 * ANCHORS.lampR,
+              height: 2 * ANCHORS.lampR,
+              zIndex: over(4),
+              ...parD("lamps", depthOf("l2-stadium-off")),
+            }}
           />
         ))}
-      {hangs && <ShirtLettering quad={QUADS["l8-shirt"]} name={shirtName} number={null} ghostNumber animate={!t0} />}
+      {hangs && (
+        <div className="layer par" style={{ inset: 0, zIndex: over(7), ...parD("l8-shirt") }}>
+          <ShirtLettering quad={QUADS["l8-shirt"]} name={shirtName} number={null} ghostNumber animate={!t0} />
+        </div>
+      )}
       {beat === "signed" && (
-        <div className={t0 ? "layer" : "layer lettering-in"} style={{ inset: 0, zIndex: 7 }}>
+        <div className={t0 ? "layer par" : "layer lettering-in par"} style={{ inset: 0, zIndex: over(7), ...parD("l7-makes-signing") }}>
           <ShirtLettering quad={QUADS["l7-makes-signing"]} name={shirtName} number={shirtNumber} animate={false} landNumber={!t0} />
         </div>
       )}
-      {/* No embers on the code beat (the lamps carry it) or the No end (no red there). */}
-      {!t0 && !still && beat !== "code" && beat !== "no-end" && (
+      {/* No embers on the code beat (the lamps carry it) or the No end (no red there). The live canvas draws its own. */}
+      {!t0 && !still && gl !== "live" && beat !== "code" && beat !== "no-end" && (
         <div className="layer" style={{ inset: 0, zIndex: 9 }}>
           {EMBERS.map((e, i) => (
             <span
