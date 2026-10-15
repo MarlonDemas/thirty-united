@@ -4,6 +4,7 @@ import { InvitePage } from "@/components/InvitePage"
 import { ErrorBoundary } from "@/components/ErrorBoundary"
 import type { RsvpApi } from "@/lib/api"
 import { getInviteKey } from "@/lib/inviteKey"
+import { TierProvider } from "@/world/TierProvider"
 import { api as convexApi } from "../convex/_generated/api"
 
 // `?debug=1` only: the device probe is its own chunk, never fetched otherwise.
@@ -22,6 +23,7 @@ export default function App() {
     [convex],
   )
   return (
+    <TierProvider>
     <ErrorBoundary>
       <InvitePage api={api} missingKey={getInviteKey() === null} />
       {debug && (
@@ -32,5 +34,6 @@ export default function App() {
         </ErrorBoundary>
       )}
     </ErrorBoundary>
+    </TierProvider>
   )
 }

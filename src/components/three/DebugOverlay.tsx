@@ -47,7 +47,7 @@ export function DebugOverlay() {
   return (
     <div
       data-testid="lanyard-debug"
-      className="pointer-events-none fixed top-2 left-2 z-50 max-w-[min(26rem,calc(100vw-1rem))] bg-ink/90 p-2 font-mono text-[10px] leading-snug break-words text-paper"
+      className="pointer-events-none fixed top-2 left-2 z-50 max-w-[min(26rem,calc(100vw-1rem))] bg-panel/90 p-2 font-mono text-[10px] leading-snug break-words text-foreground"
     >
       {lines.map((l, i) => (
         <div key={i}>{l}</div>

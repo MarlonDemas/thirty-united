@@ -17,5 +17,5 @@ test("a failed 3D chunk steps down silently to the DOM ticket", async ({ page })
   await expect(page.getByText("Something slipped")).toHaveCount(0);
   await expect(page.locator(".ticket").first()).toBeVisible();
   await tear.click();
-  await expect(page.getByRole("heading", { name: "Are you coming?" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Are you in?" })).toBeVisible();
 });

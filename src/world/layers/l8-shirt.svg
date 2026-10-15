@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="360" viewBox="0 0 320 360">
+<!-- GREYBOX placeholder. Replace with the painted plate of the same name (.webp); no code change. -->
+<line x1="160" y1="0" x2="160" y2="40" stroke="#8A8FB0" stroke-width="4"/>
+<path d="M60 70 L120 44 L200 44 L260 70 L310 130 L262 160 L252 140 L256 350 L64 350 L68 140 L58 160 L10 130 Z" fill="#3B2A30" stroke="#8A8FB0" stroke-width="2"/>
+<text x="160" y="342" font-family="Barlow Condensed, 'Arial Narrow', sans-serif" font-weight="700" font-size="20" letter-spacing="2" fill="#8A8FB0" text-anchor="middle">L8 SHIRT</text>
+</svg>

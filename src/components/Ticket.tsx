@@ -15,7 +15,7 @@ function Notch({ corner }: { corner: "tr" | "br" | "tl" | "bl" }) {
     <svg
       aria-hidden="true"
       viewBox="0 0 10 10"
-      className={cn("pointer-events-none absolute size-(--notch) text-ink", pos)}
+      className={cn("pointer-events-none absolute size-(--notch) text-pass-ink", pos)}
       fill="none"
       preserveAspectRatio="none"
     >
@@ -34,7 +34,7 @@ function StubPiece({ stub, className, style, free }: { stub: ReactNode; classNam
       // .grain sets position: relative outside the utility layer, so the free copy is pinned inline
       style={free ? { position: "absolute", inset: 0, ...style } : style}
       className={cn(
-        "piece-stub grain w-full border border-l-0 border-ink bg-paper",
+        "piece-stub grain w-full border border-l-0 border-pass-ink bg-pass",
         !free && "relative",
         className,
       )}
@@ -54,8 +54,9 @@ export type Peel = {
 }
 
 /**
- * The ticket: a main half and a stub half joined at a perforation of punched holes. Sized by
- * content (no fixed aspect ratio), so enlarged text grows it. Capped at 960px.
+ * The lanyard pass's DOM face (the tear's object on the cover): a main half and a stub half joined at a perforation
+ * of punched holes, in the scoped --pass-* paper tokens. Sized by content, capped at 960px. Decorative: the cover's
+ * readable words are on the panel.
  */
 export function Ticket({
   main,
@@ -94,13 +95,13 @@ export function Ticket({
       style={{ ...tilt?.style, ...style }}
       {...tilt?.handlers}
       data-lit={lit}
-      className={cn("ticket relative mx-auto flex w-full max-w-[960px] items-stretch", className)}
+      className={cn("ticket relative mx-auto flex w-full max-w-[960px] items-stretch text-pass-ink", className)}
     >
       {lit !== undefined && <m.div aria-hidden="true" className="ticket-shadow" style={tilt?.shadow} />}
       <m.div
         style={mainStyle}
         className={cn(
-          "piece-main grain relative min-w-0 flex-1 border border-r border-ink border-r-ink bg-paper",
+          "piece-main grain relative min-w-0 flex-1 border border-r border-pass-ink border-r-pass-ink bg-pass",
           mainClassName,
         )}
       >

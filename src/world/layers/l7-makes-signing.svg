@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="1280" viewBox="0 0 480 1280">
+<!-- GREYBOX placeholder. Replace with the painted plate of the same name (.webp); no code change. -->
+<path d="M90 240 Q240 190 390 240 L430 1280 L50 1280 Z" fill="#2B2534" stroke="#8A8FB0" stroke-opacity=".5" stroke-width="2"/>
+<rect x="206" y="160" width="68" height="60" fill="#2B2534"/>
+<circle cx="240" cy="100" r="78" fill="#3A3346" stroke="#8A8FB0" stroke-width="2"/>
+<text x="240" y="109" font-family="Barlow Condensed, 'Arial Narrow', sans-serif" font-weight="700" font-size="26" letter-spacing="2" fill="#8A8FB0" text-anchor="middle">FACE</text>
+<path d="M80 280 L150 260 L330 260 L400 280 L390 540 L90 540 Z" fill="#3B2A30" stroke="#8A8FB0" stroke-width="2"/>
+<text x="240" y="586" font-family="Barlow Condensed, 'Arial Narrow', sans-serif" font-weight="700" font-size="22" letter-spacing="2" fill="#8A8FB0" text-anchor="middle">SHIRT · HELD UP</text>
+<text x="240" y="1060" font-family="Barlow Condensed, 'Arial Narrow', sans-serif" font-weight="700" font-size="26" letter-spacing="2" fill="#8A8FB0" text-anchor="middle">MAKES · L7 SIGNING</text>
+</svg>

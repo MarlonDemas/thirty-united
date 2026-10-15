@@ -1,0 +1,342 @@
+{
+  "$comment": "Poster space 1080 x 1920. One entry per layer file in this folder; a .webp of the same name replaces the greybox .svg with no code change. bbox is [x, y, w, h] in poster px. bank: which floodlight bank the layer lights (1-4) or null. tiers: where the DOM still layer draws it. depth: 0 far to 1 near (parallax).",
+  "poster": {
+    "w": 1080,
+    "h": 1920
+  },
+  "layers": [
+    {
+      "name": "l1-sky",
+      "z": 0,
+      "bbox": [
+        0,
+        0,
+        1080,
+        1100
+      ],
+      "bank": null,
+      "tiers": [
+        "T3",
+        "T2",
+        "T1",
+        "T0"
+      ],
+      "depth": 0.05
+    },
+    {
+      "name": "l2-stadium-off",
+      "z": 2,
+      "bbox": [
+        0,
+        600,
+        1080,
+        760
+      ],
+      "bank": null,
+      "tiers": [
+        "T3",
+        "T2",
+        "T1",
+        "T0"
+      ],
+      "depth": 0.25
+    },
+    {
+      "name": "l2b-stadium-on-b1",
+      "z": 3,
+      "bbox": [
+        0,
+        600,
+        260,
+        760
+      ],
+      "bank": 1,
+      "tiers": [
+        "T3",
+        "T2",
+        "T1",
+        "T0"
+      ],
+      "depth": 0.25
+    },
+    {
+      "name": "l2b-stadium-on-b2",
+      "z": 3,
+      "bbox": [
+        200,
+        600,
+        260,
+        760
+      ],
+      "bank": 2,
+      "tiers": [
+        "T3",
+        "T2",
+        "T1",
+        "T0"
+      ],
+      "depth": 0.25
+    },
+    {
+      "name": "l2b-stadium-on-b3",
+      "z": 3,
+      "bbox": [
+        620,
+        600,
+        260,
+        760
+      ],
+      "bank": 3,
+      "tiers": [
+        "T3",
+        "T2",
+        "T1",
+        "T0"
+      ],
+      "depth": 0.25
+    },
+    {
+      "name": "l2b-stadium-on-b4",
+      "z": 3,
+      "bbox": [
+        820,
+        600,
+        260,
+        760
+      ],
+      "bank": 4,
+      "tiers": [
+        "T3",
+        "T2",
+        "T1",
+        "T0"
+      ],
+      "depth": 0.25
+    },
+    {
+      "name": "l3-crowd",
+      "z": 4,
+      "bbox": [
+        0,
+        1150,
+        1080,
+        400
+      ],
+      "bank": null,
+      "tiers": [
+        "T3",
+        "T2",
+        "T1",
+        "T0"
+      ],
+      "depth": 0.45
+    },
+    {
+      "name": "thirty",
+      "z": 5,
+      "bbox": [
+        108,
+        160,
+        864,
+        130
+      ],
+      "bank": null,
+      "tiers": [
+        "T3",
+        "T2",
+        "T1",
+        "T0"
+      ],
+      "depth": 0.15
+    },
+    {
+      "name": "united",
+      "z": 5,
+      "bbox": [
+        240,
+        296,
+        600,
+        80
+      ],
+      "bank": null,
+      "tiers": [
+        "T3",
+        "T2",
+        "T1",
+        "T0"
+      ],
+      "depth": 0.15
+    },
+    {
+      "name": "l5-makes",
+      "z": 6,
+      "bbox": [
+        330,
+        440,
+        420,
+        1280
+      ],
+      "bank": null,
+      "tiers": [
+        "T3",
+        "T2",
+        "T1",
+        "T0"
+      ],
+      "depth": 0.7
+    },
+    {
+      "name": "l6-makes-wave",
+      "z": 6,
+      "bbox": [
+        250,
+        300,
+        500,
+        1420
+      ],
+      "bank": null,
+      "tiers": [
+        "T3",
+        "T2",
+        "T1",
+        "T0"
+      ],
+      "depth": 0.7
+    },
+    {
+      "name": "l7-makes-signing",
+      "z": 6,
+      "bbox": [
+        300,
+        440,
+        480,
+        1280
+      ],
+      "bank": null,
+      "tiers": [
+        "T3",
+        "T2",
+        "T1",
+        "T0"
+      ],
+      "depth": 0.7
+    },
+    {
+      "name": "l8-shirt",
+      "z": 7,
+      "bbox": [
+        700,
+        720,
+        320,
+        360
+      ],
+      "bank": null,
+      "tiers": [
+        "T3",
+        "T2",
+        "T1",
+        "T0"
+      ],
+      "depth": 0.6
+    },
+    {
+      "name": "l4-foreground",
+      "z": 8,
+      "bbox": [
+        0,
+        1560,
+        1080,
+        360
+      ],
+      "bank": null,
+      "tiers": [
+        "T3",
+        "T2",
+        "T1",
+        "T0"
+      ],
+      "depth": 1
+    }
+  ],
+  "quads": {
+    "l8-shirt": [
+      [
+        776,
+        800
+      ],
+      [
+        944,
+        796
+      ],
+      [
+        950,
+        1040
+      ],
+      [
+        770,
+        1044
+      ]
+    ],
+    "l7-makes-signing": [
+      [
+        396,
+        724
+      ],
+      [
+        684,
+        730
+      ],
+      [
+        678,
+        960
+      ],
+      [
+        402,
+        954
+      ]
+    ]
+  },
+  "anchors": {
+    "face": {
+      "x": 540,
+      "y": 540,
+      "r": 78
+    },
+    "moon": {
+      "x": 880,
+      "y": 500,
+      "r": 56
+    },
+    "lamps": [
+      [
+        930,
+        708
+      ],
+      [
+        970,
+        708
+      ],
+      [
+        1010,
+        708
+      ],
+      [
+        930,
+        742
+      ],
+      [
+        970,
+        742
+      ],
+      [
+        1010,
+        742
+      ]
+    ],
+    "lampR": 13,
+    "title": {
+      "top": 160,
+      "bottom": 376
+    }
+  }
+}

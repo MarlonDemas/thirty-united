@@ -1,7 +1,8 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react"
+import { createPortal } from "react-dom"
 import { animate, m, useMotionValue, useTransform } from "motion/react"
 import { cn } from "cn"
-import { MapPin, Scissors } from "lucide-react"
+import { CalendarDays, MapPin, Scissors } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ErrorBoundary } from "@/components/ErrorBoundary"
 import { StatusLine } from "@/components/StatusLine"
@@ -11,9 +12,10 @@ import { useFocusOnMount } from "@/hooks/useFocusOnMount"
 import { useReducedMotion } from "@/hooks/useReducedMotion"
 import { useTilt } from "@/hooks/useTilt"
 import { haptic, HAPTICS, ticksBetween } from "@/lib/haptics"
-import { getSoundOn, playTearSeparate, playTearTick, setSoundOn, unlockAudio } from "@/lib/sound"
+import { getSoundOn, playTearSeparate, playTearTick, unlockAudio } from "@/lib/sound"
 import { forcedColors } from "@/lib/motionPrefs"
 import { hasWebGL } from "@/lib/webgl"
+import { demote, isWebGLTier, useTier } from "@/world/tier"
 import type { SettleFn } from "@/components/three/LanyardTicket"
 
 // 3D lanyard ticket. Separate chunk, fetched once the sealed view is idle.
@@ -26,7 +28,7 @@ const FINISH = { type: "spring", stiffness: 180, damping: 26 } as const
 const CANCEL = { type: "spring", stiffness: 400, damping: 34 } as const
 const SETTLE = { type: "spring", stiffness: 260, damping: 22 } as const
 const FLICK = { duration: 0.42, delay: 0.2, ease: [0.4, 0, 1, 1] as const }
-const STAGE_FADE_MS = 160 // stage-fade: the night cross-fades to paper while the 3D ticket cross-fades to the DOM one
+const STAGE_FADE_MS = 160 // the 3D pass cross-fades to the DOM one before the tear
 const SEPARATE_MS = 200 // the moment the stub lets go: haptic, rip and the main half's settle
 const THRESHOLD = 0.35
 const HANDLE = 56
@@ -40,30 +42,44 @@ const LABEL_COL = 36 // the width of its column along the right edge
 const span = (h: number) => Math.max(h - TIP0, 1)
 const tipAt = (p: number, h: number) => TIP0 + p * span(h)
 
-export function VenueTba() {
+/** "Monday 21 December 2026 · Venue TBA" (draft): icon + mono date, dashed map-pin + muted venue. */
+export function DateVenue() {
   return (
-    <p className="helper m-0 flex items-center gap-2 text-ink-2">
-      <span aria-hidden="true" className="inline-flex size-6 items-center justify-center border border-dashed border-ink-2">
-        <MapPin className="size-4" strokeWidth={1.5} />
+    <p className="m-0 flex flex-wrap items-center gap-x-2 gap-y-1">
+      <CalendarDays aria-hidden="true" className="size-5 shrink-0 text-moonlight" strokeWidth={1.5} />
+      <span className="data-label">Monday 21 December 2026</span>
+      <span aria-hidden="true" className="text-moonlight">·</span>
+      <span className="sr-only">, </span>
+      <span className="inline-flex items-center gap-2">
+        <span aria-hidden="true" className="inline-flex size-6 items-center justify-center border border-dashed border-moonlight text-moonlight">
+          <MapPin className="size-4" strokeWidth={1.5} />
+        </span>
+        <span className="helper">Venue TBA</span>
       </span>
-      Venue TBA
     </p>
   )
 }
 
-/** Sealed ticket. Drag the handle down the perforation, or press "Tear open": same finish. */
+/**
+ * The cover beat. The panel carries the heading, the host's line, the date and "Tear open"; the pass (the DOM
+ * ticket, and the 3D lanyard on T3 and T2) hangs in the world, portalled into `passSlot`. Drag the handle down the
+ * perforation, or press "Tear open": same finish.
+ */
 export function SealedView({
   onTorn,
   focusHeading,
   missingKey = false,
   onStageEnd,
   staged = true,
+  passSlot,
 }: {
   onTorn: () => void
-  /** Called once when the night stage should fade to the paper page. */
+  /** Called once when the tear hands off from the 3D pass. */
   onStageEnd?: () => void
-  /** Owned by the page: true while the night stage is up. */
+  /** True while the pass is lit by the world (its contact shadow and sheen). */
   staged?: boolean
+  /** The world stage's pass zone. Without one (no world), the pass is not drawn and "Tear open" still works. */
+  passSlot?: HTMLElement | null
   focusHeading: boolean
   missingKey?: boolean
 }) {
@@ -85,16 +101,22 @@ export function SealedView({
   const [domShown, setDomShown] = useState(false) // the DOM ticket cross-fades in over the 3D one
   const [peeling, setPeeling] = useState(false)
   const settleRef = useRef<SettleFn | null>(null)
-  // 3D is for guests who can take motion and effects; WebGL is probed once per mount.
+  // 3D is for guests who can take motion and effects, on a WebGL tier (T3, T2); WebGL is probed once per mount.
   const [glOk] = useState(hasWebGL)
-  const canLanyard = !reduced && !missingKey && glOk && !forcedColors()
-  const [sound, setSound] = useState(getSoundOn)
-  // The 3D layer failed (chunk import rejected, or it threw while rendering): step down to the DOM ticket.
+  const { tier } = useTier()
+  const canLanyard = !reduced && !missingKey && glOk && !forcedColors() && isWebGLTier(tier)
+  // The 3D layer failed (chunk import rejected, context lost, or it threw while rendering): step down to the DOM
+  // ticket, and the session to T1.
   const failLanyard = useCallback(() => {
+    demote("T1", "lanyard failed (WebGL context lost or error)")
     setLanyard("off")
     setBoxed(false)
     setDomShown(true)
   }, [])
+  // Still (or any demotion below T2) while the 3D pass is up: hand over to the DOM pass, unless a tear is running.
+  useEffect(() => {
+    if (!isWebGLTier(tier) && lanyard !== "off" && !busy.current) failLanyard()
+  }, [tier, lanyard, failLanyard])
   const tilt = useTilt(!reduced && lanyard !== "ready" && !peeling)
 
   // The free part above the scissors tip pivots at the tip; the real stub below it never moves.
@@ -265,51 +287,12 @@ export function SealedView({
     }
   }
 
-  const toggleSound = () => {
-    const next = !sound
-    setSoundOn(next)
-    if (next) unlockAudio() // created on this tap, never earlier
-    setSound(next)
-  }
-
-  // DOM mode: the Sound tab sits 8px above the ticket's top rule (the +0.5rem in its translate), clear of the corner.
-  // Stage chrome only once the stage box is up. While the chunk loads the DOM ticket is still in flow, so the tab stays above it.
-  const in3d = boxed
-
-  return (
-    <section aria-labelledby="sealed-title" className="flex flex-col items-center gap-8 pt-10">
-      <div className={cn("relative w-full", boxed && "h-[min(30rem,60svh)]")}>
-      {!reduced && !missingKey && (
-        <div className={cn("pointer-events-none absolute inset-x-0 top-0 z-20 mx-auto max-w-[960px]", in3d && "flex justify-end")}>
-          <button
-            type="button"
-            aria-pressed={sound}
-            title="Sound plays through the speaker. A phone on silent stays quiet."
-            onClick={toggleSound}
-            className={cn(
-              "label-tab stage-tab pointer-events-auto relative inline-block border px-3 py-1 transition-opacity duration-160 before:absolute before:-inset-x-2 before:-inset-y-3 before:content-['']",
-              in3d
-                ? "mr-4 mt-2 border-paper md:mr-10"
-                : "ml-4 -translate-y-[calc(100%+0.5rem)] border-ink md:ml-10",
-              in3d && !staged && "pointer-events-none opacity-0",
-              in3d && staged
-                ? sound
-                  ? "bg-paper text-ink"
-                  : "bg-scene-night-mid text-paper"
-                : sound
-                  ? "bg-ink text-paper-raised"
-                  : "bg-paper-raised text-ink",
-            )}
-          >
-            Sound <span aria-hidden="true">{sound ? "on" : "off"}</span>
-          </button>
-        </div>
-      )}
-      {/* The DOM ticket stays in the accessibility tree; it is only visually replaced by the canvas. */}
+  const pass = (
+    <div className="relative size-full">
       <div
         className={cn(
-          boxed && "pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2",
-          boxed && "transition-opacity duration-160 ease-(--ease-fade)",
+          "absolute inset-x-0 bottom-0",
+          boxed && "pointer-events-none transition-opacity duration-160 ease-(--ease-fade)",
           boxed && !domShown && "opacity-0",
         )}
       >
@@ -337,35 +320,25 @@ export function SealedView({
               }
             : undefined
         }
-        mainClassName="flex min-h-[15rem] flex-col justify-between gap-4 p-4 md:min-h-[26rem] md:gap-8 md:p-10"
+        mainClassName="flex flex-col justify-between gap-2 p-4"
         stubClassName="flex flex-col"
         main={
           <>
-            <p className="data-stub m-0">21 DEC 2026</p>
-            <h1
-              id="sealed-title"
-              ref={headingRef}
-              tabIndex={-1}
-              className="display-ticket m-0 [overflow-wrap:anywhere]"
-            >
+            <p className="data-label m-0">21 DEC 2026</p>
+            <p className="m-0 font-display text-[clamp(1.75rem,9cqw,3rem)] leading-[0.95] font-bold tracking-[0.02em] uppercase">
               Thirty United
-            </h1>
-            <div className="flex flex-col gap-2">
-              <p className="standfirst m-0">{HOST_LINE}</p>
-              <p className="helper m-0">Makes</p>
-            </div>
-            <VenueTba />
+            </p>
           </>
         }
         stubEdge={
-          <span aria-hidden="true" className="data-label absolute top-1/2 right-2 -translate-y-1/2 rotate-180 text-ink-2 [writing-mode:vertical-rl]">
+          <span aria-hidden="true" className="data-label absolute top-1/2 right-2 -translate-y-1/2 rotate-180 text-pass-ink-2 [writing-mode:vertical-rl]">
             ADMIT ONE
           </span>
         }
         stub={
           <div className="relative flex h-full flex-col items-center justify-center gap-1 p-3 pr-10 text-center">
-            <span className="data-label text-ink-2">SEAT</span>
-            <span className="data-stub text-muted-foreground">
+            <span className="data-label text-pass-ink-2">SEAT</span>
+            <span className="data-stub text-pass-ink-2">
               ---
             </span>
           </div>
@@ -383,7 +356,7 @@ export function SealedView({
             style={{ y: handleY, opacity: handleOpacity, touchAction: "none", height: HANDLE }}
             className="absolute top-0 right-(--stub-w) z-10 w-11 translate-x-1/2 cursor-grab touch-none items-center justify-center"
           >
-            <div className="mx-auto flex h-full w-6 items-center justify-center border border-ink bg-paper-raised">
+            <div className="mx-auto flex h-full w-6 items-center justify-center border border-pass-ink bg-pass-raised">
               <Scissors className="size-4 rotate-90" strokeWidth={1.5} />
             </div>
           </m.div>
@@ -391,10 +364,11 @@ export function SealedView({
       </Ticket>
       </div>
       {lanyard !== "off" && (
+        // The canvas spans the frame from its top (the strap hangs from above) to the bottom of the pass zone.
         <div
           aria-hidden="true"
           className={cn(
-            "absolute inset-x-0 top-1/2 h-[min(30rem,60svh)] -translate-y-1/2",
+            "absolute inset-x-0 bottom-0 top-[calc(var(--zone-top,0px)*-1)]",
             "transition-opacity duration-160 ease-(--ease-fade)",
             (lanyard !== "ready" || domShown) && "pointer-events-none opacity-0",
           )}
@@ -414,15 +388,25 @@ export function SealedView({
           </ErrorBoundary>
         </div>
       )}
-      </div>
+    </div>
+  )
+
+  return (
+    <section aria-labelledby="sealed-title" className="flex flex-col gap-4">
+      <h1 id="sealed-title" ref={headingRef} tabIndex={-1} className="heading-panel m-0">
+        You've been called up
+      </h1>
+      <p className="standfirst m-0">{HOST_LINE}</p>
+      <DateVenue />
       {missingKey ? (
-        <StatusLine className="stage-status max-w-sm justify-center text-center md:max-w-none">{MISSING_KEY_MESSAGE}</StatusLine>
+        <StatusLine className="mt-2">{MISSING_KEY_MESSAGE}</StatusLine>
       ) : (
-        <Button type="button" onClick={() => finish()} className="w-full max-w-sm md:w-auto md:min-w-64">
+        <Button type="button" onClick={() => finish()} className="mt-2 w-full">
           <Scissors aria-hidden="true" />
           Tear open
         </Button>
       )}
+      {passSlot && createPortal(pass, passSlot)}
     </section>
   )
 }

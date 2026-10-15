@@ -3,8 +3,6 @@ import { ArrowRight, Check, CircleHelp, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { RadioGroup, RadioTile } from "@/components/ui/radio-group"
 import { FieldError } from "@/components/ui/field"
-import { RuledBox } from "@/components/RuledBox"
-import { HeaderTicket } from "@/components/HeaderTicket"
 import { useFocusOnMount } from "@/hooks/useFocusOnMount"
 import type { Attending } from "@/lib/schemas/rsvp"
 
@@ -26,16 +24,12 @@ export function AttendanceView({
   const [error, setError] = useState(false)
 
   return (
-    <section aria-labelledby="attendance-title" className="mx-auto flex w-full max-w-[640px] flex-col gap-8">
-      <HeaderTicket attending={choice} />
-      <div className="flex flex-col gap-3">
-        <h1 id="attendance-title" ref={headingRef} tabIndex={-1} className="heading-view m-0">
-          Are you coming?
-        </h1>
-        <p className="standfirst m-0">Pick one now. You can change it later.</p>
-      </div>
+    <section aria-labelledby="attendance-title" className="flex flex-col gap-4">
+      <h1 id="attendance-title" ref={headingRef} tabIndex={-1} className="heading-panel m-0">
+        Are you in?
+      </h1>
       <form
-        className="flex flex-col gap-6"
+        className="flex flex-col gap-4"
         noValidate
         onSubmit={(e) => {
           e.preventDefault()
@@ -47,10 +41,10 @@ export function AttendanceView({
           onContinue(choice)
         }}
       >
-        <RuledBox legend="Your answer">
+        <div className="flex flex-col gap-3">
           <RadioGroup
             id="field-attending"
-            aria-label="Are you coming?"
+            aria-label="Are you in?"
             aria-invalid={error || undefined}
             aria-describedby={error ? "err-attending" : undefined}
             value={choice ?? ""}
@@ -68,8 +62,8 @@ export function AttendanceView({
             ))}
           </RadioGroup>
           {error && <FieldError id="err-attending">Pick Yes, Maybe or No</FieldError>}
-        </RuledBox>
-        <Button type="submit" className="w-full md:ml-auto md:w-auto md:min-w-56">
+        </div>
+        <Button type="submit" className="w-full">
           Continue
           <ArrowRight aria-hidden="true" />
         </Button>

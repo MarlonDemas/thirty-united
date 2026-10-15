@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import { useTier, type TierState } from "@/world/tier"
 
 /*
  * `?debug=1` only, lazy-loaded: a read-only device readout for the phase 0a phone test (cinematic recommendation,
@@ -97,7 +98,19 @@ function lines(): string[] {
   ]
 }
 
+/** The tier the page runs at, why, what the heuristic picked at load, and every demotion since. */
+function tierLines(t: TierState): string[] {
+  return [
+    `tier ${t.tier} | reason ${t.reason}${t.still ? " | still on" : ""}`,
+    `picked ${t.picked.tier} (${t.picked.reason})`,
+    t.demotions.length
+      ? `demotions ${t.demotions.map((d) => `${d.from}>${d.to} ${d.reason} @${time(d.at)}`).join("; ")}`
+      : "demotions none",
+  ]
+}
+
 export default function DeviceProbe() {
+  const tier = useTier()
   const [rows, setRows] = useState(lines)
   useEffect(() => {
     const update = () => setRows(lines())
@@ -107,9 +120,9 @@ export default function DeviceProbe() {
   return (
     <div
       data-testid="device-probe"
-      className="pointer-events-none fixed bottom-2 left-2 z-50 max-w-[min(26rem,calc(100vw-1rem))] bg-ink/90 p-2 font-mono text-[10px] leading-snug break-words text-paper"
+      className="pointer-events-none fixed bottom-2 left-2 z-50 max-w-[min(26rem,calc(100vw-1rem))] bg-panel/90 p-2 font-mono text-[10px] leading-snug break-words text-foreground"
     >
-      {rows.map((l, i) => (
+      {[...rows, ...tierLines(tier)].map((l, i) => (
         <div key={i}>{l}</div>
       ))}
     </div>

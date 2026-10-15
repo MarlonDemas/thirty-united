@@ -11,7 +11,7 @@ const unique = () => `e2e-${Date.now()}-${Math.floor(Math.random() * 1e6)}@examp
 
 /** Tears the sealed ticket. Retries the click so a Vite dev-server reload on a cold start can't swallow it. */
 async function tearOpen(page: Page) {
-  const heading = page.getByRole("heading", { name: "Are you coming?" });
+  const heading = page.getByRole("heading", { name: "Are you in?" });
   await expect(async () => {
     if (!(await heading.isVisible())) await page.getByRole("button", { name: /tear open/i }).click({ timeout: 1000 });
     await expect(heading).toBeVisible({ timeout: 2000 });
@@ -37,7 +37,7 @@ async function fillDetails(page: Page, email: string) {
   await page.getByLabel("Email").fill(email);
   await page.getByRole("radio", { name: "Email", exact: true }).click();
   await page.getByRole("button", { name: "Send my code" }).click();
-  await expect(page.getByRole("heading", { name: "Check your email" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Seal it" })).toBeVisible();
 }
 
 async function enterCode(page: Page, code: string) {
@@ -46,7 +46,7 @@ async function enterCode(page: Page, code: string) {
 }
 
 async function seatOnStub(page: Page): Promise<string> {
-  const seat = page.locator("dt", { hasText: "SEAT" }).locator("xpath=following-sibling::dd[1]");
+  const seat = page.getByTestId("seat-line").locator("span").first();
   await expect(seat).toHaveText(/^\d{3}$/);
   return (await seat.textContent())!.trim();
 }
@@ -62,8 +62,9 @@ test("happy path: Yes -> code -> stub with a seat number", async ({ page }) => {
 
   await expect(page.getByRole("heading", { name: "You're on the list" })).toBeVisible();
   await seatOnStub(page);
-  await expect(page.getByTestId("guest-name")).toHaveText("Ada Lovelace");
-  await expect(page.getByTestId("team")).toHaveText("ARSENAL");
+  // The shirt carries the first name only, and the number once the code is verified.
+  await expect(page.locator("[data-name]").first()).toHaveAttribute("data-name", "ADA");
+  await expect(page.locator("[data-number]").first()).toHaveAttribute("data-number", /^\d+$/);
 });
 
 test("update path: same email re-RSVPs as Maybe and keeps the same seat", async ({ page }) => {
@@ -86,12 +87,12 @@ test("update path: same email re-RSVPs as Maybe and keeps the same seat", async 
 
   await expect(page.getByRole("heading", { name: "Your answer is updated" })).toBeVisible();
   expect(await seatOnStub(page)).toBe(seat);
-  await expect(page.locator("dt", { hasText: "REPLY" }).locator("xpath=following-sibling::dd[1]")).toHaveText("MAYBE");
+  await expect(page.locator("[data-variant=maybe]")).toHaveText(/pencilled in/i);
 });
 
 test("no invite key: the sealed ticket shows the missing-key line and no Tear open", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { name: "Thirty United" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "You've been called up" })).toBeVisible();
   await expect(page.getByText("This link is missing its invite key. Ask Makes to send you the full link.")).toBeVisible();
   await expect(page.getByRole("button", { name: /tear open/i })).toHaveCount(0);
 });

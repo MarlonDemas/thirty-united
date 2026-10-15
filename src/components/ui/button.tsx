@@ -2,16 +2,17 @@ import { Button as ButtonPrimitive } from "@base-ui/react/button"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"
 
-// Direction A: square, 1px ink rule, 48px target. Red only on the primary action.
+// Direction D: square, 48px target. Shirt red only on the primary action, always with its 2px moonlight ring
+// (shirt red on the panel is 2.20:1); focus adds the 3px ring 2px outside it.
 const buttonVariants = cva(
-  "group/button inline-flex min-h-12 shrink-0 items-center justify-center gap-2 border border-ink px-6 text-base font-medium whitespace-nowrap transition-[color,background-color,border-color,transform] duration-100 select-none active:translate-y-px motion-reduce:transition-none motion-reduce:active:translate-y-0 disabled:pointer-events-none disabled:opacity-60 aria-disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-5",
+  "group/button inline-flex min-h-12 shrink-0 items-center justify-center gap-2 border px-6 text-base font-medium whitespace-nowrap transition-[color,background-color,border-color,transform] duration-100 select-none active:translate-y-px motion-reduce:transition-none motion-reduce:active:translate-y-0 disabled:pointer-events-none disabled:opacity-60 aria-disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-5",
   {
     variants: {
       variant: {
         default:
-          "border-red bg-red text-paper-raised hover:border-red-pressed hover:bg-red-pressed active:bg-red-pressed",
-        outline: "bg-paper-raised text-ink hover:bg-ink hover:text-paper",
-        link: "min-h-12 whitespace-normal text-left border-transparent px-0 text-ink underline underline-offset-4 decoration-1 hover:decoration-2",
+          "border-shirt-red bg-shirt-red text-foreground shadow-[0_0_0_2px_var(--moonlight)] hover:border-shirt-red-hover hover:bg-shirt-red-hover focus-visible:outline-offset-4 active:border-shirt-red-pressed active:bg-shirt-red-pressed disabled:border-line disabled:bg-panel-raised disabled:text-line disabled:opacity-100",
+        outline: "border-line bg-transparent text-foreground hover:border-moonlight",
+        link: "min-h-12 whitespace-normal text-left border-transparent px-0 text-foreground underline underline-offset-4 decoration-1 hover:decoration-2",
       },
     },
     defaultVariants: {

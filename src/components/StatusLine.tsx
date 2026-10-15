@@ -7,7 +7,7 @@ const toneClass: Record<Tone, string> = {
   success: "text-status-success",
   warning: "text-status-warning",
   error: "text-status-error",
-  neutral: "text-ink",
+  neutral: "text-foreground",
 }
 
 /**

@@ -10,8 +10,9 @@ const STEP = 1 / 60
 const SEGMENTS = 6
 const INK2 = "#5E5A50"
 const EDGE = "#CFC6B2"
-// Stadium A lights (build brief section 2). Light and strap colours are read from the scene tokens; the card edge and
-// clip colours above are literals. Intensities are tuned on screen.
+// The pass's own lights: two neutral whites at the positions and intensities the pass was tuned with, so it keeps its look
+// over the world stage without tinting it. Light and strap colours are read from the scoped --pass-* tokens; the card
+// edge and clip colours above are literals.
 const KEY_POS: [number, number, number] = [-4, 6, 5] // upper left, in front: the left floodlight's side
 const KEY_INTENSITY = 4.2
 const AMBIENT_INTENSITY = 1.6
@@ -34,7 +35,7 @@ function Scene({ faces, onReady, settleRef }: { faces: Faces; onReady: () => voi
   const cardH = cardW / TICKET_ASPECT
   const strapW = cardW * 0.07
   const colors = useMemo(
-    () => ({ key: cssVar("--scene-floodlight"), ambient: cssVar("--scene-ambient"), paper: cssVar("--paper"), ink: cssVar("--foreground") }),
+    () => ({ key: cssVar("--pass-light"), ambient: cssVar("--pass-light"), paper: cssVar("--pass-paper"), ink: cssVar("--pass-ink") }),
     [],
   )
   const strapTex = useMemo(() => makeStrapTexture(colors.ink, colors.paper), [colors])

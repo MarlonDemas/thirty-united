@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react"
+import { act, render, screen } from "@testing-library/react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 const load = async () => {
@@ -22,6 +22,21 @@ describe("device probe (?debug=1)", () => {
     expect(probe).toHaveTextContent(/deviceMemory .+ \| cores/)
     expect(probe).toHaveTextContent(/dpr [\d.]+ \| viewport \d+x\d+/)
     expect(probe).toHaveTextContent("reduced-motion false | forced-colors false")
+  })
+
+  it("shows the tier, its reason, the load-time pick and each demotion", async () => {
+    const DeviceProbe = await load()
+    const { demote } = await import("@/world/tier") // the same fresh module instance the probe imported
+    render(<DeviceProbe />)
+    const probe = screen.getByTestId("device-probe")
+    expect(probe).toHaveTextContent(/tier T1 \| reason no WebGL2/)
+    expect(probe).toHaveTextContent(/picked T1 \(no WebGL2/)
+    expect(probe).toHaveTextContent("demotions none")
+    act(() => {
+      demote("T0", "test")
+    })
+    expect(probe).toHaveTextContent("tier T0 | reason test")
+    expect(probe).toHaveTextContent(/demotions T1>T0 test @\d\d:\d\d:\d\d/)
   })
 
   it("shows the previous load's stamp from sessionStorage, then writes its own", async () => {
