@@ -11,6 +11,12 @@ describe("shirtName (never the surname)", () => {
     expect(shirtName({ firstName: "Anna van der Merwe", surname: "van der Merwe" })).toBe("ANNA")
     expect(shirtName({ preferredName: "thandi NKOSI", surname: "Nkosi" })).toBe("THANDI")
   })
+  it("shows only the first name token until a surname is entered", () => {
+    expect(shirtName({ firstName: "Thandi Nkosi" })).toBe("THANDI")
+    expect(shirtName({ firstName: "Thandi Nkosi", surname: "" })).toBe("THANDI")
+    expect(shirtName({ preferredName: "Mary Ann", firstName: "Mary" })).toBe("MARY")
+    expect(shirtName({ preferredName: "Mary Ann", firstName: "Mary", surname: "Smith" })).toBe("MARY ANN")
+  })
   it("keeps a double first name and a name that only equals the surname", () => {
     expect(shirtName({ firstName: "Mary Jane", surname: "Watson" })).toBe("MARY JANE")
     expect(shirtName({ firstName: "Nkosi", surname: "Nkosi" })).toBe("NKOSI")
@@ -42,7 +48,7 @@ describe("shirtName (surname variants, cap, format characters)", () => {
     expect(shirtName({ firstName: "Nkosi Nkosi", surname: "Nkosi" })).toBe("NKOSI NKOSI")
   })
   it("caps at 24 characters on a token boundary, hard-slicing one long token", () => {
-    expect(shirtName({ firstName: "Alexandria Bartholomew Christopher" })).toBe("ALEXANDRIA BARTHOLOMEW")
+    expect(shirtName({ firstName: "Alexandria Bartholomew Christopher", surname: "Smith" })).toBe("ALEXANDRIA BARTHOLOMEW")
     expect(shirtName({ firstName: "Wolfeschlegelsteinhausenbergerdorff" })).toBe("WOLFESCHLEGELSTEINHAUSEN")
     expect(shirtName({ firstName: "Wolfeschlegelsteinhausenbergerdorff" })).toHaveLength(24)
   })
