@@ -187,9 +187,12 @@ Fallbacks stay size-adjusted (Arial Narrow, Georgia, system-ui, ui-monospace), `
 | Shirt number | Barlow Condensed 700 | About 40 percent of the shirt quad's height | `text` |
 | Fixture line | Barlow Condensed 700 caps, tracking +6% | 44 px | `text` ("MON 21 DEC 2026 · VENUE TBA") |
 | Credit line | Barlow Condensed 700 caps | 32 px | `moonlight` ("+ name" only; no team, owner decision 2026-10-15) |
+| AI credit line | Barlow Condensed 700 caps | 24 px, tracking +6% | `moonlight` ("POSTER ART MADE WITH AI"; saved poster only, owner decision 2026-10-15). Sits on its own centred line directly under the credit line (16 px gap), or alone in that slot when there is no plus-one |
 | Stamp | Barlow Condensed 700 caps | 28 px or more | Yes: `panel` on `poster-red` (4.52:1). Maybe: `text` on `panel` with a 2 px `text` border |
 
 Scene sizes are starting values to tune on G5 and G6 once the shirt quads are measured.
+
+**AI credit line contrast.** The area behind the credit lines is plate art, not a token, so no fixed ratio can be promised for the art alone. The compositor must draw a `panel` (`#18131F`) scrim behind the credit block at 85 percent opacity or more, full poster width, about 24 px of padding above and below the text. Measured: `moonlight` on a solid `panel` is 11.90:1. With the scrim at 85 percent over the worst case, pure white art, the backdrop blends to `#3B3641` and the line measures 7.66:1 (AA for normal text needs 4.5:1). Over `poster-red` art it is 10.48:1. The scrim is part of the saved poster only.
 
 ## Spacing and layout
 

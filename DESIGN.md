@@ -121,7 +121,7 @@ Sizes are `rem`, so 200% text grows the panel, which scrolls inside itself inste
 | `data-stub` | 20 / 28 | 20 / 28 | JetBrains Mono 500 ("Seat 017 · Shirt 17") |
 | `data-code` | 32 / 40 | 28 / 36 | JetBrains Mono 500, one digit per cell |
 
-Scene type (art, `aria-hidden`, on the 1080 × 1920 poster): "THIRTY" about 80% of the poster width in the empty sky band, its top edge below the chip zone at the cover shot; "UNITED" under it in `poster-red`; the shirt name fits 80% of the shirt quad's width; the shirt number about 40% of its height; the fixture line 44px; the credit line 32px in `moonlight`; the stamp 28px or more.
+Scene type (art, `aria-hidden`, on the 1080 × 1920 poster): "THIRTY" about 80% of the poster width in the empty sky band, its top edge below the chip zone at the cover shot; "UNITED" under it in `poster-red`; the shirt name fits 80% of the shirt quad's width; the shirt number about 40% of its height; the fixture line 44px; the credit line 32px in `moonlight`; the AI credit line "Poster art made with AI" 24px in `moonlight` under it, on a `panel` scrim at 85% or more (7.66:1 worst case over white art; 11.90:1 on solid `panel`), saved poster only (not in the page, not on the OG image); the stamp 28px or more.
 
 ## 6. Spacing & Layout
 
@@ -234,7 +234,7 @@ Code is the source of truth for components that exist; `.specno-design/component
 
 ### Data display
 - **ShirtLettering** (planned): the preferred (or first) name (until Surname has a value, only the first word of the typed name), then the number, in Barlow Condensed 700, warped to the shirt quad.
-- **PosterCompositor** (planned): the layers and the guest's fields to a 1080 × 1920 JPEG `File`, rendered during the stamp, never uploaded.
+- **PosterCompositor** (planned): the layers and the guest's fields to a 1080 × 1920 JPEG `File`, rendered during the stamp, never uploaded. Draws the "Poster art made with AI" credit line on the saved poster only.
 - **OgCompositor** and the offline asset scripts (planned): build-time only, never ship.
 
 ### Navigation
@@ -285,3 +285,4 @@ The paper `Ticket` and `HeaderTicket` as page objects, the `Stub` ruled table, t
 - **2026-10-14 (3D ticket and stadium A)**: Contract amended for the 3D lanyard ticket (option C), opt-in sound, haptics and the soft contact shadow and sheen on the ticket and stamp, then for the sealed-screen stage (treatment A, "Floodlit Night Stand"). Owner decisions recorded: scene lights stay at the built key 4.2 and ambient 1.6 (replacing 1.0 and 1.4, tuned on the built scene); the stage fades to paper after "Tear open"; the stub stays on paper; the strap reads "THIRTY UNITED", repeated; the Netlify badge stays. DESIGN.md and `.agents/specno-design.json` regenerated from the contract. Sections 1, 3, 4, 7, 9, 10, 11 and 12 changed.
 - **2026-10-15 (Direction D, Matchday: The Signing)**: The owner replied "defaults" to the cinematic recommendation, choosing Direction D and its eight decisions (no crests ever; the shirt number is `ticketNo`; no poster for a No; preferred or first name only; ambient at 30 Hz with a Still chip; lanyard B2 with B3 as the cut line; Makes generates the plates; "Monday 21 December 2026 · Venue TBA"). Contract rewritten: dark scheme with every pair re-measured, illustration and red in the scene, the poster and step panel layout, render tiers, the planned world components, a new lux note, phone wireframes per beat and the copied consults. Follow-up the same day: "likeness yes" and "wireframes ok". The first G1 attempt (2026-10-15) is in review, not approved. `src/` still ships Direction A until nova migrates it. All 12 sections changed.
 - **2026-10-15 (owner decisions after the first G1 attempt)**: plates stay photo-real (style locks in `direction.md`); G1 in review, not approved, pending a 1080 x 1920 file and a lights-off edit; footer line removed; team and sport not shown after saving or on the poster; draft copy and timing as built; shirt shows only the first word of the name until Surname has a value.
+- **2026-10-15 (AI credit on the saved poster)**: owner decision: the saved 1080 × 1920 poster carries "Poster art made with AI" in small `moonlight` type under the credit line, on a `panel` scrim; not in the live page, not on the OG image. The owner keeps the original ChatGPT exports (C2PA metadata) outside the repo as provenance.

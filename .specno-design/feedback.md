@@ -163,3 +163,7 @@ Makes read `audits/cinematic-recommendation-2026-10-15.md` and replied "defaults
 - G1 approval, after the two fixes above come back.
 
 - CORRECTION (2026-10-15): "Sorry you'll miss it, {firstName}" is the No end's heading and stays; the owner dropped only the separate warm closing line under it, so the No end shows the heading and "Changed your mind?".
+
+## 2026-10-15, AI credit on the saved poster (owner decision)
+
+- ACCEPTED: The exported 1080 x 1920 poster guests save (phase 6, the poster compositor) carries a small credit line, "Poster art made with AI", next to the existing credit line, in small type in `moonlight` over a `panel` scrim (7.66:1 worst case at 85 percent opacity; 11.90:1 on solid `panel`). It is on the saved poster only: not in the live page UI and not on the OG link-preview image. Why: the plates are generated in ChatGPT; OpenAI's terms assign ownership of the output to the user and require no label, and its older 2022 sharing policy asks that AI content be indicated, so this line covers that at near-zero cost. The original ChatGPT exports (C2PA metadata) stay with the owner outside the repo as provenance; processed layers will not carry it. (Owner, 2026-10-15.)

@@ -22,6 +22,7 @@ acceptedOwnerDecisions:
   - "Team or NEUTRAL line and sport are not shown after saving or on the phase 6 poster; data still collected for the host (owner, 2026-10-15, status quo default)."
   - "Draft copy and timing stay as built: panel shows straight away, No ending has no warm closing line, Chapter 2 standfirst is \"Your name goes on the back. A few lines so I can seat you properly.\" (owner, 2026-10-15)."
   - "Live shirt name: until Surname has a value, the shirt shows only the first word of the name (owner, 2026-10-15)."
+  - "AI credit on the saved poster: \"Poster art made with AI\", small, in moonlight next to the credit line, over a panel scrim; saved poster only, not in the live page UI and not on the OG image (owner, 2026-10-15). Original ChatGPT exports with C2PA metadata are kept by the owner outside the repo."
 maintainers:
   - marlon@specno.com
 files:
