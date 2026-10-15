@@ -1,10 +1,11 @@
 import { describe, expect, it } from "vitest"
 import { BEATS } from "@/world/beats"
-import { ANCHORS, QUADS } from "@/world/layers"
-import { DESKTOP, KEYBOARD, keyboardOpen, layoutFor, PANEL_FRACTION, placementFor, toScreen, type Layout } from "@/world/shots"
+import { ANCHORS, LAYERS, QUADS } from "@/world/layers"
+import { CHIP_ZONE, DESKTOP, KEYBOARD, keyboardOpen, layoutFor, PANEL_FRACTION, placementFor, toScreen, type Layout } from "@/world/shots"
 
 const PHONES = [
   [360, 640],
+  [360, 780],
   [390, 844],
   [430, 932],
 ] as const
@@ -21,8 +22,14 @@ describe.each(PHONES)("shots at %ix%i", (w, h) => {
 
   it.each(BEATS)("%s: Makes's face sits above the panel, and the poster covers the frame", (beat) => {
     const p = placementFor(beat, "yes", l)
-    const faceBottom = toScreen(p, [ANCHORS.face.x, ANCHORS.face.y + ANCHORS.face.r])[1]
+    const { x, y, r } = ANCHORS.face
+    const faceBottom = toScreen(p, [x, y + r])[1]
     expect(faceBottom).toBeLessThan(l.panelTop)
+    // The whole face is on screen (the code beat sets it upper left).
+    const [fl, ft] = toScreen(p, [x - r, y - r])
+    expect(fl).toBeGreaterThanOrEqual(0)
+    expect(ft).toBeGreaterThanOrEqual(0)
+    expect(toScreen(p, [x + r, y])[0]).toBeLessThanOrEqual(w)
     expect(p.tx).toBeLessThanOrEqual(0)
     expect(p.ty).toBeLessThanOrEqual(0)
     expect(p.tx + 1080 * p.s).toBeGreaterThanOrEqual(w - 0.5)
@@ -33,7 +40,75 @@ describe.each(PHONES)("shots at %ix%i", (w, h) => {
     const p = placementFor("signed", "yes", l)
     const shirtBottom = Math.max(...QUADS["l7-makes-signing"].map((pt) => toScreen(p, pt)[1]))
     expect(shirtBottom).toBeLessThan(l.panelTop)
-    expect(toScreen(p, [540, ANCHORS.title.top])[1]).toBeLessThan(l.panelTop)
+    expect(toScreen(p, [540, ANCHORS.title.bottom])[1]).toBeLessThan(l.panelTop)
+  })
+
+  it("chapter 2 and the code beat: the hanging shirt clears the panel", () => {
+    for (const beat of ["chapter2", "code"] as const) {
+      const p = placementFor(beat, "yes", l)
+      const shirtBottom = Math.max(...QUADS["l8-shirt"].map((pt) => toScreen(p, pt)[1]))
+      expect(shirtBottom, beat).toBeLessThan(l.panelTop)
+    }
+  })
+
+  // The title's ink box is the SVG's view box (layers.test.ts), so these hold for every letter.
+  const title = (n: "thirty" | "united") => LAYERS.find((x) => x.name === n)!.bbox
+  const rect = (beat: (typeof BEATS)[number], n: "thirty" | "united") => {
+    const p = placementFor(beat, "yes", l)
+    const [x, y, bw, bh] = title(n)
+    const [l0, t0] = toScreen(p, [x, y])
+    const [r0, b0] = toScreen(p, [x + bw, y + bh])
+    return { l: l0, t: t0, r: r0, b: b0 }
+  }
+  const chips = { l: w - CHIP_ZONE.right - CHIP_ZONE.w, t: CHIP_ZONE.top, r: w - CHIP_ZONE.right, b: CHIP_ZONE.top + CHIP_ZONE.h }
+
+  it.each(BEATS)("%s: no chip covers a letter of the title", (beat) => {
+    for (const n of ["thirty", "united"] as const) {
+      const r = rect(beat, n)
+      const overlaps = r.l < chips.r && r.r > chips.l && r.t < chips.b && r.b > chips.t
+      expect(overlaps, n).toBe(false)
+    }
+  })
+
+  it.each(BEATS)("%s: THIRTY is either whole in the frame or out of it, never cropped", (beat) => {
+    const r = rect(beat, "thirty")
+    const whole = r.l >= 0 && r.r <= w && r.t >= 0 && r.b <= h
+    const out = r.b <= 0 || r.t >= h || r.r <= 0 || r.l >= w
+    expect(whole || out).toBe(true)
+  })
+
+  it.each(["cover", "chapter1", "signed", "no-end"] as const)("%s: the whole lockup shows, with Makes's face", (beat) => {
+    for (const n of ["thirty", "united"] as const) {
+      const r = rect(beat, n)
+      expect(r.l >= 0 && r.r <= w && r.t >= 0 && r.b < l.panelTop, n).toBe(true)
+    }
+  })
+
+  it.each([
+    ["chapter1", 1],
+    ["chapter2", 2],
+    ["code", 3],
+  ] as const)("%s: the lamp core of the bank that strikes here (%i) is in frame, above the panel", (beat, bank) => {
+    const { x, y } = ANCHORS.banks[bank - 1]
+    const [sx, sy] = toScreen(placementFor(beat, "yes", l), [x, y])
+    expect(sx).toBeGreaterThan(0)
+    expect(sx).toBeLessThan(w)
+    expect(sy).toBeGreaterThan(0)
+    expect(sy).toBeLessThan(l.panelTop)
+  })
+
+  it("signed (full ignition): banks 2 and 3 are in frame; the outer towers' glows reach into it", () => {
+    const p = placementFor("signed", "yes", l)
+    for (const b of [2, 3]) {
+      const [sx, sy] = toScreen(p, [ANCHORS.banks[b - 1].x, ANCHORS.banks[b - 1].y])
+      expect(sx > 0 && sx < w && sy > 0 && sy < l.panelTop, `bank ${b}`).toBe(true)
+    }
+    for (const b of [1, 4]) {
+      const { x, y, r } = ANCHORS.banks[b - 1]
+      const [left] = toScreen(p, [x - r, y])
+      const [right] = toScreen(p, [x + r, y])
+      expect(right > 0 && left < w, `bank ${b}`).toBe(true)
+    }
   })
 
   it("code: all six lamps are on screen above the panel", () => {

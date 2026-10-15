@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1100" viewBox="0 0 1080 1100">
-<!-- GREYBOX placeholder. Replace with the painted plate of the same name (.webp); no code change. -->
-<defs><linearGradient id="s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0E0B13"/><stop offset="1" stop-color="#1D1828"/></linearGradient></defs>
-<rect width="1080" height="1100" fill="url(#s)"/>
-<text x="60" y="420" font-family="Barlow Condensed, 'Arial Narrow', sans-serif" font-weight="700" font-size="26" letter-spacing="2" fill="#8A8FB0" text-anchor="start">L1 SKY</text>
-<rect x="740" y="380" width="280" height="240" fill="none" stroke="#8A8FB0" stroke-opacity=".35" stroke-dasharray="8 8"/>
-<text x="880" y="646" font-family="Barlow Condensed, 'Arial Narrow', sans-serif" font-weight="700" font-size="20" letter-spacing="2" fill="#8A8FB0" text-anchor="middle">CLEAR SKY · MOON (CODE)</text>
-</svg>

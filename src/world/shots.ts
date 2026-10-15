@@ -25,27 +25,38 @@ export const KEYBOARD = {
 /** Desktop (from 1024 px): the poster is a 9:16 frame at 100dvh minus 64 px, centre-left; the panel a 420 px column. */
 export const DESKTOP = { minWidth: 1024, panelWidth: 420, gutter: 64 } as const
 
+/** Makes's face (the plate's face anchor, poster px). */
+const FACE: Point = [567, 412]
+
+/**
+ * The Sound and Still chips as the shots see them (screen px from the top right, the safe area aside): both
+ * chips side by side, as measured (96 + 8 + 90 px wide, 48 px tall). The title lockup must clear this box on
+ * every shot that shows it.
+ */
+export const CHIP_ZONE = { top: 12, right: 12, w: 194, h: 48 } as const
+
 export const SHOTS: Record<Beat, Shot> = {
-  // Full poster, height-fit, Makes's face 28 percent from the top.
-  cover: { zoom: 1, focus: [540, 540], at: [0.5, 0.28] },
-  // The 3 percent push-in after the tear.
-  chapter1: { zoom: 1.03, focus: [540, 540], at: [0.5, 0.28] },
-  // Two-shot: Makes and the hanging shirt to his right.
-  chapter2: { zoom: 1.08, focus: [700, 700], at: [0.5, 0.33] },
-  // Toward the right floodlight head and its six lamps; his face upper left.
-  code: { zoom: 1.3, focus: [970, 725], at: [0.78, 0.36] },
-  // The 4 percent push-in at the signing: the held shirt and the title clear the panel.
-  signed: { zoom: 1.04, focus: [540, 620], at: [0.5, 0.33] },
+  // Full poster, height-fit. Makes a little right of centre, so the left-set title and the moon both show.
+  cover: { zoom: 1, focus: FACE, at: [0.57, 0.28] },
+  // The 3 percent push-in after the tear, panned left so bank 1 (far left tower) strikes in frame.
+  chapter1: { zoom: 1.03, focus: FACE, at: [0.6, 0.28] },
+  // Two-shot: his face, the hanging shirt's name band to his right and bank 2's tower to his left, all above the
+  // panel. Tilted down far enough that the title leaves the frame whole rather than being cropped at the left.
+  chapter2: { zoom: 1.12, focus: [790, 720], at: [0.77, 0.3] },
+  // Toward the right floodlight head and its six lamps; his face upper left; the title fully out of frame.
+  code: { zoom: 1.3, focus: [993, 684], at: [0.87, 0.26] },
+  // The 4 percent push-in at the signing: the title (UNITED paints in) and the held shirt clear the panel.
+  signed: { zoom: 1.04, focus: FACE, at: [0.57, 0.3] },
   // Back to the cover framing; Makes waves.
-  "no-end": { zoom: 1, focus: [540, 540], at: [0.5, 0.28] },
+  "no-end": { zoom: 1, focus: FACE, at: [0.57, 0.28] },
 }
 
 /** Keyboard open: the strip at the top of the visual viewport frames this poster box (centre, width). */
 export type StripShot = { focus: Point; width: number }
 export function stripShotFor(beat: Beat, attending?: Attending): StripShot {
-  if (beat === "code") return { focus: [970, 725], width: 220 } // the lamps mirror the digits typed
-  if (beat === "chapter2" && attending !== "no") return { focus: [860, 850], width: 240 } // the name band on the shirt
-  return { focus: [540, 540], width: 420 } // no shirt (No path): his face
+  if (beat === "code") return { focus: [993, 684], width: 220 } // the lamps mirror the digits typed
+  if (beat === "chapter2" && attending !== "no") return { focus: [861, 870], width: 240 } // the name band on the shirt
+  return { focus: FACE, width: 420 } // no shirt (No path): his face
 }
 
 export type Frame = { w: number; h: number }

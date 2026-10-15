@@ -1,6 +1,6 @@
-import type { CSSProperties } from "react"
+import { useState, type CSSProperties } from "react"
 import type { Banks, Beat, Pose } from "@/world/beats"
-import { ANCHORS, LAYERS, QUADS, layerUrl, type Layer } from "@/world/layers"
+import { ANCHORS, LAYERS, QUADS, layerUrl, plateSetFor, type Layer } from "@/world/layers"
 import { Moon } from "@/world/Moon"
 import { ShirtLettering } from "@/world/ShirtLettering"
 import { isStillTier, type Tier } from "@/world/tier"
@@ -48,10 +48,12 @@ export function StillLayer({
 }) {
   const t0 = isStillTier(tier)
   const drawTier: Tier = tier === "forced-colors" ? "T0" : tier
+  // The plate set is fixed for the visit: a later demotion (Still, context loss) keeps the files already fetched.
+  const [plates] = useState(() => plateSetFor(tier))
   return (
     <>
       {LAYERS.map((l) => {
-        const src = layerUrl(l.name)
+        const src = layerUrl(l.name, plates)
         if (!src || !l.tiers.includes(drawTier)) return null
         const common = { src, alt: "", draggable: false, decoding: "async" as const, "data-layer": l.name }
         if (l.bank) return <img key={l.name} {...common} className="layer layer-bank" style={{ ...box(l), opacity: banks[l.bank - 1] }} />
@@ -63,6 +65,16 @@ export function StillLayer({
         return <img key={l.name} {...common} className={l.name === "united" ? "layer layer-united" : "layer"} style={box(l)} />
       })}
       <Moon />
+      {/* One glow per bank on its tower head, struck with that bank's plate (same opacity, same timing). */}
+      {ANCHORS.banks.map(({ x, y, r, z }, i) => (
+        <span
+          key={i}
+          className="layer bank-glow"
+          data-bank={i + 1}
+          data-on={banks[i] > 0}
+          style={{ left: x - r, top: y - r, width: 2 * r, height: 2 * r, zIndex: z, opacity: banks[i] }}
+        />
+      ))}
       {beat === "code" &&
         ANCHORS.lamps.map(([x, y], i) => (
           <span

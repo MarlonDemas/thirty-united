@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="260" height="760" viewBox="0 0 260 760">
-<!-- GREYBOX placeholder. Replace with the painted plate of the same name (.webp); no code change. -->
-<defs><linearGradient id="b" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FEFCFB" stop-opacity=".22"/><stop offset="1" stop-color="#FEFCFB" stop-opacity="0"/></linearGradient></defs>
-<path d="M50 160 L210 160 L260 760 L0 760 Z" fill="url(#b)"/>
-<rect x="0" y="420" width="260" height="340" fill="#4A4359" fill-opacity=".55"/>
-<rect x="50" y="90" width="160" height="70" fill="#FEFCFB"/>
-<text x="130" y="136" font-family="Barlow Condensed, 'Arial Narrow', sans-serif" font-weight="700" font-size="24" letter-spacing="2" fill="#18131F" text-anchor="middle">BANK 3 · ON</text>
-</svg>
