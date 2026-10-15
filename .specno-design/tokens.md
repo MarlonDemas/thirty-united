@@ -183,10 +183,10 @@ Fallbacks stay size-adjusted (Arial Narrow, Georgia, system-ui, ui-monospace), `
 |---|---|---|---|
 | "THIRTY" lockup | SVG brush lockup | About 80 percent of the poster width, inside the empty sky band (top 20 percent), with its top edge below the chip zone at the cover shot (about poster y 160, so the solid chips cover sky, not the word; see `wireframes/save-the-date-signing-2026-10-15/variant-C.md`) | `text` |
 | "UNITED" lockup | SVG brush lockup | Under "THIRTY", same band | `poster-red` |
-| Shirt name | Barlow Condensed 700 caps | Fits 80 percent of the shirt quad's width, never above 22 percent of its height | `text` on the painted shirt |
+| Shirt name | Barlow Condensed 700 caps | Fits 80 percent of the shirt quad's width, never above 22 percent of its height | `text` on the shirt |
 | Shirt number | Barlow Condensed 700 | About 40 percent of the shirt quad's height | `text` |
 | Fixture line | Barlow Condensed 700 caps, tracking +6% | 44 px | `text` ("MON 21 DEC 2026 · VENUE TBA") |
-| Credit line | Barlow Condensed 700 caps | 32 px | `moonlight` (team, "+ name") |
+| Credit line | Barlow Condensed 700 caps | 32 px | `moonlight` ("+ name" only; no team, owner decision 2026-10-15) |
 | Stamp | Barlow Condensed 700 caps | 28 px or more | Yes: `panel` on `poster-red` (4.52:1). Maybe: `text` on `panel` with a 2 px `text` border |
 
 Scene sizes are starting values to tune on G5 and G6 once the shirt quads are measured.

@@ -144,3 +144,22 @@ Makes read `audits/cinematic-recommendation-2026-10-15.md` and replied "defaults
 
 ### Pending (owner)
 - Keep the photo-real G1 attempt, or have it repainted in the painted poster style.
+
+## 2026-10-15 (owner decisions after the first G1 attempt)
+
+### Decisions
+- ACCEPTED: G1 style, photo-real. Makes keeps the photo-real render instead of the painted, anime-lit style. Direction D is now a cinematic, photo-real night poster with the same palette, light logic and composition rules. Revised style locks for G2 to G5 (9:16) and G6 (1:1) are in `direction.md`, Plate style. This supersedes the 2026-10-15 "defaults" line that took his AI poster's painted semi-real style with anime key-visual lighting, and the "honest painted plates" wording of the LUX line above. (Owner, 2026-10-15.)
+- ACCEPTED: The head sits about 17% down the frame instead of 28%, because the title layer sits behind the figure. (Owner, 2026-10-15.)
+- ACCEPTED: The footer line "Makes, 21 DEC 2026" is removed. The date is on the cover. (Owner, 2026-10-15.)
+- ACCEPTED: The team or "NEUTRAL" line and the sport are not shown after saving and not on the phase 6 poster. The data is still collected for the host. This was the status quo, taken as the default. (Owner, 2026-10-15.)
+- ACCEPTED: The draft copy and timing stay as built, and the drafts stay drafts until he rewrites them: the panel shows straight away (not after 2.2 s); the No ending has no warm closing line; Chapter 2's standfirst is "Your name goes on the back. A few lines so I can seat you properly." (Owner, 2026-10-15.)
+- ACCEPTED: Live shirt name. Until Surname has a value, the shirt shows only the first word of the name, so a surname typed into First name never shows. Also in `edge-cases/save-the-date.md` (W-8). (Owner, 2026-10-15.)
+- INSIGHT: **G1 stays in review, not approved.** Two fixes remain: a larger file (at least 1080 x 1920; it is 941 x 1672 now) by upscale or regeneration, and a lights-off edit because the floodlights are on in G1. The lights-on version becomes the source for the lit-stadium plate, which saves a generation.
+
+### Resolved (owner)
+- The 2026-10-15 pending question "keep the photo-real G1 attempt, or have it repainted in the painted poster style" is answered: keep photo-real.
+
+### Pending (owner)
+- G1 approval, after the two fixes above come back.
+
+- CORRECTION (2026-10-15): "Sorry you'll miss it, {firstName}" is the No end's heading and stays; the owner dropped only the separate warm closing line under it, so the No end shows the heading and "Changed your mind?".

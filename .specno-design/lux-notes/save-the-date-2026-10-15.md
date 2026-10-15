@@ -51,14 +51,15 @@ Decision 5 (owner, through "defaults"): go all out, within limits. Ambient ember
 - The code beat is the quietest moment on purpose: ambient off, six lamps, nothing else moves.
 
 ### Material truth
-- Bank strikes reveal the lights-on plate through its own masks, so lit areas match the painted lamps; glow sprites sit on the lamp heads, never in empty sky.
+- Bank strikes reveal the lights-on plate through its own masks, so lit areas match the lamps in the picture; glow sprites sit on the lamp heads, never in empty sky.
 - The moon is drawn in code at its 21 December 2026 phase (about 93 percent waxing gibbous; default accepted, the phase itself is still an estimate), and the moonlight rim on Makes comes from the same upper right.
 - The shirt lettering is warped to the shirt quad and displaced by the shirt's depth map, so the name sits in the folds instead of floating on top.
-- The title sits in a painted band of empty sky and is depth-sorted behind Makes, as in the MATCHDAY reference; Claude measures it against that band's brightest pixel on every plate.
+- The title sits in a band of empty sky and is depth-sorted behind Makes, as in the MATCHDAY reference; Claude measures it against that band's brightest pixel on every plate.
 
 ### Specificity
+- Until Surname has a value, the shirt shows only the first word of the typed name (owner decision 2026-10-15).
 - The number area on the shirt stays empty, with a faint ghost outline, until the code is right: the number is the reward.
-- "Bringing someone" adds "+ name" to the poster's credit line, not a second figure; the team is plain text on the same line, never a badge.
+- "Bringing someone" adds "+ name" to the poster's credit line, not a second figure; no team or sport is shown (owner decision 2026-10-15).
 - The No path keeps Makes waving with the lights at their pre-match level: a warm ending, not a punished one.
 
 ### Time visible in detail
@@ -77,3 +78,7 @@ Decision 5 (owner, through "defaults"): go all out, within limits. Ambient ember
 - Makes's likeness on every shared poster: answered "likeness yes" (2026-10-15). His photo arrived on 2026-10-15; the first G1 attempt is in review, not approved.
 - Whether the Still chip should also mute sound (current answer: no; Still is about motion, Sound has its own chip).
 - Whether the cover's draft h1 "You've been called up" survives his rewrite; the beat names (Chapter 1, Chapter 2, Seal it) are drafts too.
+
+## Update 2026-10-15 (owner decisions after the first G1 attempt)
+
+The plates stay photo-real, so "honest material" now means a photograph's honesty: real light, real fabric, film grain. The moon is still drawn in code. The "painted" wording above (lamps, band of sky) described the superseded style and now means the same elements in the photo-real plates. G1 is in review, not approved, pending a 1080 x 1920 file and a lights-off edit; the lights-on G1 is the source for the lit-stadium plate.

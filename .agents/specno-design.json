@@ -230,7 +230,7 @@
     "customComponents": true,
     "buildStatus": "src/ still ships Direction A until nova migrates it; components listed in plannedComponents do not exist yet",
     "pendingDecisions": [
-      "Owner decision: keep the photo-real G1 attempt, or have it repainted in the painted poster style (G1 is in review, not approved). Likeness consent given (\"likeness yes\", 2026-10-15)."
+      "G1 approval: in review, not approved. Photo-real style kept (owner, 2026-10-15). Remaining: a file of at least 1080x1920 (it is 941x1672) and a lights-off edit. Likeness consent given (\"likeness yes\", 2026-10-15)."
     ],
     "plannedComponents": [
       "TierProvider",

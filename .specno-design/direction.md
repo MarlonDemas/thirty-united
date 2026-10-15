@@ -14,7 +14,7 @@ profileVersion: "1.0.0"
 
 # Direction: Thirty United (redesign: the world and the journey)
 
-**Chosen: Direction D, "Matchday: The Signing"** (owner, 2026-10-15). Makes replied "defaults" to `audits/cinematic-recommendation-2026-10-15.md`, which accepts the recommended hybrid and all eight decisions with their defaults. He did not write the Signature or the Distinctiveness Sentence himself; both are Pixel's wording, accepted through "defaults". The likeness question is still open and gates the first image generation (G1), not this contract.
+**Chosen: Direction D, "Matchday: The Signing"** (owner, 2026-10-15). Makes replied "defaults" to `audits/cinematic-recommendation-2026-10-15.md`, which accepts the recommended hybrid and all eight decisions with their defaults. He did not write the Signature or the Distinctiveness Sentence himself; both are Pixel's wording, accepted through "defaults". The likeness question is answered ("likeness yes"), and on 2026-10-15 the owner kept the photo-real render for the plates (see Plate style below).
 
 ## History
 
@@ -22,6 +22,7 @@ profileVersion: "1.0.0"
 - **2026-10-14, owner override.** "I still don't like the color or theme currently and I feel like we still being safe! … go all out … Don't hold back at all", and "the second part felt too much like a boring form that people might get tired of filling in, it also needs to feel like a story or journey." Logged in `feedback.md` (2026-10-14, owner override). The gate is closed, pending the owner's pick (`chosenDirection: null`).
 - **Still binding from 2026-10-14:** rejected B "Terrace Ticket" (letterpress ink bleed, deckled edge, off-register stamp, one question per screen) and rejected C "Scoreboard Broadcast" (solid ink strips, scrolling ticker, wipes, shirt-number form rows, scoreboard digits). None of the four directions below uses any of these.
 - **2026-10-15, owner gameday set.** Makes sent four images (three anime matchday graphics and his own AI poster, "MAKES 08"), which moved the brief toward cinematic matchday key art with him as the hero. Pixel's phase 1 audit (`audits/cinematic-audit-2026-10-15.md`) drew five concepts (S1 to S5) from them; phase 2 (`audits/cinematic-recommendation-2026-10-15.md`) recommended a hybrid of S1, S2 and S3, recorded below as Direction D. Directions A, B and C predate the gameday set.
+- **2026-10-15, owner decisions after the first G1 attempt.** (1) Plates stay photo-real: the earlier painted, anime-lit style is dropped; palette, light logic and composition rules are unchanged. (2) The footer line "Makes, 21 DEC 2026" is removed; the date is on the cover. (3) The team or "NEUTRAL" line and the sport are not shown after saving or on the poster; the data is still collected for the host. (4) The draft copy and timing stay as built: the panel shows straight away, the No ending has no warm closing line, and Chapter 2's standfirst is "Your name goes on the back. A few lines so I can seat you properly." (5) Until Surname has a value, the shirt shows only the first word of the name. Logged in `feedback.md` (2026-10-15, owner decisions after the first G1 attempt).
 - **2026-10-15, gate closed.** Owner reply: "defaults". Direction D chosen; A, B and C are recorded as considered and not chosen (see Decision).
 
 ## Brief Summary
@@ -222,6 +223,7 @@ Added 2026-10-15 as the owner's fourth option: a deliberate hybrid of the phase 
 **Reference category:** a football film's matchday key-art poster (the low-angle hero one-sheet), brought to life in depth layers, ending on a club's new-signing shirt presentation.
 
 **Competitor / inspiration references** (5, captioned):
+- Style note (2026-10-15): the three anime graphics below are composition and lighting references only. The shipped plates are photo-real, not anime-lit.
 - ![Makes's own AI poster: low-angle hero, foot on the ball, smiling, moonlit, red smoke and embers](.specno-design/references/immersive-night-world-rsvp/owner-gameday/04-makes-08-moonlit-poster-ai.png), the spine: his pose, his smile, one cold moon against one hot red. Its crests, kit stripes, sponsor, trident and stand fascia never ship; it is a head-and-neck likeness reference only, never a base image.
 - ![MATCHDAY title card: one huge condensed word with the hero cutting through it](.specno-design/references/immersive-night-world-rsvp/owner-gameday/03-anime-matchday-header-red-sword-embers.png), the title depth-sorted between the stadium and the hero, and embers on every plane.
 - ![Anime hero on a toad under a moonlit dome, fixture block bottom left](.specno-design/references/immersive-night-world-rsvp/owner-gameday/01-anime-toad-moon-starball-dome-fixture.png), one motivated cold key light from the upper right, six separable depth planes, and a fixture block that is exactly an invite's content.
@@ -230,7 +232,7 @@ Added 2026-10-15 as the owner's fourth option: a deliberate hybrid of the phase 
 
 **Tone:** a celebration with a film's sense of occasion. Makes smiles in every frame; nothing is pointed at the camera; the ball is the power object.
 
-**The world:** one 9:16 painted poster in about eight depth layers: a sky with a code-drawn moon at its phase on 21 December 2026 (about 93 percent waxing gibbous; the owner accepted this default, but the phase itself is still an estimate), a stadium with four floodlight towers dark before kick-off, a crowd with plain red flags and mid smoke, foreground rubble with embers, Makes in three poses (hands in pockets with a foot on the ball, waving, holding up a shirt), and a plain red shirt on a hanger. "THIRTY" is painted across an empty band of night sky, between the stadium and Makes. No crest, badge, sponsor, kit stripes, starball, club name, devil or trident, anywhere, ever.
+**The world:** one 9:16 cinematic, photo-real night poster in about eight depth layers (a generated image that reads as a film still; owner decision 2026-10-15): a sky with a code-drawn moon at its phase on 21 December 2026 (about 93 percent waxing gibbous; the owner accepted this default, but the phase itself is still an estimate), a stadium with four floodlight towers dark before kick-off, a crowd with plain red flags and mid smoke, foreground rubble with embers, Makes in three poses (hands in pockets with a foot on the ball, waving, holding up a shirt), and a plain red shirt on a hanger. "THIRTY" is set across an empty band of night sky, between the stadium and Makes. No crest, badge, sponsor, kit stripes, starball, club name, devil or trident, anywhere, ever.
 
 **Typographic identity** (the recommendation does not set one; these keep the four faces already shipped, plus SVG title lockups, with the brush font picked in the asset phase (owner accepted)):
 - Display: Barlow Condensed 700, caps. Panel headings, the guest's name and number on the shirt, the poster's fixture and credit lines. Close in spirit to the MATCHDAY header's heavy condensed grotesque, already self-hosted, and it carries accented names.
@@ -258,13 +260,13 @@ Added 2026-10-15 as the owner's fourth option: a deliberate hybrid of the phase 
 **Journey model** (each beat completes with its plain control on the panel; the world only answers):
 - **Cover (sealed):** the poster before kick-off, moonlit, floodlights dark, "THIRTY" in the sky; the lanyard pass hangs in the frame. "Tear open" works from the first paint. The tear strikes bank one.
 - **Chapter 1, "Are you in?":** one radio group (Yes / Maybe / No) and Continue. On Continue: Yes strikes bank two and an ember swirl rises past Makes; Maybe strikes bank two at half and holds; No strikes nothing and Makes cross-fades to the wave.
-- **Chapter 2, "Your shirt":** the grouped fields as built. A plain red shirt swings in beside Makes and the guest's preferred name (or first name) is lettered across its back as they type. The number area stays empty: the number exists only after the code. "Send my code" strikes bank three. No path: name and email only, no shirt, no strike.
+- **Chapter 2, "Your shirt":** the grouped fields as built. The panel shows straight away, with no 2.2 s delay. Standfirst (draft): "Your name goes on the back. A few lines so I can seat you properly." A plain red shirt swings in beside Makes and the guest's preferred name (or first name) is lettered across its back as they type. Until Surname has a value, the shirt shows only the first word of the typed name, so a surname typed into First name never shows. The number area stays empty: the number exists only after the code. "Send my code" strikes bank three. No path: name and email only, no shirt, no strike.
 - **Chapter 3, "Seal it":** the code beat. Ambient stops (the ground holds its breath). Six small lamps on the right floodlight head light one per digit; they are lamps, never numerals. A wrong code puts them out together; the right code flares them and strikes bank four.
-- **Signed (Yes and Maybe):** Makes holds up the guest's shirt with their name and their number (`ticketNo`); "UNITED" paints in under "THIRTY"; full ignition; the stamp lands ("SIGNED · 21 DEC 2026" solid for Yes, "PENCILLED IN" outlined for Maybe). The panel returns with the seat and shirt line, Save your poster and Share.
-- **No end:** the lights stay at their pre-match level apart from bank one; Makes keeps waving; one ember drifts past the moon. "Sorry you'll miss it" and "Changed your mind?". No stamp, no poster.
+- **Signed (Yes and Maybe):** Makes holds up the guest's shirt with their name and their number (`ticketNo`); "UNITED" paints in under "THIRTY"; full ignition; the stamp lands ("SIGNED · 21 DEC 2026" solid for Yes, "PENCILLED IN" outlined for Maybe). The panel returns with the seat and shirt line, Save your poster and Share. The team or "NEUTRAL" line and the sport are not shown after saving, and the footer line "Makes, 21 DEC 2026" is gone; the date is on the cover.
+- **No end:** the lights stay at their pre-match level apart from bank one; Makes keeps waving; one ember drifts past the moon. The panel shows the heading "Sorry you'll miss it, {firstName}" and the "Changed your mind?" button; there is no warm closing line below the heading (owner, 2026-10-15). No stamp, no poster.
 
 **Render cost (honest; every figure an estimate from atlas and the catalogue):**
-- Atlas's path: painted layers (A1), ambient on demand at 30 Hz (C2), a client-side JPEG poster (D1). No CSP change, no decoders.
+- Atlas's path: photo-real layers (A1), ambient on demand at 30 Hz (C2), a client-side JPEG poster (D1). No CSP change, no decoders.
 - T3: about 8 WebGL planes with depth-UV parallax, the bank-mask reveal of a lights-on plate, additive glow sprites and beam cards, up to 1,500 GPU ember points (start about 300), 2 to 3 scrolling-noise smoke quads, no post-processing.
 - Budgets: entry at most 160 kB gz; about 2 MB (T2) or 3.5 MB (T3) over the journey; decoded memory up to 60 / 120 / 200 MB for T1 / T2 / T3. Alpha layers are cropped, pose plates load when needed, T1 uses 720-wide files.
 - Weak GPU: demote on slow frames, never promote within a session; context loss drops to T1 on the same files.
@@ -281,6 +283,24 @@ Added 2026-10-15 as the owner's fourth option: a deliberate hybrid of the phase 
 **Drift check:** no torn or deckled panel edge, no ink bleed, no one-question-per-screen (rejected B). No scrolling ticker, no solid ink strips, no wipes, lamps instead of digits on the code beat, and the shirt number is a reward on the poster, never a form row (rejected C).
 
 **The Signature**: The thing that makes this unmistakable in a screenshot is that the invite is Makes's own living matchday poster, where every answer switches on a bank of floodlights until he holds up your shirt, with your name and number, as his new signing. (Pixel's wording, accepted by the owner through "defaults" on 2026-10-15, not written by him.)
+
+## Plate style: photo-real (owner decision, 2026-10-15)
+
+The owner keeps the photo-real render. Direction D is a cinematic, photo-real night poster with the same palette, the same light logic (one cold moonlight key from the upper right, red as the one hot colour) and the same composition rules (title band of empty sky behind Makes, face and shirt above the panel, no crest or club mark). The earlier painted, anime-lit wording is superseded in every live line. Dated history in `audits/` and `direction-archive/` keeps the old wording on purpose.
+
+**G1 status: in review, not approved.** Two fixes remain:
+1. A larger file: at least 1080 x 1920 (it is 941 x 1672 now), by upscale or regeneration.
+2. A lights-off edit: the floodlights are on in G1. The lights-on G1 becomes the source for the lit-stadium plate, which saves one generation.
+
+Accepted as is: Makes's head sits about 17% down the frame instead of 28%, because the title layer sits behind the figure.
+
+**Style lock for G2 to G5 (9:16).** Paste this paragraph at the start of every generation prompt:
+
+> STYLE LOCK. A cinematic photograph of a night football poster, portrait 9:16, shot low-angle on a 35 mm lens with shallow depth of field, fine film grain, real skin texture and real fabric detail, and a restrained filmic colour grade. It is night. One cold blue-white moonlight is the only key light, coming from the upper right, with a thin cold rim on hair, shoulders and ball. Red is the one hot colour, appearing in the low smoke, the plain flags, the ball's panels and the shirt. Small white points of light: a few drifting sparks and embers. They are the only other highlights. Everything else falls away into deep blue-black shadow. It must read as a photograph: no illustration, no painting, no anime, no cartoon shading, no plastic CGI gloss. No crest, badge, sponsor, stripes, star-pattern ball or signage. No text anywhere: no letters, numbers, logos or captions.
+
+**Style lock for G6 (square 1:1).** Paste this paragraph at the start of the G6 prompt:
+
+> STYLE LOCK, SQUARE. A cinematic product photograph, square 1:1, of a plain red football shirt on a hanger, centred and filling about 70% of the frame, shot at a slight low angle on a 35 mm lens with shallow depth of field, fine film grain, real fabric folds and stitching, and a restrained filmic colour grade. It is night. One cold blue-white moonlight is the only key light, coming from the upper right, with a thin cold rim along the shoulders and the hanger. Red is the one hot colour, and here it is the shirt itself. Small white points of light: a few drifting sparks and embers. They sit in the dark background and nowhere else. The back of the shirt is completely blank so the name and number can be added later. It must read as a photograph: no illustration, no painting, no anime, no cartoon shading, no plastic CGI gloss. No crest, badge, sponsor, stripes, star-pattern ball or signage. No text anywhere: no letters, numbers, logos or captions.
 
 ## Distinctiveness Test
 
@@ -305,7 +325,7 @@ The owner accepted this sentence through "defaults" on 2026-10-15; he did not wr
   6. The lanyard stays on the cover as one object inside the world canvas (B2); retire it (B3) if it threatens the schedule.
   7. Makes generates the plates with his own tool; Claude does all processing.
   8. Panel: "Monday 21 December 2026 · Venue TBA". Poster: "MON 21 DEC 2026 · VENUE TBA". No kick-off time until there is one.
-- **Answered (2026-10-15):** the likeness question, "may my likeness appear on every shared poster". Owner: "likeness yes". G1 (the first image generation) is unblocked. His photo arrived on 2026-10-15 and the first G1 attempt is in review, not approved (see `feedback.md`).
+- **Answered (2026-10-15):** the likeness question, "may my likeness appear on every shared poster". Owner: "likeness yes". G1 (the first image generation) is unblocked. His photo arrived on 2026-10-15 and the first G1 attempt is in review, not approved (see `feedback.md`). The owner then kept the photo-real render as the plate style; G1 is still not approved (two fixes outstanding, see Plate style below).
 - **Considered, not chosen** (recorded, not hard constraints, because D reuses parts of B and C):
   - Direction A, Tabletop Ground. A miniature world with no Makes in it, and the largest 3D build (2 to 4 days of Blender modelling); it predates the gameday set that made Makes the subject.
   - Direction B, The Walk-Out. Its call-up story survives as D's story frame, but five interiors to model (4 to 7 days) and the only first-person travel make it the most expensive and the one motion-sickness risk.

@@ -10,13 +10,18 @@ chosenDirection: D
 chosenDirectionName: "Matchday: The Signing"
 colorScheme: dark
 pendingOwnerDecisions:
-  - "Owner decision: keep the photo-real G1 attempt, or have it repainted in the painted poster style (G1 is in review, not approved)."
+  - "G1 approval: in review, not approved. Remaining: a file of at least 1080x1920 (it is 941x1672) and a lights-off edit (the floodlights are on in G1; the lights-on version becomes the lit-stadium plate source)."
 acceptedOwnerDecisions:
   - "Likeness on every shared poster (owner: \"likeness yes\", 2026-10-15)."
   - "Wireframes approved (owner: \"wireframes ok\", 2026-10-15)."
   - "Moon at about 93 percent waxing gibbous on 21 Dec 2026 (default accepted; the phase is still an estimate)."
   - "Four shipped faces plus SVG title lockups; brush font picked in the asset phase."
   - "Draft copy stays as drafts until the owner rewrites it."
+  - "G1 style: photo-real. Plates are a cinematic, photo-real night poster with the same palette, light logic and composition rules; revised style locks for G2-G6 are in direction.md (owner, 2026-10-15). Head at about 17 percent down instead of 28 percent accepted."
+  - "Footer line \"Makes, 21 DEC 2026\" removed; the date is on the cover (owner, 2026-10-15)."
+  - "Team or NEUTRAL line and sport are not shown after saving or on the phase 6 poster; data still collected for the host (owner, 2026-10-15, status quo default)."
+  - "Draft copy and timing stay as built: panel shows straight away, No ending has no warm closing line, Chapter 2 standfirst is \"Your name goes on the back. A few lines so I can seat you properly.\" (owner, 2026-10-15)."
+  - "Live shirt name: until Surname has a value, the shirt shows only the first word of the name (owner, 2026-10-15)."
 maintainers:
   - marlon@specno.com
 files:

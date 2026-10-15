@@ -213,3 +213,12 @@ Bot protection is a secret invite key in the shared link (`?k=...`). The key sta
 | B-16 | Verify, wrong key | `verifyAndSave` returns `invalid_link` | Sentence in the code view; not counted as a wrong code; entered code kept |
 
 The accessibility scan (0 violations in 26 states) predates these states. They reuse the already-scanned `StatusLine`, so they are not separately scanned.
+
+### Owner decisions, 2026-10-15
+
+| ID | Case | Priority | Handling |
+|----|------|----------|----------|
+| W-8 | Live shirt name, Surname empty | WILL | Until Surname has a value, the shirt shows only the first word of the typed name, so a surname typed into First name never shows. A preferred name still wins when given. Once Surname has a value, the full first-name field shows as before. |
+| W-9 | Team or sport after saving | N/A | Neither is shown after saving or on the phase 6 poster; the data is still collected for the host. |
+| W-10 | Footer line | N/A | "Makes, 21 DEC 2026" is removed; the date is on the cover. |
+| W-11 | No ending | WILL | Heading "Sorry you'll miss it, {firstName}" and "Changed your mind?"; no warm closing line below the heading. |
