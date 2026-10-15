@@ -270,7 +270,7 @@ Added 2026-10-15 as the owner's fourth option: a deliberate hybrid of the phase 
 - T3: about 8 WebGL planes with depth-UV parallax, the bank-mask reveal of a lights-on plate, additive glow sprites and beam cards, up to 1,500 GPU ember points (start about 300), 2 to 3 scrolling-noise smoke quads, no post-processing.
 - Budgets: entry at most 160 kB gz; about 2 MB (T2) or 3.5 MB (T3) over the journey; decoded memory up to 60 / 120 / 200 MB for T1 / T2 / T3. Alpha layers are cropped, pose plates load when needed, T1 uses 720-wide files.
 - Weak GPU: demote on slow frames, never promote within a session; context loss drops to T1 on the same files.
-- Asset cost: six generations (G1 master, G2 to G5 edits of it, G6 the shirt). Makes generates them; Claude does all processing.
+- Asset cost: six generations planned (G1 master, G2 to G5 edits of it, G6 the shirt); five were used, because the lights-on G1 replaced G3. Makes generates them; Claude does all processing.
 
 **Fallback:**
 - T2 Lit: the same layers, parallax on the hero only, fewer embers, one smoke quad, no beam cards.
@@ -288,9 +288,12 @@ Added 2026-10-15 as the owner's fourth option: a deliberate hybrid of the phase 
 
 The owner keeps the photo-real render. Direction D is a cinematic, photo-real night poster with the same palette, the same light logic (one cold moonlight key from the upper right, red as the one hot colour) and the same composition rules (title band of empty sky behind Makes, face and shirt above the panel, no crest or club mark). The earlier painted, anime-lit wording is superseded in every live line. Dated history in `audits/` and `direction-archive/` keeps the old wording on purpose.
 
-**G1 status: in review, not approved.** Two fixes remain:
-1. A larger file: at least 1080 x 1920 (it is 941 x 1672 now), by upscale or regeneration.
-2. A lights-off edit: the floodlights are on in G1. The lights-on G1 becomes the source for the lit-stadium plate, which saves one generation.
+**Plate status (owner, 2026-10-15): all approved.**
+- G1 is approved. The lights-off edit is the base plate and the source of the hero cut-out (L5). The lights-on G1 is the source of the lit stadium (L2b). ChatGPT returns edits at 941 x 1672, so Claude scales every plate to 1080 x 1920 in processing, by one method for all of them.
+- G2 (clean background) is approved and lines up with the base. Its upper-right clouds are brighter than G1's, so processing darkens the title band.
+- G3 is dropped: the lights-on G1 replaces it.
+- G4 (the wave) and G5 (the signing) are approved and line up with the base at the feet and the ball. Processing removes a faint oval under the G5 shirt collar.
+- G6 (the shirt on a hanger, 1254 x 1254) is approved; its red matches the G5 shirt.
 
 Accepted as is: Makes's head sits about 17% down the frame instead of 28%, because the title layer sits behind the figure.
 
