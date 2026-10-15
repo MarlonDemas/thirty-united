@@ -183,14 +183,6 @@
   line-height: 1rem;
   color: var(--moonlight);
 }
-@utility label-chip {
-  font-family: var(--font-display);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  font-size: 0.875rem;
-  line-height: 1rem;
-}
 @utility data-stub {
   font-family: var(--font-mono);
   font-weight: 500;
@@ -403,6 +395,14 @@
   transform-origin: 0 0;
   background: var(--void);
 }
+/* The title's front copy on T3 and T2 (WorldStage): over the lanyard, never in the way of a grab. */
+.poster-front {
+  background: none;
+  pointer-events: none;
+}
+.world[data-title-front="true"] .poster:not(.poster-front) :is([data-layer="thirty"], [data-layer="united"]) {
+  visibility: hidden;
+}
 /* Shots move as a push (1200 ms); the keyboard strip reframes at panel speed. T0 and reduced motion cut. */
 .world[data-tier]:not([data-tier="T0"]) .poster {
   transition: transform var(--dur-push-in) var(--ease-push);
@@ -509,6 +509,21 @@
 .world[data-beat="signed"] .bank-glow {
   transition-delay: 1400ms;
 }
+/* The moon's halo: moonlight screened onto the photo sky, strongest at the disc's edge and gone by the halo's rim.
+   Static: no animation, nothing per frame. */
+.moon-halo {
+  border-radius: 50%;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in srgb, var(--scene-moon-halo) 55%, transparent) var(--moon-core),
+    color-mix(in srgb, var(--scene-moon-halo) 24%, transparent) calc(var(--moon-core) + 9%),
+    color-mix(in srgb, var(--scene-moon-halo) 9%, transparent) calc(var(--moon-core) + 28%),
+    color-mix(in srgb, var(--scene-moon-halo) 3%, transparent) 82%,
+    transparent 100%
+  );
+}
 /* Six code lamps on the right floodlight head: one per digit typed, never numerals. */
 .code-lamp {
   position: absolute;
@@ -602,31 +617,34 @@
   padding: 48px 32px;
 }
 
-/* Sound and Still: solid panel chips at the safe-area top + 12 px, top right. */
+/* Sound and Still: icon-only solid panel chips in one column at the top right. Sizes come from chips.ts (set on
+   .chips by WorldChips), so the shots' chip zone and these boxes cannot drift apart. */
 .chips {
   position: fixed;
   z-index: 20;
-  top: calc(env(safe-area-inset-top) + 12px);
-  right: calc(env(safe-area-inset-right) + 12px);
+  top: calc(env(safe-area-inset-top) + var(--chip-inset));
+  right: calc(env(safe-area-inset-right) + var(--chip-inset));
   display: flex;
-  gap: 8px;
+  flex-direction: column;
+  gap: var(--chip-gap);
 }
 .chip {
   display: inline-flex;
-  min-height: 48px;
+  width: var(--chip-size);
+  height: var(--chip-size);
   align-items: center;
-  gap: 8px;
-  padding-inline: 14px;
+  justify-content: center;
   background: var(--panel);
   color: var(--foreground);
   border: 1px solid var(--line);
 }
 .chip:hover,
-.chip[aria-pressed="true"] {
+.chip[aria-pressed="true"],
+.chip[data-on="true"] {
   border-color: var(--moonlight);
 }
 .chip:focus-visible {
-  box-shadow: 0 0 0 7px var(--panel); /* focus-halo: holds against floodlight glare */
+  box-shadow: 0 0 0 var(--chip-reach) var(--panel); /* focus-halo: 2 px of panel outside the 3 px ring */
 }
 
 @media (forced-colors: active) {

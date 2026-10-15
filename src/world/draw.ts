@@ -5,7 +5,7 @@ import type { Point, Quad } from "@/world/layers"
  * about 93 percent lit, waxing gibbous (tokens.md, still an estimate). Seen from South Africa a waxing moon is lit
  * on its left side.
  */
-export const MOON = { illuminated: 0.93, litSide: "left" as "left" | "right", haloScale: 2.4 } as const
+export const MOON = { illuminated: 0.93, litSide: "left" as "left" | "right", haloScale: 3.2 } as const
 
 /** The lit part as a path centred on 0,0: a half disc on the lit side plus a half ellipse past the middle. */
 export function moonPath(r: number, illuminated: number, litSide: "left" | "right"): string {

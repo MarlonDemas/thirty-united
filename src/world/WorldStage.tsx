@@ -3,7 +3,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary"
 import { Stamp } from "@/components/Stamp"
 import type { Attending } from "@/lib/schemas/rsvp"
 import { banksFor, poseFor, shirtHangs, type Beat, type Pose } from "@/world/beats"
-import { ANCHORS } from "@/world/layers"
+import { ANCHORS, LAYERS, layerUrl } from "@/world/layers"
 import { StillLayer } from "@/world/StillLayer"
 import { placementFor, placeShot, SHOTS, STAMP_LIVE, toScreen, type Layout } from "@/world/shots"
 import { demote, isStillTier, isWebGLTier, useTier } from "@/world/tier"
@@ -13,6 +13,16 @@ const WorldCanvas = lazy(() => import("@/world/WorldCanvas"))
 
 /** The finale on T1: the stamp lands at 1800 ms (tokens.md beat timings). T0 shows the final state at once. */
 export const STAMP_AT_MS = 1800
+
+/**
+ * The signing is two shots: wide while every bank fires (the ignition starts at 1400 ms and runs 600 ms, index.css),
+ * then the push-in to the face-and-shirt framing (1200 ms, `--dur-push-in`), so the finale ends at 3200 ms.
+ * T0 cuts straight to the final framing with the banks already lit.
+ */
+export const SIGNED_PUSH_AT_MS = 2000
+
+/** The title lockup (THIRTY, UNITED). On T3 and T2 the cover draws a second copy in front of the lanyard. */
+const TITLE = LAYERS.filter((l) => l.name === "thirty" || l.name === "united")
 
 /** Plates fetched ahead of the beat that shows them, so a pose change is a cross-fade, not a pop-in. */
 const PRELOAD: Partial<Record<Beat, Pose[]>> = { chapter1: ["l6-makes-wave"], code: ["l7-makes-signing"] }
@@ -72,12 +82,16 @@ export function WorldStage({
   if (last.beat !== beat || last.keyboard !== layout.keyboard)
     setLast({ beat, keyboard: layout.keyboard, reframe: last.beat !== beat ? "push" : "quick" })
 
-  const p = placementFor(beat, attending, layout, vvTop)
   const banks = banksFor(beat, attending)
   const hangs = shirtHangs(beat, attending)
   const signed = beat === "signed"
   const stampOn = useDelayed(signed, t0 ? 0 : STAMP_AT_MS)
+  const pushed = useDelayed(signed, t0 ? 0 : SIGNED_PUSH_AT_MS)
+  const wide = signed && !pushed
+  const p = placementFor(beat, attending, layout, vvTop, wide)
   const { frame } = layout
+  const posterTransform = `translate(${p.tx}px, ${p.ty}px) scale(${p.s})`
+  const titleFront = beat === "cover" && isWebGLTier(tier)
 
   // The pass sits between Makes's face and the panel at the cover shot, outside the transformed poster.
   const cover = layout.mode === "desktop" ? p : placeShot(SHOTS.cover, frame)
@@ -105,10 +119,12 @@ export function WorldStage({
       data-tier={tier}
       data-still={still}
       data-reframe={last.reframe}
+      data-wide={wide}
+      data-title-front={titleFront}
       data-testid="world-stage"
     >
       <div className="world-frame" style={{ left: frame.x, top: frame.y, width: frame.w, height: frame.h }}>
-        <div className="poster" style={{ transform: `translate(${p.tx}px, ${p.ty}px) scale(${p.s})` }}>
+        <div className="poster" style={{ transform: posterTransform }}>
           <StillLayer
             tier={tier}
             still={still}
@@ -124,6 +140,27 @@ export function WorldStage({
         </div>
         <div className="world-vignette" />
         <div ref={zoneRef} className="pass-zone" style={zoneStyle} hidden={beat !== "cover"} />
+        {/* The lanyard cord hangs through THIRTY. The poster is one stacking context under the pass zone, so a
+            second copy of the title over the zone puts the letters in front of the cord (and of a card lifted that
+            high): the cord reads as passing behind them. Same transform and transition as the poster, so the copies
+            never part, and the poster's own copy is hidden meanwhile (one title, no doubled edges); it never takes the
+            pointer. Only where the lanyard can hang: the cover on T3 and T2. */}
+        {titleFront && (
+          <div className="poster poster-front" data-testid="title-front" style={{ transform: posterTransform }}>
+            {TITLE.map((l) => (
+              <img
+                key={l.name}
+                src={layerUrl(l.name)}
+                alt=""
+                draggable={false}
+                decoding="async"
+                data-layer={l.name}
+                className={l.name === "united" ? "layer layer-united" : "layer"}
+                style={{ left: l.bbox[0], top: l.bbox[1], width: l.bbox[2], height: l.bbox[3] }}
+              />
+            ))}
+          </div>
+        )}
         {stampOn && attending !== "no" && (
           <div className="world-stamp" style={stampStyle}>
             <Stamp variant={attending === "maybe" ? "maybe" : "yes"} />

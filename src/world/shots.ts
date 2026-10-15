@@ -1,6 +1,6 @@
 import type { Attending } from "@/lib/schemas/rsvp"
 import type { Beat } from "@/world/beats"
-import { POSTER, type Point } from "@/world/layers"
+import { ANCHORS, POSTER, type Point } from "@/world/layers"
 
 /**
  * One camera shot per beat (CHOSEN.md): a scale and translate of the 1080 x 1920 poster, clipped to the phone.
@@ -28,13 +28,6 @@ export const DESKTOP = { minWidth: 1024, panelWidth: 420, gutter: 64 } as const
 /** Makes's face (the plate's face anchor, poster px). */
 const FACE: Point = [567, 412]
 
-/**
- * The Sound and Still chips as the shots see them (screen px from the top right, the safe area aside): both
- * chips side by side, as measured (96 + 8 + 90 px wide, 48 px tall). The title lockup must clear this box on
- * every shot that shows it.
- */
-export const CHIP_ZONE = { top: 12, right: 12, w: 194, h: 48 } as const
-
 export const SHOTS: Record<Beat, Shot> = {
   // Full poster, height-fit. Makes a little right of centre, so the left-set title and the moon both show.
   cover: { zoom: 1, focus: FACE, at: [0.57, 0.28] },
@@ -45,11 +38,20 @@ export const SHOTS: Record<Beat, Shot> = {
   chapter2: { zoom: 1.12, focus: [790, 720], at: [0.77, 0.3] },
   // Toward the right floodlight head and its six lamps; his face upper left; the title fully out of frame.
   code: { zoom: 1.3, focus: [993, 684], at: [0.87, 0.26] },
-  // The 4 percent push-in at the signing: the title (UNITED paints in) and the held shirt clear the panel.
+  // The signing's final framing, after the wide first stage (placeSignedWide): the title (UNITED paints in) and the
+  // held shirt clear the panel.
   signed: { zoom: 1.04, focus: FACE, at: [0.57, 0.3] },
   // Back to the cover framing; Makes waves.
   "no-end": { zoom: 1, focus: FACE, at: [0.57, 0.28] },
 }
+
+/**
+ * The signing's first stage (owner, 2026-10-15): the camera starts wide enough for all four floodlight banks to fire
+ * on screen, then pushes in to `SHOTS.signed`. Width-fit across the four lamp cores with this margin each side, so
+ * it holds at any phone width; never tighter than the cover, never so wide that a side edge shows. On a 19.5:9
+ * phone the poster then ends above the frame's bottom edge: that band sits behind the solid panel (shots.test.ts).
+ */
+export const SIGNED_WIDE = { margin: 20 } as const
 
 /** Keyboard open: the strip at the top of the visual viewport frames this poster box (centre, width). */
 export type StripShot = { focus: Point; width: number }
@@ -72,6 +74,16 @@ export function placeShot(shot: Shot, f: Frame): Placement {
     tx: clamp(shot.at[0] * f.w - shot.focus[0] * s, f.w - POSTER.w * s, 0),
     ty: clamp(shot.at[1] * f.h - shot.focus[1] * s, f.h - POSTER.h * s, 0),
   }
+}
+
+/** The signing's wide first stage: the four lamp cores centred across the frame, the poster's top edge at the top. */
+export function placeSignedWide(f: Frame): Placement {
+  const xs = ANCHORS.banks.map((b) => b.x)
+  const lo = Math.min(...xs)
+  const hi = Math.max(...xs)
+  const cover = Math.max(f.h / POSTER.h, f.w / POSTER.w)
+  const s = Math.max(f.w / POSTER.w, Math.min(cover, (f.w - 2 * SIGNED_WIDE.margin) / (hi - lo)))
+  return { s, tx: clamp(f.w / 2 - ((lo + hi) / 2) * s, f.w - POSTER.w * s, 0), ty: 0 }
 }
 
 /** The keyboard strip: `focus` centred in the strip at the top of the visual viewport. */
@@ -131,11 +143,15 @@ export function layoutFor(v: Viewport): Layout {
   return { mode: "phone", frame: { x: 0, y: 0, w: v.w, h: v.h }, panelTop, panelH: v.h - panelTop, keyboard, strip: 0 }
 }
 
-/** The shot for this beat in this layout. Desktop always shows the whole composition. */
-export function placementFor(beat: Beat, attending: Attending | undefined, l: Layout, vvTop = 0): Placement {
+/**
+ * The shot for this beat in this layout. Desktop always shows the whole composition. `wide` asks for the signing's
+ * first stage (phone only; WorldStage holds it until the ignition has run, and skips it on T0).
+ */
+export function placementFor(beat: Beat, attending: Attending | undefined, l: Layout, vvTop = 0, wide = false): Placement {
   const f = { w: l.frame.w, h: l.frame.h }
   if (l.mode === "desktop") return { s: f.h / POSTER.h, tx: 0, ty: 0 }
   if (l.keyboard) return placeStrip(stripShotFor(beat, attending), f, vvTop, l.strip)
+  if (wide && beat === "signed") return placeSignedWide(f)
   return placeShot(SHOTS[beat], f)
 }
 

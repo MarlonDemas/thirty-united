@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest"
 import { BEATS } from "@/world/beats"
 import { ANCHORS, LAYERS, QUADS } from "@/world/layers"
-import { CHIP_ZONE, DESKTOP, KEYBOARD, keyboardOpen, layoutFor, PANEL_FRACTION, placementFor, toScreen, type Layout } from "@/world/shots"
+import { CHIP, CHIP_ZONE } from "@/world/chips"
+import { DESKTOP, KEYBOARD, keyboardOpen, layoutFor, PANEL_FRACTION, placementFor, SIGNED_WIDE, toScreen, type Layout } from "@/world/shots"
 
 const PHONES = [
   [360, 640],
@@ -51,10 +52,14 @@ describe.each(PHONES)("shots at %ix%i", (w, h) => {
     }
   })
 
-  // The title's ink box is the SVG's view box (layers.test.ts), so these hold for every letter.
+  // The title's ink box is the SVG's view box (layers.test.ts), so these hold for every letter. "signed-wide" is the
+  // signing's first stage, a shot of its own.
+  type Shown = (typeof BEATS)[number] | "signed-wide"
+  const SHOWN: readonly Shown[] = [...BEATS, "signed-wide"]
+  const place = (beat: Shown) => (beat === "signed-wide" ? placementFor("signed", "yes", l, 0, true) : placementFor(beat, "yes", l))
   const title = (n: "thirty" | "united") => LAYERS.find((x) => x.name === n)!.bbox
-  const rect = (beat: (typeof BEATS)[number], n: "thirty" | "united") => {
-    const p = placementFor(beat, "yes", l)
+  const rect = (beat: Shown, n: "thirty" | "united") => {
+    const p = place(beat)
     const [x, y, bw, bh] = title(n)
     const [l0, t0] = toScreen(p, [x, y])
     const [r0, b0] = toScreen(p, [x + bw, y + bh])
@@ -62,7 +67,14 @@ describe.each(PHONES)("shots at %ix%i", (w, h) => {
   }
   const chips = { l: w - CHIP_ZONE.right - CHIP_ZONE.w, t: CHIP_ZONE.top, r: w - CHIP_ZONE.right, b: CHIP_ZONE.top + CHIP_ZONE.h }
 
-  it.each(BEATS)("%s: no chip covers a letter of the title", (beat) => {
+  it("the chip zone is the chip column itself, focus indicator included (chips.ts, the numbers index.css draws)", () => {
+    expect(CHIP_ZONE.w).toBe(CHIP.size + 2 * CHIP.focusReach)
+    expect(CHIP_ZONE.h).toBe(2 * CHIP.size + CHIP.gap + 2 * CHIP.focusReach)
+    expect(chips.r).toBe(w - CHIP.inset + CHIP.focusReach)
+    expect(chips.t).toBe(CHIP.inset - CHIP.focusReach)
+  })
+
+  it.each(SHOWN)("%s: no chip covers a letter of the title", (beat) => {
     for (const n of ["thirty", "united"] as const) {
       const r = rect(beat, n)
       const overlaps = r.l < chips.r && r.r > chips.l && r.t < chips.b && r.b > chips.t
@@ -70,14 +82,14 @@ describe.each(PHONES)("shots at %ix%i", (w, h) => {
     }
   })
 
-  it.each(BEATS)("%s: THIRTY is either whole in the frame or out of it, never cropped", (beat) => {
+  it.each(SHOWN)("%s: THIRTY is either whole in the frame or out of it, never cropped", (beat) => {
     const r = rect(beat, "thirty")
     const whole = r.l >= 0 && r.r <= w && r.t >= 0 && r.b <= h
     const out = r.b <= 0 || r.t >= h || r.r <= 0 || r.l >= w
     expect(whole || out).toBe(true)
   })
 
-  it.each(["cover", "chapter1", "signed", "no-end"] as const)("%s: the whole lockup shows, with Makes's face", (beat) => {
+  it.each(["cover", "chapter1", "signed", "signed-wide", "no-end"] as const)("%s: the whole lockup shows, with Makes's face", (beat) => {
     for (const n of ["thirty", "united"] as const) {
       const r = rect(beat, n)
       expect(r.l >= 0 && r.r <= w && r.t >= 0 && r.b < l.panelTop, n).toBe(true)
@@ -109,6 +121,26 @@ describe.each(PHONES)("shots at %ix%i", (w, h) => {
       const [right] = toScreen(p, [x + r, y])
       expect(right > 0 && left < w, `bank ${b}`).toBe(true)
     }
+  })
+
+  it("signed, first stage: all four lamp cores fire on screen above the panel, with the face, held shirt and title", () => {
+    const p = placementFor("signed", "yes", l, 0, true)
+    for (const [i, { x, y }] of ANCHORS.banks.entries()) {
+      const [sx, sy] = toScreen(p, [x, y])
+      // The cores sit at least the stage's margin in from each side (less only where the cover is already wider).
+      expect(sx >= Math.min(SIGNED_WIDE.margin, w / 2) - 0.5 && sx <= w - Math.min(SIGNED_WIDE.margin, w / 2) + 0.5, `bank ${i + 1}`).toBe(true)
+      expect(sy > 0 && sy < l.panelTop, `bank ${i + 1}`).toBe(true)
+    }
+    const { x, y, r } = ANCHORS.face
+    expect(toScreen(p, [x, y - r])[1]).toBeGreaterThanOrEqual(0)
+    expect(toScreen(p, [x, y + r])[1]).toBeLessThan(l.panelTop)
+    expect(Math.max(...QUADS["l7-makes-signing"].map((pt) => toScreen(p, pt)[1]))).toBeLessThan(l.panelTop)
+    // Wider than the cover, so it may stop short of the frame's bottom edge, but only behind the solid panel.
+    expect(p.s).toBeLessThanOrEqual(placementFor("cover", "yes", l).s)
+    expect(p.tx).toBeLessThanOrEqual(0)
+    expect(p.ty).toBe(0)
+    expect(p.tx + 1080 * p.s).toBeGreaterThanOrEqual(w - 0.5)
+    expect(1920 * p.s).toBeGreaterThanOrEqual(l.panelTop)
   })
 
   it("code: all six lamps are on screen above the panel", () => {

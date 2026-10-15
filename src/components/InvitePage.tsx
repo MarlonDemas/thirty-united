@@ -19,6 +19,7 @@ import {
 import { formatSeat } from "@/lib/seat"
 import { withTimeout } from "@/lib/timing"
 import { banksFor, beatFor, worldLine, type Banks, type Beat, type View } from "@/world/beats"
+import { CHIP } from "@/world/chips"
 import { layoutFor } from "@/world/shots"
 import { shirtName, shirtNumber } from "@/world/shirt"
 import { useViewport } from "@/world/useViewport"
@@ -190,7 +191,7 @@ export function InvitePage({ api, missingKey = false }: { api: RsvpApi; missingK
 
   const { frame } = layout
   const chipsStyle: CSSProperties | undefined =
-    layout.mode === "desktop" ? { top: frame.y + 12, right: viewport.w - frame.x - frame.w + 12 } : undefined
+    layout.mode === "desktop" ? { top: frame.y + CHIP.inset, right: viewport.w - frame.x - frame.w + CHIP.inset } : undefined
   const rootStyle = { "--panel-top": `${layout.panelTop}px`, "--panel-h": `${layout.panelH}px` } as CSSProperties
 
   return (
