@@ -55,6 +55,32 @@ function clearAnswers() {
   }
 }
 
+export const STEP_KEY = "thirty-united:step"
+
+/** The code step (when the code was sent, never the code) survives a discarded tab, so the cooldown holds. */
+function loadSentAt(): number | null {
+  try {
+    const v = JSON.parse(window.sessionStorage.getItem(STEP_KEY) ?? "null") as { view?: string; sentAt?: unknown } | null
+    return v?.view === "code" && typeof v.sentAt === "number" && Number.isFinite(v.sentAt) && v.sentAt > 0 && v.sentAt <= Date.now() ? v.sentAt : null
+  } catch {
+    return null
+  }
+}
+function saveStep(sentAt: number) {
+  try {
+    window.sessionStorage.setItem(STEP_KEY, JSON.stringify({ view: "code", sentAt }))
+  } catch {
+    /* private mode: a reload returns to the form */
+  }
+}
+function clearStep() {
+  try {
+    window.sessionStorage.removeItem(STEP_KEY)
+  } catch {
+    /* nothing to clear */
+  }
+}
+
 type CodeState = { status: CodeStatus; sentAt?: number; retryAfterMs?: number; key: number }
 
 /**
@@ -63,11 +89,16 @@ type CodeState = { status: CodeStatus; sentAt?: number; retryAfterMs?: number; k
  */
 export function InvitePage({ api, missingKey = false }: { api: RsvpApi; missingKey?: boolean }) {
   const [restored] = useState(loadAnswers)
-  const [view, setView] = useState<View>(restored ? "form" : "sealed")
+  const [restoredSentAt] = useState(() => (restored ? loadSentAt() : null))
+  const [view, setView] = useState<View>(restoredSentAt ? "code" : restored ? "form" : "sealed")
   const [values, setValues] = useState<RsvpFormValues | null>(restored)
   const [formKey, setFormKey] = useState(0)
   const [serverErrors, setServerErrors] = useState<FieldErrors | undefined>()
-  const [code, setCode] = useState<CodeState>({ status: { kind: "sent" }, key: 0 })
+  const [code, setCode] = useState<CodeState>(() =>
+    restoredSentAt
+      ? { status: { kind: "sent" }, sentAt: restoredSentAt, key: restoredSentAt }
+      : { status: { kind: "sent" }, key: 0 },
+  )
   const [result, setResult] = useState<{ saved: SavedResult; payload: RsvpPayload } | null>(null)
   const [navigated, setNavigated] = useState(false)
   const [announce, setAnnounce] = useState("")
@@ -84,6 +115,7 @@ export function InvitePage({ api, missingKey = false }: { api: RsvpApi; missingK
   }, [])
 
   const go = (next: View, message = "") => {
+    if (next !== "code") clearStep() // saved, back to edit, or the backend sent the guest to the form
     setNavigated(true)
     setAnnounce(message)
     setView(next)
@@ -119,6 +151,7 @@ export function InvitePage({ api, missingKey = false }: { api: RsvpApi; missingK
             ? { status: { kind: "rate_limited", retryAfterMs: r.retryAfterMs }, retryAfterMs: r.retryAfterMs, key: start }
             : { status: { kind: "unavailable" }, key: start }
       setCode(next)
+      if (next.sentAt) saveStep(next.sentAt)
       go("code", r.status === "sent" ? `Code sent to ${normalizeEmail(v.email)}` : "")
     } catch {
       return { failed: true }
@@ -177,6 +210,7 @@ export function InvitePage({ api, missingKey = false }: { api: RsvpApi; missingK
               initialSentAt={code.sentAt}
               initialRetryAfterMs={code.retryAfterMs}
               onRequestCode={() => api.requestCode(email)}
+              onSent={saveStep}
               onVerify={(c) =>
                 api.verifyAndSave({ email, code: c, payload: toPayload(valuesRef.current ?? current) })
               }

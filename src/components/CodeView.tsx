@@ -92,6 +92,7 @@ export function CodeView({
   initialSentAt,
   initialRetryAfterMs,
   onRequestCode,
+  onSent,
   onVerify,
   onSaved,
   onInvalidPayload,
@@ -104,6 +105,8 @@ export function CodeView({
   initialSentAt?: number
   initialRetryAfterMs?: number
   onRequestCode: () => Promise<RequestCodeResult>
+  /** Told the epoch ms of each new code sent from this view, so a reload keeps the cooldown. */
+  onSent?: (sentAt: number) => void
   onVerify: (code: string) => Promise<VerifyResult>
   onSaved: (r: SavedResult) => void
   onInvalidPayload: (errors: Record<string, string>) => void
@@ -158,6 +161,7 @@ export function CodeView({
         if (r.status === "sent") {
           const t = Date.now()
           setSentAt(t)
+          onSent?.(t)
           setCooldownUntil(t + RESEND_COOLDOWN_MS)
           setCode("")
           setStatus({ kind: "sent", resent: true })

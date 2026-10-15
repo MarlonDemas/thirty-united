@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event"
 import { describe, expect, it } from "vitest"
 import { InvitePage } from "@/components/InvitePage"
 import type { VerifyResult } from "@/lib/api"
+import { emptyForm } from "@/lib/schemas/rsvp"
 import { fakeApi, setReducedMotion } from "@/test-utils"
 
 type Api = ReturnType<typeof fakeApi>
@@ -326,6 +327,86 @@ describe("the code step", () => {
     expect(await findHeading("Your details")).toBeInTheDocument()
     expect(screen.getByLabelText("First name")).toHaveValue("Thandi")
     expect(screen.getByLabelText("Football team")).toHaveValue("Orlando Pirates")
+  })
+})
+
+describe("the code step after a reload or discarded tab", () => {
+  const STEP = "thirty-united:step"
+  const step = () => JSON.parse(window.sessionStorage.getItem(STEP) ?? "null") as { view: string; sentAt: number } | null
+  const seed = (sentAt: number) => {
+    const answers = { ...emptyForm("yes"), firstName: "Thandi", surname: "Nkosi", email: "thandi@example.com" }
+    window.sessionStorage.setItem("thirty-united:answers", JSON.stringify(answers))
+    window.sessionStorage.setItem(STEP, JSON.stringify({ view: "code", sentAt }))
+  }
+  const toCodeView = async (api: Api) => {
+    setReducedMotion(true)
+    const { user } = setup(api)
+    await user.click(screen.getByRole("button", { name: /tear open/i }))
+    await pick(user, "Yes")
+    await fillYes(user)
+    await submit(user)
+    await findHeading("Check your email")
+    return user
+  }
+
+  it("stores only the step and when the code was sent, never the code", async () => {
+    const api = fakeApi({ verifyAndSave: async () => ({ status: "invalid_code", attemptsLeft: 2 }) as VerifyResult })
+    const before = Date.now()
+    const user = await toCodeView(api)
+    expect(step()).toEqual({ view: "code", sentAt: expect.any(Number) })
+    expect(step()!.sentAt).toBeGreaterThanOrEqual(before)
+    await typeCode(user, "482913")
+    await screen.findByText(/didn't match/i)
+    const all = Object.keys(window.sessionStorage).map((k) => window.sessionStorage.getItem(k)).join("|")
+    expect(all).not.toContain("482913")
+    expect(Object.keys(step()!).sort()).toEqual(["sentAt", "view"])
+  })
+
+  it("restores the code step with the resend cooldown still running", async () => {
+    seed(Date.now() - 15_000)
+    const api = fakeApi()
+    setup(api)
+    expect(await findHeading("Check your email")).toHaveFocus()
+    expect(screen.getByRole("button", { name: /resend in 0:4\d/i })).toBeDisabled()
+    expect(api.requestCode).not.toHaveBeenCalled()
+  })
+
+  it("keeps the new send time after a resend", async () => {
+    const old = Date.now() - 70_000
+    seed(old)
+    const { user } = setup(fakeApi())
+    await findHeading("Check your email")
+    await user.click(screen.getByRole("button", { name: "Send a new code" }))
+    await screen.findByText(/new code sent to/i)
+    expect(step()!.sentAt).toBeGreaterThan(old + 60_000)
+  })
+
+  it("ignores a stored step without stored answers", () => {
+    window.sessionStorage.setItem(STEP, JSON.stringify({ view: "code", sentAt: Date.now() }))
+    setup()
+    expect(heading("Thirty United")).toBeInTheDocument()
+  })
+
+  it("ignores a stored step sent in the future", async () => {
+    seed(Date.now() + 60 * 60 * 1000)
+    setup()
+    expect(await findHeading("Your details")).toBeInTheDocument()
+    expect(screen.queryByRole("heading", { name: "Check your email" })).toBeNull()
+  })
+
+  it("clears the step once the answer is saved", async () => {
+    const user = await toCodeView(fakeApi())
+    expect(step()).not.toBeNull()
+    await typeCode(user, "123456")
+    await findHeading("You're on the list")
+    expect(step()).toBeNull()
+  })
+
+  it("clears the step when the guest goes back to edit", async () => {
+    const user = await toCodeView(fakeApi())
+    await user.click(screen.getByRole("button", { name: /back to my answers/i }))
+    await findHeading("Your details")
+    expect(step()).toBeNull()
   })
 })
 
