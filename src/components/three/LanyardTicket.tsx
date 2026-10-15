@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type MutableRefObject } from "react"
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type MutableRefObject } from "react"
 import { Canvas, useFrame, useThree, type ThreeEvent } from "@react-three/fiber"
 import { BufferAttribute, BufferGeometry, DoubleSide, Group, Mesh, MeshBasicMaterial, MeshStandardMaterial, Vector3, type CanvasTexture } from "three"
 import { Lanyard, settleScale } from "./rope"
@@ -298,6 +298,15 @@ export default function LanyardTicket({
   useEffect(() => {
     onFailRef.current = onFail
   })
+  // R3F forces a context loss when it tears its root down (the hand-off to the DOM pass): only a loss while mounted
+  // is a failure. Without this every tear-open demoted the session to T1, and the WebGL world with it.
+  const mountedRef = useRef(true)
+  useLayoutEffect(() => {
+    mountedRef.current = true
+    return () => {
+      mountedRef.current = false
+    }
+  }, [])
 
   useEffect(() => {
     let dead = false
@@ -331,6 +340,7 @@ export default function LanyardTicket({
           onCreated={({ gl }) =>
             gl.domElement.addEventListener("webglcontextlost", (e) => {
               e.preventDefault()
+              if (!mountedRef.current) return
               stats.status = "CONTEXT LOST"
               onFailRef.current()
             })
