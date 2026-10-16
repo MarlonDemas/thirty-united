@@ -4,9 +4,9 @@ import { ArrowLeft, CircleAlert, CloudOff, Mail, MailCheck, Timer } from "lucide
 import { Button } from "@/components/ui/button"
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp"
 import { RuledBox } from "@/components/RuledBox"
-import { HeaderTicket } from "@/components/HeaderTicket"
 import { Announcer, StatusLine, type Tone } from "@/components/StatusLine"
 import { useFocusOnMount } from "@/hooks/useFocusOnMount"
+import { haptic, HAPTICS } from "@/lib/haptics"
 import { useSlowPending } from "@/hooks/useSlowPending"
 import { MISSING_KEY_MESSAGE } from "@/lib/inviteKey"
 import type { RequestCodeResult, SavedResult, VerifyResult } from "@/lib/api"
@@ -87,27 +87,33 @@ function useNow(active: boolean) {
 
 export function CodeView({
   email,
-  attending,
   initialStatus,
   initialSentAt,
   initialRetryAfterMs,
   onRequestCode,
+  onSent,
   onVerify,
   onSaved,
   onInvalidPayload,
   onBack,
+  onDigits,
 }: {
   email: string
-  attending: Attending
+  /** Kept for the caller's sake; the world shows the answer now. */
+  attending?: Attending
   initialStatus: CodeStatus
   /** Epoch ms when a code was sent in this view, if one was. */
   initialSentAt?: number
   initialRetryAfterMs?: number
   onRequestCode: () => Promise<RequestCodeResult>
+  /** Told the epoch ms of each new code sent from this view, so a reload keeps the cooldown. */
+  onSent?: (sentAt: number) => void
   onVerify: (code: string) => Promise<VerifyResult>
   onSaved: (r: SavedResult) => void
   onInvalidPayload: (errors: Record<string, string>) => void
   onBack: () => void
+  /** Digits typed so far: the floodlight's six lamps mirror them, never as numerals. */
+  onDigits?: (n: number) => void
 }) {
   const headingRef = useFocusOnMount<HTMLHeadingElement>()
   const otpRef = useRef<HTMLInputElement>(null)
@@ -121,6 +127,9 @@ export function CodeView({
     return 0
   })
   const [announce, setAnnounce] = useState("")
+  useEffect(() => {
+    onDigits?.(code.length)
+  }, [code.length, onDigits])
   const verify = useSlowPending()
   const resend = useSlowPending()
 
@@ -158,6 +167,7 @@ export function CodeView({
         if (r.status === "sent") {
           const t = Date.now()
           setSentAt(t)
+          onSent?.(t)
           setCooldownUntil(t + RESEND_COOLDOWN_MS)
           setCode("")
           setStatus({ kind: "sent", resent: true })
@@ -192,6 +202,7 @@ export function CodeView({
             onSaved(r)
             return
           case "invalid_code":
+            haptic(HAPTICS.wrong) // the six lamps go out together
             setCode("")
             setStatus(r.attemptsLeft > 0 ? { kind: "wrong", attemptsLeft: r.attemptsLeft } : { kind: "locked" })
             if (r.attemptsLeft > 0) requestAnimationFrame(focusCode)
@@ -228,14 +239,15 @@ export function CodeView({
   const busy = verify.pending || resend.pending
 
   return (
-    <section aria-labelledby="code-title" className="mx-auto flex w-full max-w-[640px] flex-col gap-8">
-      <HeaderTicket attending={attending} />
-      <h1 id="code-title" ref={headingRef} tabIndex={-1} className="heading-view m-0">
-        Check your email
+    <section aria-labelledby="code-title" className="flex flex-col gap-4">
+      <h1 id="code-title" ref={headingRef} tabIndex={-1} className="heading-panel m-0">
+        Seal it
       </h1>
       <StatusLine id="code-status" tone={d.tone} icon={d.icon}>
         {d.text}
       </StatusLine>
+      {/* Recommendation, chapter 3: the promise the code-step persistence keeps (InvitePage STEP_KEY). */}
+      <p className="standfirst m-0">Keep this page open. If it closes, open the link again and your answers will be waiting.</p>
       {busy && (
         <StatusLine>
           {resend.pending
@@ -249,20 +261,20 @@ export function CodeView({
       )}
 
       {noInput ? (
-        <Button type="button" onClick={doResend} disabled={busy} className="w-full md:w-auto">
+        <Button type="button" onClick={doResend} disabled={busy} className="w-full">
           <Mail aria-hidden="true" />
           Try again
         </Button>
       ) : (
         <form
           noValidate
-          className="flex flex-col gap-6"
+          className="flex flex-col gap-4"
           onSubmit={(e) => {
             e.preventDefault()
             doVerify()
           }}
         >
-          <RuledBox legend="Your code">
+          <RuledBox>
             <InputOTP
               ref={otpRef}
               maxLength={CODE_LENGTH}
@@ -287,7 +299,7 @@ export function CodeView({
               </InputOTPGroup>
             </InputOTP>
           </RuledBox>
-          <div className="flex flex-col-reverse gap-3 md:flex-row md:items-center md:justify-between">
+          <div className="flex flex-col-reverse gap-3">
             <Button
               type="button"
               variant="outline"
@@ -304,7 +316,7 @@ export function CodeView({
           </div>
         </form>
       )}
-      <Button type="button" variant="link" className="w-fit" onClick={onBack}>
+      <Button type="button" variant="link" className="w-fit px-0" onClick={onBack}>
         <ArrowLeft aria-hidden="true" className="size-5" strokeWidth={1.5} />
         Back to my answers
       </Button>

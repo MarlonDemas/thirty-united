@@ -1,6 +1,10 @@
 import { z } from "zod"
 import { FIELD_MESSAGES, LIMITS, isValidEmail, max, normalizeWhatsapp } from "@/lib/schemas/rsvp"
 
+// Skip zod 4's Function("") JIT probe: it trips the CSP (no 'unsafe-eval'). Set here, where zod first loads (the
+// details view chunk), before any schema is built or parsed.
+z.config({ jitless: true })
+
 /** Form schema. Lives apart from rsvp.ts so zod only loads with the details view. */
 export const rsvpFormSchema = z
   .object({

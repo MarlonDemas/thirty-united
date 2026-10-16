@@ -1,141 +1,123 @@
-# Brief: Thirty United, save-the-date RSVP page
+# Brief: Thirty United, save-the-date RSVP (redesign: the world and the journey)
 
-Date: 2026-10-14
+Date: 2026-10-15 (owner decisions of 2026-10-14, tonight). Updated 2026-10-15 after the direction gate closed on Direction D, "Matchday: The Signing" (owner reply: "defaults").
 Resolved stack: web-vite
 Family: web
+Supersedes: `briefs/archive/save-the-date-brief-2026-10-14.md`. Facts that did not change (backend, stored fields, code limits, scope out-list, edge-case tiers, opening line) are carried forward below or by reference to that file. Its Distinctiveness Sentence, Palette A, light-theme-only decision and Direction A are no longer current.
 
 ## Goal
-A guest opens one link on their phone, tears the ticket open, RSVPs in under a minute, verifies their email, and keeps a personalised stub that says they are on the list.
+A guest opens one link on their phone, opens Makes's own matchday poster alive in depth layers, and moves through it to RSVP: tear open the pass, say whether they are coming, tell us who they are, confirm their email, and end as Makes's new signing, with a poster of their own shirt to keep. They should want to reach the end because each answer switches on more of the ground's floodlights, and their shirt number appears only after the code.
+
+(The world described under "World (owner)" below was the 2026-10-14 brief. After the owner's gameday set of 2026-10-15, the chosen world is Makes's poster, not a miniature ground; see `direction.md` Direction D.)
+
+## Owner direction (2026-10-14, verbatim)
+- "I still don't like the color or theme currently and I feel like we still being safe! … go all out … Don't hold back at all"
+- "the second part felt too much like a boring form that people might get tired of filling in, it also needs to feel like a story or journey. Just something interactive that makes you feel you want to finish the form."
 
 ## Persona
 - Primary: friends and family of Marlon "Makes" Demas, mostly South African, ages roughly 20 to 70. Many are not football fans. Some are not comfortable with forms.
-- Device context (web): primarily mobile (opened from a WhatsApp or email link, one-handed, portrait). Desktop is a secondary, wider view of the same flow.
+- Device context (web): primarily mobile, opened from one WhatsApp link, often inside WhatsApp's in-app browser, one-handed, portrait. Many guests are on low-end Android. Desktop is a secondary, wider view of the same world.
 - Frequency: rare. Each guest visits once, maybe twice (re-verifying the same email to change an answer).
 
 ## Stakes
-Low and reversible, but personal. A guest's name, email and optional WhatsApp number are collected, so the code step and the data shown back must feel trustworthy. Re-verifying the same email updates the RSVP, so a wrong answer is never permanent.
+Low and reversible, but personal. Name, email and an optional WhatsApp number are collected, so the code step and the data shown back must feel trustworthy. Re-verifying the same email updates the RSVP.
 
-## Reading mode
-glance (ticket), then scan (form), inferred from data shape: the sealed ticket is a one-object hero; the RSVP, details and code views are forms. The stub is glance. User override: owner's decision, "glance (ticket) → scan (form)".
+## World (owner)
+- Football stays. A stylised miniature night stadium the guest is inside: floodlights through haze, a glowing pitch, the ticket living in it.
+- No club crest, wordmark or kit (trademark, unchanged). The United nod can no longer lean on terrace red; it lives in football culture itself (floodlights, tunnel, turnstile, pitch markings).
+- Out: the paper palette (`#F3EDE1`, `#B3261E` and its neutrals) and the drawn CSS green night stand (stadium A scene tokens `#0B1411`, `#16231E`, `#22342D`, `#FFF6DC`, `#2F5D3A`, `#2A4A31`). A new palette is required.
+- Reach: the world persists behind every step: sealed ticket → attendance (Yes / Maybe / No and plus-one) → details → email code → returned stub. This reverses "fade to paper after Tear open" and "stub stays on paper" (see `feedback.md`, 2026-10-14 owner override).
+
+## Ambition calibration (owner)
+Two reference videos, copied to `references/immersive-night-world-rsvp/owner-calibration/` and cited in the reference file:
+- @Guronnimo: a first-person meadow of cursor-reactive grass, wildflowers and haze, with a small Morning / Golden / Night chip that relights the whole world.
+- @flxrnc: an autumn cottage diorama on a dark lacquered turntable, lit windows and lamp posts, chimney smoke, falling leaves, volumetric dusk haze and an orbiting camera.
+Both are whole lit worlds where the UI is one small chip. Today's page is a page with a 3D object on it. That gap is the redesign.
+
+## Journey requirement
+The RSVP must stop reading as a form. Rules every direction follows:
+1. **Each step is a place or moment in the world**, and every answer gets a visible reaction in the world (a gate turns, a light strikes, a name appears on an object). The guest sees progress in the world, not in a numbered stepper.
+2. **The world decorates; the control decides.** Every step is completed by a plain, labelled DOM control with one tap, Enter or Space. No beat requires playing, dragging, aiming or finding something. World gestures (drag to turn, touch the grass) are optional extras with no effect on the data.
+3. **Beats group fields.** The five beats map to the existing views. Details stays one beat with its fields together; this is not a one-question-per-screen sequence (that was part of rejected Direction B).
+4. **Text never sits directly on the moving scene.** Every label, input, status line and button sits on a solid or near-solid surface defined by the direction, so contrast is fixed whatever the scene is doing.
+5. **Answers persist.** The existing `sessionStorage` draft (`thirty-united:answers`, never the code) keeps answers across reload and back, as today.
+6. **No game engine.** The fun fact is still only collected ("May be used in a game on the day"). No scores, timers, achievements or leaderboards.
+
+## Motion budget
+Signature. Motion is the brand: the world's light and camera answer the guest's answers. One continuous world, so view changes are camera shots or light changes, never page fades or wipes.
+
+Direction D, owner decision 5 ("go all out, within limits", accepted through "defaults" on 2026-10-15):
+- **Ambient:** embers, smoke and cloud at 30 Hz on T3 and T2; paused when the page is hidden and for the whole code beat. The UI layer never loops.
+- **Beats:** each answer is a one-way floodlight strike (about 600 ms); camera push-ins of 3 to 4 percent at most; no forward travel, no gyro, no idle drift. The finale runs about 3.2 s. Every large-area brightness change is one-way and 300 ms or longer.
+- **Still chip:** stops every ambient loop for the session and drops to T1, without an OS setting.
+- **Reduced motion (T0):** nothing loops; no camera travel, no particles, no relight animation; each beat swaps instantly to its final framing, and every reaction has a static equivalent (a lit state instead of a lighting animation).
+
+Timings and tokens: `tokens.md` Motion. All durations are estimates to tune on a device.
+
+## Brief texture
+premium-consumer. Lux re-run on 2026-10-15 for Direction D: `lux-notes/save-the-date-2026-10-15.md`. Committed: material truth, specificity, time visible in detail, multi-sensory, and quiet by default recast for the UI layer only; inevitability through restraint kept as a list of refusals. Not committing: patina-aware. "Nothing loops" is reversed for ambient motion on T3 and T2 and kept under reduced motion, in the UI layer and on the code beat.
+
+## Reading mode (per step)
+| Step | Mode | Why |
+|---|---|---|
+| Sealed ticket | glance | One object in one place, one action. |
+| Attendance (Yes / Maybe / No, plus-one) | glance | Three choices and a toggle, understood in about two seconds. |
+| Details (name, email, WhatsApp and the optional fields) | scan | The one step with several fields; short labels, one-line helpers. |
+| Email code | scan | Where the code went, six digits, resend state. |
+| Returned stub | glance | Your name, your seat, the stamp. |
+| World chrome (relight chip, sound, quality) | glance | Small controls, icon plus short label. |
+
+## Accessibility floor (unchanged in substance, re-proven over the scene)
+- WCAG 2.2 AA on every step: text 4.5:1 on its surface, control edges and focus 3:1 against both the surface and the brightest scene pixels behind them (floodlight glare included).
+- Keyboard completion of every step. Tab order follows reading order; the canvas is never in the tab order; focus moves to the new step's heading (project rule, see `feedback.md`).
+- Live-region announcement of every world reaction that carries meaning (tear result, code status, seat assigned).
+- `prefers-reduced-motion`, `forced-colors: active` and 200% text supported. In forced colours the scene is hidden and the UI uses system colours.
+- Minimum text 14 px, inputs 16 px, targets 48 px.
+- `color-scheme` changes from light to dark with this redesign; the old light-only decision is reversed with the paper palette (inferred from the reach decision on 2026-10-14; confirmed by the Direction D pick on 2026-10-15).
+
+## Performance and fallback (constraint for every direction)
+- Stack: Vite, React 19, `@react-three/fiber` and `three` (already in the lazy chunk, 246 kB gzip), `motion`, Tailwind, Convex, Netlify. Entry chunk stays free of three.
+- Every direction keeps a three-rung ladder where every rung is still that direction's world and journey: (1) WebGL world; (2) a 2D world (baked stills or layered illustration, same palette, same beats) for no WebGL, slow frames, low memory or a chunk failure; (3) reduced motion and forced colours (flat, instant, no camera or relight). Dropping to the old paper flow is not a fallback.
+- Each direction states its render cost honestly: what is instanced, what is baked, what drops on a weak GPU. An architecture pass sizes the budget after the pick.
+- Current CSP (`netlify.toml`): no `unsafe-inline`, no wasm. Decoders that need wasm (Draco, Meshopt, KTX2/Basis) need a CSP change, decided in the architecture pass.
 
 ## Aesthetic anchors
-- Loves: Paperless Post (the invite as a physical object), Mundial (ruled print-programme boxes, football through print culture), Man Utd site (serif gravitas, one red action), Premier League (tabular numerals for match facts).
-- Avoids: Evite (confetti, balloons, gold-foil "30"), Partiful (club-night distressed promo), Luma (gradient headline word), Copa90 (glitchy loud intro), any official club crest (trademarked), photo-led dark heroes as the default.
+- Loves: the two owner videos above (whole lit worlds, UI as one small chip); the current 3D lanyard ticket and the tear (he approved both in WhatsApp tests).
+- Avoids: anything "safe"; the paper-and-red programme look; rejected B (letterpress ink bleed, deckled edge, off-register stamp, one question per screen) and rejected C (solid ink strips, scrolling ticker, wipes, shirt-number form rows, scoreboard digits); Evite-style confetti, balloons and gold foil; club crests, wordmarks and kits.
 
 ## Scope
-- In: the single page and its states: sealed ticket and tear, RSVP attendance, Yes/Maybe details form, No form, email code verification (6 digits, resend cooldown), personalised stub (Yes/Maybe), "sorry you'll miss it" stub (No), re-verify updates the RSVP, error and edge states.
-- Out: no host dashboard or guest-list view, no game engine (the fun fact is only collected; "may be used in a game on the day"), no automated invites or reminders, no venue map (venue is TBA), no payments, no gift registry.
+- In: the single page and all its states: sealed ticket and tear, attendance (Yes / Maybe / No, plus-one), Yes/Maybe details, No details, email code (6 digits, resend cooldown), personalised stub (Yes/Maybe), "sorry you'll miss it" stub (No), re-verify updates the RSVP, error and edge states, all inside the world.
+- Out: no host dashboard or guest-list view, no game engine, no automated invites or reminders, no venue map (venue TBA), no payments, no gift registry. **No new backend reads**: Convex and the RSVP logic are unchanged, so nothing may show other guests' data (who else is coming, how many seats are lit). The guest's own `ticketNo` is available and may drive "your seat lights up".
+
+## Data shape (unchanged, `convex/schema.ts`)
+`email`, `firstName`, `surname`, `preferredName`, `attending` (yes | maybe | no), `plusOne`, `plusOneName`, `sport` (football | other), `team`, `otherSport`, `funFact`, `howKnowMakes`, `inviteChannel` (email | whatsapp), `whatsapp`, `ticketNo`. Code challenge: 6 digits; design assumes 10 minutes, 5 attempts, 30 s between sends (see archived brief).
 
 ## Edge case priority
-- Tier 1 (must): wrong or expired code, resend cooldown running, resend sent, invalid email, invalid WhatsApp number, network failure on submit (answers kept), reduced-motion instant reveal, keyboard-only completion of every step, same email re-verified (update, not duplicate), screen-reader announcement of the tear result.
-- Tier 2 (should): very long names (stub must not overflow), no team given, other-sport team instead of football, plus-one name left blank, slow network on the code step, browser back after verification, small phone (360 px wide) and large text (200%).
+Carried forward from the archived brief (Tier 1 to 3 unchanged), plus world-specific items:
+- Tier 1 (must): WebGL unavailable or lost mid-journey (drop to the 2D rung without losing the step or answers); slow frames on low-end Android (drop silently); the on-screen keyboard covering the lower half of the screen while the scene is still visible; WhatsApp in-app browser on iOS and Android; reduced motion; forced colours; keyboard-only completion over the scene.
+- Tier 2 (should): device rotation mid-step; tab hidden and restored (pause the world); 200% text with the scene squeezed to a strip; slow network while the world assets load (the first beat must be usable before the world finishes loading).
 - Tier 3 (later): offline, add-to-calendar, share-the-link, saving the stub as an image.
 
 ## Web-specific
-- Above-the-fold priority (desktop): the sealed ticket at full size, centred, with the single tear affordance visible.
-- Above-the-fold priority (mobile): the ticket (landscape, rotated hint not required) fills the width at 390 px; the tear handle and stub line are visible without scrolling.
-- Responsive behaviour: same layout concept at all breakpoints (one object, one column of content); the ticket scales and the form column caps at a readable width on desktop.
-- Keyboard model: Tab order follows reading order. The tear is a real button ("Tear open", Enter or Space triggers the tear; pointer users may also drag along the stub line). Attendance is a radio group (arrow keys move, Space selects). The code field accepts paste of 6 digits and auto-advances; Backspace moves back. Focus moves to the new view's heading after each step. Esc does nothing destructive.
-- SEO / sharability: Open Graph image and title for the link preview in WhatsApp and email (sealed ticket artwork, "Thirty United, 21 Dec 2026"). No indexing needed (`noindex`).
+- Above-the-fold priority (mobile): the world, with the sealed ticket inside it and the one action visible without scrolling.
+- Above-the-fold priority (desktop): the same world, wider; the step surface sits beside or below the world without covering its focal point.
+- Responsive behaviour: one world at every breakpoint; the camera framing changes, not the concept. The step surface caps at a readable width on desktop.
+- Keyboard model: unchanged from the archived brief (tear is a real button; attendance is a radio group; code field takes paste of 6 digits; focus to the step heading). World extras (relight chip, sound) are real buttons with `aria-pressed`.
+- SEO / sharability: the Open Graph image for the WhatsApp preview becomes a teaser composite of the poster (Makes from the chest up, dark floodlights, "THIRTY", "21 DEC 2026"), never a guest's poster. `noindex`.
 
 ## Decisions
-- Distinctiveness Sentence (owner, verbatim): "The thing that makes this unmistakable in a screenshot is a landscape match ticket with a punched perforation that the guest tears along the stub line to open the page, and their RSVP comes back as a stub with their name, team and seat number in tabular numerals, stamped ADMIT ONE · 21 DEC 2026." This is Candidate Signatures 1 and 2 from the reference set combined. Do not re-ask.
-- Motion budget (owner): signature. The tear is the brand moment. `prefers-reduced-motion` means an instant reveal with no tear.
-- Brief texture (owner): premium-consumer. Likely lux commits: material truth (paper stock, ink, perforation), quiet by default, specificity, patina-aware. Run `/specno-design:lux` before the build.
-- Reading mode (owner): glance (ticket) → scan (form).
-- Palette (owner): A "Matchday Paper". Ticket stock `#F3EDE1`, ink `#1B1A17`, a single terrace-red accent `#B3261E`. Starting type pairing Barlow Condensed / Inter / JetBrains Mono. All three proposed directions keep paper + ink + one red accent and differ on typography identity, layout primitive, ticket rendering, motion philosophy, density and tone.
-- Dark mode (owner confirmed 2026-10-14, light theme only): ship one deliberate light theme ("paper") and set `color-scheme: light` so browsers do not auto-darken it. Reasons: the paper stock is the material of the Signature; the event is one night and the page lives for weeks; inverting a ticket into a dark card weakens the screenshot test. Guard against the cost: contrast is checked at AA on paper, `forced-colors` and 200% text are supported, and no content depends on a light-only effect. Revisit only if user testing shows glare complaints at night. Build note: neutralise the `.dark` block in `src/index.css` and set `color-scheme: light` on `:root`.
-- Brand constraint: no official Manchester United crest, wordmark or kit. The United nod is the red, the serif or condensed type, and the football-programme culture.
-- Copy tone: warm, short, a little playful. Words only where no icon, type, colour, position or motion can carry the meaning.
-
-## Message list per view
-Channel key: icon / type / colour / position / motion. Words only where nothing else fits (each such string is logged in `channel-log.yaml` at build).
-
-### View 1: Sealed ticket (glance)
-| Meaning | Channel | Words |
-|---|---|---|
-| "This is an invitation and it is for me" | Type: the display "30" and "THIRTY UNITED" at the largest size; position: ticket centred | "Thirty United" (title, needed) |
-| Date | Type: tabular numerals, high on the ticket | "21 DEC 2026" (the Signature stamp text) |
-| Venue is not set yet | Icon: map-pin with a dashed outline; type: muted ink | "Venue TBA" (nothing else fits) |
-| "Do this next" | Icon (scissors/arrow along the stub line) plus a short label on the one red action; motion: a slow nudge of the stub edge | "Tear open" |
-| Tear result | Motion: the stub separates along the perforation, page content reveals from the tear origin; reduced motion: instant swap | none |
-
-### View 2: RSVP attendance (scan)
-| Meaning | Channel | Words |
-|---|---|---|
-| Three options | Icons: check, help-circle (maybe), x; position: three equal choices in a row; colour: selected state ink fill plus icon fill change plus accessible name | "Yes", "Maybe", "No" (short labels) |
-| Question | Type: heading size | "Are you coming?" |
-| Selected | Colour plus icon state change plus the ticket stub previews the choice | none |
-| Continue | Red primary action, arrow icon plus label | "Continue" |
-
-### View 3: Details, Yes or Maybe (scan)
-| Meaning | Channel | Words |
-|---|---|---|
-| Name fields | Position: first name, surname side by side on desktop, stacked on mobile; labels above fields | "First name", "Surname", "Preferred name (optional)" |
-| Plus-one | Icon: user-plus on a toggle; the name field appears from the toggle's origin | "Bringing someone?" and "Their name" |
-| Team | Segmented choice: football icon vs other-sports icon; then a team field | "Football team" or "Sport and team" |
-| Fun fact | Helper line under the field, small muted type | "May be used in a game on the day" (needed, it sets consent expectations) |
-| How you know Makes | Optional select | "How do you know Makes? (optional)" |
-| Invite channel | Two icon choices: mail, message-circle (WhatsApp); a phone field appears only for WhatsApp | "Email", "WhatsApp", "WhatsApp number" |
-| Required vs optional | Position and type: optional fields carry a muted "optional" tag; no red asterisks | "optional" |
-| Field error | Colour (red) plus alert icon plus inline text under the field plus focus moved to the first error | specific text, e.g. "Add a first name" |
-| Submit | Red primary action | "Send my code" |
-
-### View 4: No (scan)
-| Meaning | Channel | Words |
-|---|---|---|
-| Only name and email are needed | Position: two fields, nothing else; the ticket shows a dimmed seat | "First name", "Surname", "Email" |
-| Submit | Red primary action | "Send my code" |
-
-### View 5: Email code (scan)
-| Meaning | Channel | Words |
-|---|---|---|
-| Where the code went | Icon: mail; the email address shown in tabular numerals/mono | "Code sent to" plus the address |
-| Six digits | Position: six separate boxes in a row, mono numerals, paste-aware | none |
-| Wrong code | Colour plus alert icon plus a short horizontal shake (reduced motion: no shake) | "That code didn't match" |
-| Resend cooldown | Icon: timer plus a countdown in tabular numerals; button disabled with accessible name | "Resend in 0:30", then "Send a new code" |
-| Resent | Check icon and a brief status line (live region) | "New code sent" |
-| Success | Motion: the verified ticket is stamped and the stub drops in; reduced motion: instant | none |
-
-### View 6: Stub, Yes or Maybe (glance)
-| Meaning | Channel | Words |
-|---|---|---|
-| You are on the list | Type: the ADMIT ONE · 21 DEC 2026 stamp, terrace red, the only red area | the stamp text (part of the Signature) |
-| Whose ticket | Type: guest name large; team beneath in condensed caps | the guest's own words |
-| Seat | Type: seat number in tabular numerals | "SEAT" label, short |
-| Maybe vs Yes | Stamp wording and icon: Yes is "ADMIT ONE", Maybe is "ADMIT ONE" in outline with a help-circle (the seat is held, not confirmed) | "MAYBE" tag, short |
-| Update later | Quiet link; same email re-verifies and overwrites | "Change my answer" |
-| Venue | Icon: map-pin dashed | "Venue TBA" |
-
-### View 7: Stub, No (glance)
-| Meaning | Channel | Words |
-|---|---|---|
-| Sorry you'll miss it | Type: ticket marked void by a diagonal rule in ink (no red stamp: red is reserved for a Yes); a heart or hand icon | "Sorry you'll miss it, [preferred or first name]" |
-| Change of mind | Quiet link | "Changed your mind?" |
-
-### Global edge states
-| Meaning | Channel | Words |
-|---|---|---|
-| Network failure on submit | Alert icon, inline, answers preserved, retry action | "Couldn't send. Try again" |
-| Link opened after RSVP on the same device | Page shows the guest's stub directly after re-verification only; no silent recognition | none |
-
-## Resolved decisions and backend (2026-10-14)
-- Direction (owner): A, Matchday Programme. B Terrace Ticket and C Scoreboard Broadcast are rejected (see `direction.md`, Decision).
-- Seat numbers (owner): sequential in RSVP order, so "SEAT 007" is the 7th reply. The backend assigns `ticketNo` on the first RSVP and keeps it when the guest updates their answer. Design note: if No replies also take a number, Yes and Maybe seats will show gaps (1, 2, 4). The No stub shows no seat, so guests will not see this unless they compare.
-- Backend (decided, not open): Convex, with the email code sent through Gmail. Stored fields per `convex/schema.ts`: `email` (trimmed, lowercase), `firstName`, `surname`, `preferredName`, `attending` (yes | maybe | no), `plusOne`, `plusOneName`, `sport` (football | other), `team`, `otherSport`, `funFact`, `howKnowMakes`, `inviteChannel` (email | whatsapp), `whatsapp`, `ticketNo`, `createdAt`, `updatedAt`. Code challenges keep `codeHash`, `expiresAt`, `attempts` and `consumed`; `@convex-dev/rate-limiter` backs the rate-limit state. The design needs these backend facts at build: the code lifetime, the attempt limit and the resend limit (the design assumes 10 minutes, 5 attempts, 30 seconds between sends).
-- Light theme only (owner): `color-scheme: light`, AA contrast, `forced-colors` and 200% text support.
-- Maybe guests: the RSVP records the status. Reminders stay out of scope.
-
-## Opening line: options
-One short line from Makes, set in the serif standfirst on the sealed ticket and signed "Makes". The owner picks one. No exclamation marks, no club names.
-
-1. "Turning 30, and I've kept you a seat in the stands."
-2. "Thirty feels like half time. Come for the oranges." **(CHOSEN by the owner, 2026-10-14)**
-3. "Turning 30 on a Monday, which is brave. You're in my starting eleven."
-
-Lean: option 1 is the safest for guests who do not follow football and ties to the seat number on the stub. Option 2 is the funniest for fans and still readable by everyone. Option 3 is the driest and mentions the Monday, so it also helps the date register.
+- Distinctiveness Sentence (Pixel's wording, accepted by the owner through "defaults" on 2026-10-15; he did not write it): "The thing that makes this unmistakable in a screenshot is that the invite is Makes's own living matchday poster, where every answer switches on a bank of floodlights until he holds up your shirt, with your name and number, as his new signing."
+- Direction: D, "Matchday: The Signing" (`direction.md`).
+- Motion budget: signature, with ambient motion within limits (above).
+- Brief texture: premium-consumer (above); lux re-run done.
+- Colour scheme: dark, `color-scheme: dark` (confirmed by the pick: the poster persists behind every beat).
+- The eight owner decisions of 2026-10-15 (crests, shirt number, No poster, name, motion, lanyard, plates, date line): `direction.md` Decision.
+- Reading mode: per step (above).
+- Opening line, carried forward: "Thirty feels like half time. Come for the oranges." (owner, 2026-10-14).
 
 ## Open questions
-- Which opening line (above)? Owner to pick.
-- Code lifetime, attempt limit and resend limit: confirm the backend values against the design assumptions above.
-- Whether No replies consume a seat number (see the gap note above).
+- Closed 2026-10-15: which direction (D), the Distinctiveness Sentence (above), `color-scheme` (dark), and the lux commits (lux note 2026-10-15).
+- Closed 2026-10-15: likeness (owner: "likeness yes"), wireframes ("wireframes ok"), typography (keep the four shipped faces plus SVG title lockups; brush font picked in the asset phase) and the moon default (about 93 percent waxing gibbous on 21 December 2026; the phase itself is still an estimate).
+- Open: the owner's decision on G1 (keep the photo-real attempt or have it repainted in the painted style). His photo arrived on 2026-10-15 and the first G1 attempt is in review, not approved.
+- Draft copy stays as drafts until he rewrites it.
+- Carried forward: confirm code lifetime, attempt limit and resend limit against the design assumptions; whether No replies consume a seat number.

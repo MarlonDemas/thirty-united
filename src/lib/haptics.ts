@@ -8,6 +8,16 @@ export const HAPTICS = {
   separate: [10, 30, 18],
   stamp: 22,
   stampSoft: 12,
+  /** A floodlight bank strikes (tokens.md haptics). */
+  strike: 12,
+  /** Maybe and No on Chapter 1's Continue. */
+  strikeSoft: 8,
+  /** One code digit lights one lamp. */
+  digit: 4,
+  /** A wrong code: the lamps go out. */
+  wrong: [10, 30, 10],
+  /** The number lands on the shirt. */
+  number: 22,
 } as const satisfies Record<string, HapticPattern>
 
 export const TEAR_TICK_PX = 40

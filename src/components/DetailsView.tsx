@@ -7,7 +7,6 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Field, FieldError } from "@/components/ui/field"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioTile } from "@/components/ui/radio-group"
-import { HeaderTicket } from "@/components/HeaderTicket"
 import { RuledBox } from "@/components/RuledBox"
 import { StatusLine } from "@/components/StatusLine"
 import { OptionalTag, TextAreaField, TextField } from "@/components/fields"
@@ -16,6 +15,7 @@ import { MISSING_KEY_MESSAGE } from "@/lib/inviteKey"
 import { useSlowPending } from "@/hooks/useSlowPending"
 import {
   FORM_FIELDS,
+  LIMITS,
   type FormField,
   type RsvpFormValues,
 } from "@/lib/schemas/rsvp"
@@ -107,19 +107,18 @@ export function DetailsView({
   const channel = watch("inviteChannel")
 
   return (
-    <section aria-labelledby="details-title" className="mx-auto flex w-full max-w-[640px] flex-col gap-8">
-      <HeaderTicket attending={attending} />
-      <div className="flex flex-col gap-3">
-        <h1 id="details-title" ref={headingRef} tabIndex={-1} className="heading-view m-0">
-          {isNo ? "Just your name" : "Your details"}
+    <section aria-labelledby="details-title" className="flex flex-col gap-6">
+      <div className="flex flex-col gap-2">
+        <h1 id="details-title" ref={headingRef} tabIndex={-1} className="heading-panel m-0">
+          {isNo ? "Just your name" : "Your shirt"}
         </h1>
         <p className="standfirst m-0">
-          {isNo ? "So I know you replied." : "A few lines so I can seat you properly."}
+          {isNo ? "So I know you replied." : "Your name goes on the back. A few lines so I can seat you properly."}
         </p>
         <Button
           type="button"
           variant="link"
-          className="w-fit"
+          className="w-fit px-0"
           onClick={() => onChangeAttending({ ...initial, ...getValues(), attending })}
         >
           <Pencil aria-hidden="true" className="size-5" strokeWidth={1.5} />
@@ -130,15 +129,15 @@ export function DetailsView({
       <form
         noValidate
         onSubmit={submit}
-        className="flex flex-col gap-8"
+        className="flex flex-col gap-6"
       >
         <RuledBox legend="You">
-          <div className="grid gap-4 md:grid-cols-2">
-            <TextField name="firstName" label="First name" autoComplete="given-name" reg={register("firstName")} error={errMsg("firstName")} />
-            <TextField name="surname" label="Surname" autoComplete="family-name" reg={register("surname")} error={errMsg("surname")} />
+          <div className="grid gap-4">
+            <TextField name="firstName" maxLength={LIMITS.name} label="First name" autoComplete="given-name" reg={register("firstName")} error={errMsg("firstName")} />
+            <TextField name="surname" maxLength={LIMITS.name} label="Surname" autoComplete="family-name" reg={register("surname")} error={errMsg("surname")} />
           </div>
           {!isNo && (
-            <TextField name="preferredName" label="Preferred name" optional autoComplete="nickname" reg={register("preferredName")} error={errMsg("preferredName")} />
+            <TextField name="preferredName" maxLength={LIMITS.name} label="Preferred name" optional autoComplete="nickname" reg={register("preferredName")} error={errMsg("preferredName")} />
           )}
           {isNo && (
             <TextField name="email" label="Email" type="email" inputMode="email" autoComplete="email" reg={register("email")} error={errMsg("email")} helper="We send a 6-digit code here." />
@@ -227,7 +226,7 @@ export function DetailsView({
                   <select
                     id="field-howKnowMakes"
                     data-slot="select"
-                    className="h-12 w-full min-w-0 appearance-none rounded-none border border-input bg-paper-raised py-0 pr-10 pl-3 text-base text-ink has-[option[value='']:checked]:text-muted-foreground [&>option]:text-ink disabled:cursor-not-allowed disabled:opacity-60"
+                    className="h-12 w-full min-w-0 appearance-none rounded-none border border-input bg-panel-raised py-0 pr-10 pl-3 text-base text-foreground has-[option[value='']:checked]:text-moonlight [&>option]:bg-panel-raised [&>option]:text-foreground disabled:cursor-not-allowed disabled:opacity-60"
                     {...register("howKnowMakes")}
                   >
                     <option value="">Choose one</option>
@@ -237,7 +236,7 @@ export function DetailsView({
                       </option>
                     ))}
                   </select>
-                  <ChevronDown aria-hidden="true" className="pointer-events-none absolute top-1/2 right-3 size-5 -translate-y-1/2 text-ink" strokeWidth={1.5} />
+                  <ChevronDown aria-hidden="true" className="pointer-events-none absolute top-1/2 right-3 size-5 -translate-y-1/2 text-foreground" strokeWidth={1.5} />
                 </div>
               </Field>
             </RuledBox>
@@ -298,7 +297,7 @@ export function DetailsView({
         )}
 
         <div className="flex flex-col gap-3">
-          <Button type="submit" disabled={pending} className="w-full md:ml-auto md:w-auto md:min-w-56">
+          <Button type="submit" disabled={pending} className="w-full">
             <Mail aria-hidden="true" />
             Send my code
           </Button>

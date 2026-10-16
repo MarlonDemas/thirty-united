@@ -1,9 +1,9 @@
-import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react"
+import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
+import { createPortal } from "react-dom"
 import { animate, m, useMotionValue, useTransform } from "motion/react"
 import { cn } from "cn"
-import { MapPin, Scissors } from "lucide-react"
+import { CalendarDays, MapPin, Scissors } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { ErrorBoundary } from "@/components/ErrorBoundary"
 import { StatusLine } from "@/components/StatusLine"
 import { MISSING_KEY_MESSAGE } from "@/lib/inviteKey"
 import { Ticket } from "@/components/Ticket"
@@ -11,13 +11,15 @@ import { useFocusOnMount } from "@/hooks/useFocusOnMount"
 import { useReducedMotion } from "@/hooks/useReducedMotion"
 import { useTilt } from "@/hooks/useTilt"
 import { haptic, HAPTICS, ticksBetween } from "@/lib/haptics"
-import { getSoundOn, playTearSeparate, playTearTick, setSoundOn, unlockAudio } from "@/lib/sound"
+import { getSoundOn, playTearSeparate, playTearTick, unlockAudio } from "@/lib/sound"
 import { forcedColors } from "@/lib/motionPrefs"
 import { hasWebGL } from "@/lib/webgl"
-import type { SettleFn } from "@/components/three/LanyardTicket"
+import { demote, isWebGLTier, useTier } from "@/world/tier"
+import { clearPass, setPass, type SettleFn } from "@/world/pass"
 
-// 3D lanyard ticket. Separate chunk, fetched once the sealed view is idle.
-const LanyardTicket = lazy(() => import("@/components/three/LanyardTicket"))
+// `?debug=1` only: the pass's readout (fps, renderer, frame times), in its own small chunk.
+const DebugOverlay = lazy(() => import("@/components/three/DebugOverlay").then((m) => ({ default: m.DebugOverlay })))
+const debug = () => new URLSearchParams(window.location.search).get("debug") === "1"
 
 export const HOST_LINE = "Thirty feels like half time. Come for the oranges."
 
@@ -26,7 +28,13 @@ const FINISH = { type: "spring", stiffness: 180, damping: 26 } as const
 const CANCEL = { type: "spring", stiffness: 400, damping: 34 } as const
 const SETTLE = { type: "spring", stiffness: 260, damping: 22 } as const
 const FLICK = { duration: 0.42, delay: 0.2, ease: [0.4, 0, 1, 1] as const }
-const STAGE_FADE_MS = 160 // stage-fade: the night cross-fades to paper while the 3D ticket cross-fades to the DOM one
+// The torn pass fades out before the beat changes: a large bright area, so one way and 300 ms or more (brand.md,
+// tokens.md Motion rules). The same 300 ms, ease-in-out, one-way fade as `finale-dim`.
+const PASS_EXIT = { duration: 0.3, ease: "easeInOut" } as const
+const STAGE_FADE_MS = 160 // pressed with no 3D pass up: the stage fades before the tear
+// The hand-off from the 3D pass: the DOM ticket (on top) fades in over the 3D one, which stays lit under it until it is
+// gone. The two differ in size and light, so this is the one visible change: one way, 300 ms, ease-in-out (`finale-dim`).
+const HANDOFF_MS = 300
 const SEPARATE_MS = 200 // the moment the stub lets go: haptic, rip and the main half's settle
 const THRESHOLD = 0.35
 const HANDLE = 56
@@ -40,30 +48,52 @@ const LABEL_COL = 36 // the width of its column along the right edge
 const span = (h: number) => Math.max(h - TIP0, 1)
 const tipAt = (p: number, h: number) => TIP0 + p * span(h)
 
-export function VenueTba() {
+/** "Monday 21 December 2026 · Venue TBA" (draft): icon + mono date, dashed map-pin + muted venue. */
+export function DateVenue() {
   return (
-    <p className="helper m-0 flex items-center gap-2 text-ink-2">
-      <span aria-hidden="true" className="inline-flex size-6 items-center justify-center border border-dashed border-ink-2">
-        <MapPin className="size-4" strokeWidth={1.5} />
+    // The separator leads the venue group, and a group that starts a row has its lead pulled into the 1rem the row
+    // is shifted left by, which the paragraph clips: one row shows the dot, a wrapped row drops it at the break.
+    <p className="m-0 overflow-x-clip">
+      <span className="-ms-4 flex flex-wrap items-center gap-x-2 gap-y-1">
+        <span className="inline-flex items-center gap-2">
+          <span aria-hidden="true" className="w-2" />
+          <CalendarDays aria-hidden="true" className="size-5 shrink-0 text-moonlight forced-colors:text-[CanvasText]" strokeWidth={1.5} />
+          <span className="data-label">Monday 21 December 2026</span>
+        </span>
+        <span className="sr-only">, </span>
+        <span className="inline-flex items-center gap-2">
+          <span aria-hidden="true" className="w-2 text-center text-moonlight">·</span>
+          <span aria-hidden="true" className="inline-flex size-6 items-center justify-center border border-dashed border-moonlight text-moonlight">
+            <MapPin className="size-4" strokeWidth={1.5} />
+          </span>
+          <span className="helper">Venue TBA</span>
+        </span>
       </span>
-      Venue TBA
     </p>
   )
 }
 
-/** Sealed ticket. Drag the handle down the perforation, or press "Tear open": same finish. */
+/**
+ * The cover beat. The panel carries the heading, the host's line, the date and "Tear open"; the pass (the DOM
+ * ticket) hangs in the world, portalled into `passSlot`. On T3 and T2 the world canvas draws the 3D lanyard pass over
+ * it (B2: one WebGL context), asked for through `@/world/pass`. Drag the handle down the perforation, or press
+ * "Tear open": same finish.
+ */
 export function SealedView({
   onTorn,
   focusHeading,
   missingKey = false,
   onStageEnd,
   staged = true,
+  passSlot,
 }: {
   onTorn: () => void
-  /** Called once when the night stage should fade to the paper page. */
+  /** Called once when the tear hands off from the 3D pass. */
   onStageEnd?: () => void
-  /** Owned by the page: true while the night stage is up. */
+  /** True while the pass is lit by the world (its contact shadow and sheen). */
   staged?: boolean
+  /** The world stage's pass zone. Without one (no world), the pass is not drawn and "Tear open" still works. */
+  passSlot?: HTMLElement | null
   focusHeading: boolean
   missingKey?: boolean
 }) {
@@ -73,6 +103,7 @@ export function SealedView({
   const flick = useMotionValue(0)
   const lift = useMotionValue(0)
   const mainScale = useMotionValue(1)
+  const passOpacity = useMotionValue(1)
   const trackH = useMotionValue(0)
   const ticketRef = useRef<HTMLDivElement>(null)
   const busy = useRef(false)
@@ -80,22 +111,62 @@ export function SealedView({
   const interacted = useRef(false)
   const speed = useRef(1)
   const timers = useRef<ReturnType<typeof setTimeout>[]>([])
+  const alive = useRef(true)
   const [lanyard, setLanyard] = useState<"off" | "loading" | "ready">("off")
   const [boxed, setBoxed] = useState(false) // the 30rem stage box stays until the view is left, so nothing jumps at the hand-off
-  const [domShown, setDomShown] = useState(false) // the DOM ticket cross-fades in over the 3D one
+  const [domShown, setDomShown] = useState(false) // the DOM ticket (on top) shows again over the 3D one
+  const [handOff, setHandOff] = useState(false) // the tear's hand-off: the 3D pass stays lit under the DOM one
   const [peeling, setPeeling] = useState(false)
   const settleRef = useRef<SettleFn | null>(null)
-  // 3D is for guests who can take motion and effects; WebGL is probed once per mount.
+  const hostRef = useRef<HTMLDivElement>(null)
+  const hitRef = useRef<HTMLDivElement>(null)
+  const lanyardNow = useRef(lanyard)
+  useLayoutEffect(() => {
+    lanyardNow.current = lanyard
+  })
+  // 3D is for guests who can take motion and effects, on a WebGL tier (T3, T2); WebGL is probed once per mount.
   const [glOk] = useState(hasWebGL)
-  const canLanyard = !reduced && !missingKey && glOk && !forcedColors()
-  const [sound, setSound] = useState(getSoundOn)
-  // The 3D layer failed (chunk import rejected, or it threw while rendering): step down to the DOM ticket.
+  const [debugOn] = useState(debug)
+  const { tier } = useTier()
+  const canLanyard = !reduced && !missingKey && glOk && !forcedColors() && isWebGLTier(tier)
+  // The 3D pass failed (its textures failed; a lost context or a world chunk failure demotes the tier, below): step
+  // down to the DOM ticket, and the session to T1.
   const failLanyard = useCallback(() => {
+    demote("T1", "lanyard failed (ticket textures failed)")
     setLanyard("off")
     setBoxed(false)
     setDomShown(true)
   }, [])
+  // Still (or any demotion below T2) while the 3D pass is up: hand over to the DOM pass, unless a tear is running.
+  useEffect(() => {
+    if (!isWebGLTier(tier) && lanyard !== "off" && !busy.current) failLanyard()
+  }, [tier, lanyard, failLanyard])
   const tilt = useTilt(!reduced && lanyard !== "ready" && !peeling)
+
+  // The world canvas drew the pass: it takes over from the DOM one (which fades out under it).
+  const onLanyardReady = useCallback(() => {
+    if (lanyardNow.current !== "loading") return
+    setLanyard("ready")
+    setBoxed(true)
+  }, [])
+  // The pass left the world canvas while up (a hidden tab or a demotion unmounts the canvas): the DOM pass shows
+  // again until the canvas hangs it anew. A running tear goes on in the DOM (the pass resolves its settle on the way out).
+  const onLanyardGone = useCallback(() => {
+    if (busy.current || lanyardNow.current !== "ready") return
+    setLanyard("loading")
+    setBoxed(false)
+  }, [])
+  // Fading both at once would show the night through two half-faded tickets (a dip, then a rise): in the hand-off the
+  // 3D pass stays at full strength until it unmounts, under a DOM ticket that is opaque by then.
+  const shown = lanyard === "ready" && (!domShown || handOff)
+  useEffect(() => {
+    const host = hostRef.current
+    const hit = hitRef.current
+    if (lanyard === "off" || !host || !hit) return
+    const req = { hostLine: HOST_LINE, host, hit, settleRef, shown, onReady: onLanyardReady, onFail: failLanyard, onGone: onLanyardGone }
+    setPass(req)
+    return () => clearPass(req)
+  }, [lanyard, shown, onLanyardReady, failLanyard, onLanyardGone])
 
   // The free part above the scissors tip pivots at the tip; the real stub below it never moves.
   const tip = useTransform([progress, trackH], ([p, h]: number[]) => Math.round(tipAt(p, h)))
@@ -160,8 +231,12 @@ export function SealedView({
   }, [progress, trackH])
 
   useEffect(() => {
+    alive.current = true
     const pending = timers.current
-    return () => pending.forEach(clearTimeout)
+    return () => {
+      alive.current = false // the pass resolves its settle as it unmounts: the tear must not go on after this view
+      pending.forEach(clearTimeout)
+    }
   }, [])
 
   // Load the 3D layer after first paint, when idle. Never for reduced motion, forced colors, no key, or no WebGL.
@@ -187,12 +262,12 @@ export function SealedView({
       if (busy.current) return // a second press during the tear is absorbed
       busy.current = true
       interacted.current = true
+      if (getSoundOn()) unlockAudio() // under reduced motion too: sound follows only its own opt-in
       if (reduced) {
         endStage()
         onTorn()
         return
       }
-      if (getSoundOn()) unlockAudio()
       setPeeling(true)
       const tear = () => {
         timers.current.push(
@@ -203,7 +278,9 @@ export function SealedView({
             animate(mainScale, 1, SETTLE)
           }, SEPARATE_MS),
         )
-        Promise.all([animate(progress, 1, { ...FINISH, velocity }), animate(flick, 1, FLICK)]).then(() => onTorn())
+        Promise.all([animate(progress, 1, { ...FINISH, velocity }), animate(flick, 1, FLICK)])
+          .then(() => animate(passOpacity, 0, PASS_EXIT))
+          .then(() => onTorn())
       }
       const wait = (ms: number, then: () => void) => timers.current.push(setTimeout(then, ms))
       const rect = ticketRef.current?.getBoundingClientRect()
@@ -214,9 +291,11 @@ export function SealedView({
         // A resize mid-hand-off cannot align the two tickets: swap instantly instead of cross-fading.
         settleRef.current(rect).then(() => {
           window.removeEventListener("resize", onResize)
+          if (!alive.current) return
+          setHandOff(true)
           setDomShown(true)
           endStage()
-          wait(resized ? 0 : STAGE_FADE_MS, () => {
+          wait(resized ? 0 : HANDOFF_MS, () => {
             setLanyard("off")
             tear()
           })
@@ -229,7 +308,7 @@ export function SealedView({
       if (progress.get() > 0) tear() // a drag already tore along: the stage fades as the hand lets go
       else wait(STAGE_FADE_MS, tear) // pressed: the night fades to paper first, then the tear
     },
-    [onTorn, progress, flick, mainScale, reduced, lanyard, endStage],
+    [onTorn, progress, flick, mainScale, passOpacity, reduced, lanyard, endStage],
   )
 
   const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
@@ -265,51 +344,13 @@ export function SealedView({
     }
   }
 
-  const toggleSound = () => {
-    const next = !sound
-    setSoundOn(next)
-    if (next) unlockAudio() // created on this tap, never earlier
-    setSound(next)
-  }
-
-  // DOM mode: the Sound tab sits 8px above the ticket's top rule (the +0.5rem in its translate), clear of the corner.
-  // Stage chrome only once the stage box is up. While the chunk loads the DOM ticket is still in flow, so the tab stays above it.
-  const in3d = boxed
-
-  return (
-    <section aria-labelledby="sealed-title" className="flex flex-col items-center gap-8 pt-10">
-      <div className={cn("relative w-full", boxed && "h-[min(30rem,60svh)]")}>
-      {!reduced && !missingKey && (
-        <div className={cn("pointer-events-none absolute inset-x-0 top-0 z-20 mx-auto max-w-[960px]", in3d && "flex justify-end")}>
-          <button
-            type="button"
-            aria-pressed={sound}
-            title="Sound plays through the speaker. A phone on silent stays quiet."
-            onClick={toggleSound}
-            className={cn(
-              "label-tab stage-tab pointer-events-auto relative inline-block border px-3 py-1 transition-opacity duration-160 before:absolute before:-inset-x-2 before:-inset-y-3 before:content-['']",
-              in3d
-                ? "mr-4 mt-2 border-paper md:mr-10"
-                : "ml-4 -translate-y-[calc(100%+0.5rem)] border-ink md:ml-10",
-              in3d && !staged && "pointer-events-none opacity-0",
-              in3d && staged
-                ? sound
-                  ? "bg-paper text-ink"
-                  : "bg-scene-night-mid text-paper"
-                : sound
-                  ? "bg-ink text-paper-raised"
-                  : "bg-paper-raised text-ink",
-            )}
-          >
-            Sound <span aria-hidden="true">{sound ? "on" : "off"}</span>
-          </button>
-        </div>
-      )}
-      {/* The DOM ticket stays in the accessibility tree; it is only visually replaced by the canvas. */}
+  const pass = (
+    <m.div className="relative size-full" style={{ opacity: passOpacity }}>
       <div
         className={cn(
-          boxed && "pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2",
-          boxed && "transition-opacity duration-160 ease-(--ease-fade)",
+          "absolute inset-x-0 bottom-0",
+          boxed && "pointer-events-none transition-opacity",
+          boxed && (handOff ? "duration-300 ease-in-out" : "duration-160 ease-(--ease-fade)"),
           boxed && !domShown && "opacity-0",
         )}
       >
@@ -337,35 +378,25 @@ export function SealedView({
               }
             : undefined
         }
-        mainClassName="flex min-h-[15rem] flex-col justify-between gap-4 p-4 md:min-h-[26rem] md:gap-8 md:p-10"
+        mainClassName="flex flex-col justify-between gap-2 p-4"
         stubClassName="flex flex-col"
         main={
           <>
-            <p className="data-stub m-0">21 DEC 2026</p>
-            <h1
-              id="sealed-title"
-              ref={headingRef}
-              tabIndex={-1}
-              className="display-ticket m-0 [overflow-wrap:anywhere]"
-            >
+            <p className="data-label m-0">21 DEC 2026</p>
+            <p className="m-0 font-display text-[clamp(1.75rem,9cqw,3rem)] leading-[0.95] font-bold tracking-[0.02em] uppercase">
               Thirty United
-            </h1>
-            <div className="flex flex-col gap-2">
-              <p className="standfirst m-0">{HOST_LINE}</p>
-              <p className="helper m-0">Makes</p>
-            </div>
-            <VenueTba />
+            </p>
           </>
         }
         stubEdge={
-          <span aria-hidden="true" className="data-label absolute top-1/2 right-2 -translate-y-1/2 rotate-180 text-ink-2 [writing-mode:vertical-rl]">
+          <span aria-hidden="true" className="data-label absolute top-1/2 right-2 -translate-y-1/2 rotate-180 text-pass-ink-2 [writing-mode:vertical-rl]">
             ADMIT ONE
           </span>
         }
         stub={
           <div className="relative flex h-full flex-col items-center justify-center gap-1 p-3 pr-10 text-center">
-            <span className="data-label text-ink-2">SEAT</span>
-            <span className="data-stub text-muted-foreground">
+            <span className="data-label text-pass-ink-2">SEAT</span>
+            <span className="data-stub text-pass-ink-2">
               ---
             </span>
           </div>
@@ -383,7 +414,7 @@ export function SealedView({
             style={{ y: handleY, opacity: handleOpacity, touchAction: "none", height: HANDLE }}
             className="absolute top-0 right-(--stub-w) z-10 w-11 translate-x-1/2 cursor-grab touch-none items-center justify-center"
           >
-            <div className="mx-auto flex h-full w-6 items-center justify-center border border-ink bg-paper-raised">
+            <div className="mx-auto flex h-full w-6 items-center justify-center border border-pass-ink bg-pass-raised">
               <Scissors className="size-4 rotate-90" strokeWidth={1.5} />
             </div>
           </m.div>
@@ -391,38 +422,36 @@ export function SealedView({
       </Ticket>
       </div>
       {lanyard !== "off" && (
-        <div
-          aria-hidden="true"
-          className={cn(
-            "absolute inset-x-0 top-1/2 h-[min(30rem,60svh)] -translate-y-1/2",
-            "transition-opacity duration-160 ease-(--ease-fade)",
-            (lanyard !== "ready" || domShown) && "pointer-events-none opacity-0",
-          )}
-        >
-          <ErrorBoundary fallback={null} onError={failLanyard}>
-          <Suspense fallback={null}>
-            <LanyardTicket
-              hostLine={HOST_LINE}
-              settleRef={settleRef}
-              onReady={() => {
-                setLanyard("ready")
-                setBoxed(true)
-              }}
-              onFail={failLanyard}
-            />
-          </Suspense>
-          </ErrorBoundary>
+        // The pass's box: from the top of the frame (the strap hangs from above) to the bottom of the pass zone. The
+        // world canvas draws the pass here; only the hit box over the card takes the pointer.
+        <div ref={hostRef} aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 top-[calc(var(--zone-top,0px)*-1)]">
+          <div ref={hitRef} data-testid="lanyard-hit" hidden className="lanyard-hit pointer-events-auto absolute touch-none" />
         </div>
       )}
-      </div>
+      {debugOn && lanyard !== "off" && (
+        <Suspense fallback={null}>
+          <DebugOverlay />
+        </Suspense>
+      )}
+    </m.div>
+  )
+
+  return (
+    <section aria-labelledby="sealed-title" className="flex flex-col gap-4">
+      <h1 id="sealed-title" ref={headingRef} tabIndex={-1} className="heading-panel m-0">
+        You've been called up
+      </h1>
+      <p className="standfirst m-0">{HOST_LINE}</p>
+      <DateVenue />
       {missingKey ? (
-        <StatusLine className="stage-status max-w-sm justify-center text-center md:max-w-none">{MISSING_KEY_MESSAGE}</StatusLine>
+        <StatusLine className="mt-2">{MISSING_KEY_MESSAGE}</StatusLine>
       ) : (
-        <Button type="button" onClick={() => finish()} className="w-full max-w-sm md:w-auto md:min-w-64">
+        <Button type="button" onClick={() => finish()} className="mt-2 w-full">
           <Scissors aria-hidden="true" />
           Tear open
         </Button>
       )}
+      {passSlot && createPortal(pass, passSlot)}
     </section>
   )
 }

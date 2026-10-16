@@ -4,7 +4,7 @@ schemaVersion: "1.0"
 profileVersion: "1.0.0"
 clientName: thirty-united
 stack: web-vite
-lastUpdated: "2026-10-14"
+lastUpdated: "2026-10-15"
 ---
 
 # Feedback log: Thirty United
@@ -81,3 +81,128 @@ Owner settled the four open points for the 3D ticket and stadium A. This section
 - LUX: Committed, now decided. The returned stub stays on paper, not the stadium. (Owner: yes. Was a default he could override.)
 - ACCEPTED: Strap text is "THIRTY UNITED", repeated, as built. (Owner: confirmed. Closes open question 4 in `lux-notes/save-the-date-3d-lanyard-spec.md`.)
 - ACCEPTED: The Netlify badge stays; its CSP console errors are accepted. (Owner: confirmed earlier.)
+
+## 2026-10-14 (owner override, redesign: the world and the journey)
+
+### Context
+Owner reviewed the built page tonight and overrode the chosen direction. This section supersedes "AESTHETIC: Chosen A, Matchday Programme" and Palette A "Matchday Paper" above. Earlier entries stay as history. The direction gate is closed, pending the owner's pick (`direction.md`, `chosenDirection: null`); the previous gate is archived at `direction-archive/2026-10-14.md`.
+
+### Decisions
+- AESTHETIC: Overridden by the owner. Chosen A, Matchday Programme, and Palette A (`#F3EDE1` paper, `#1B1A17` ink, `#B3261E` terrace red). Owner: "I still don't like the color or theme currently and I feel like we still being safe! … go all out … Don't hold back at all". The paper palette, terrace red as the brand accent and the drawn CSS green night stand (stadium A scene tokens) are out. A new palette is required.
+- REJECTED: The RSVP as a form. Owner: "the second part felt too much like a boring form that people might get tired of filling in, it also needs to feel like a story or journey. Just something interactive that makes you feel you want to finish the form." Every step becomes a moment in a journey with an interaction, and each input stays accessible, keyboard-operable and WCAG 2.2 AA over the scene.
+- AESTHETIC: Rejected B "Terrace Ticket" and C "Scoreboard Broadcast" stay rejected. New directions must not drift into them: no letterpress ink bleed, deckled edge or off-register stamp (B); no solid ink strips, scrolling ticker, wipes, shirt-number form rows or scoreboard digits (C). B also carried "one question per screen"; the new journeys group fields into beats and keep that rejection.
+- CORRECTION: World. Keep football. A stylised miniature night stadium the guest is inside: floodlights through haze, a glowing pitch, the ticket living in it. No club crest, wordmark or kit (trademark, unchanged).
+- CORRECTION: Reach. The world persists behind every step: sealed ticket → attendance (Yes / Maybe / No and plus-one) → details (name, email, WhatsApp) → email code → returned stub. This reverses two commits marked decided earlier today: "after Tear open the stadium fades to the paper page; the RSVP form, code and stub views stay light" and "the returned stub stays on paper, not the stadium". Light-theme-only (`color-scheme: light`) is reversed with them (inferred from the reach decision; confirm); contrast, `forced-colors` and 200% text must be re-proven over the scene.
+- INSIGHT: Ambition calibration. Two reference videos from the owner, copied to `references/immersive-night-world-rsvp/owner-calibration/`. @Guronnimo ("one shotted with Opus 5.5"): a first-person meadow of cursor-reactive grass, wildflowers and haze, with a Morning / Golden / Night chip that relights the world. @flxrnc: an autumn cottage diorama on a dark lacquered turntable, lit windows, lamp posts, chimney smoke, falling leaves, dusk haze and an orbiting camera. Both are whole lit worlds where the UI is one small chip; the current page is a page with a 3D object on it. That gap is the redesign.
+- LUX: In question, not resolved. The commits "quiet by default" and "inevitability through restraint" (`lux-notes/save-the-date-2026-10-14.md`) sit against "go all out … Don't hold back at all". Lux is re-run after the owner picks a direction; until then neither commit binds the new directions.
+- LUX: In question, not resolved. Round-2 "nothing loops" (`feedback.md`, 2026-10-14 round 2). All three proposed directions carry ambient haze and motes; decided in the lux re-run after the pick.
+
+## 2026-10-15 (owner decision, direction gate: Matchday: The Signing)
+
+### Context
+Makes read `audits/cinematic-recommendation-2026-10-15.md` and replied "defaults". That accepts the recommended hybrid, all eight decisions with their defaults, and the "defaults I'm taking unless you object" list. The direction gate is closed on Direction D. This section supersedes the two "LUX: In question, not resolved" lines of 2026-10-14 (owner override) above.
+
+### Decisions
+- AESTHETIC: Chosen. Direction D "Matchday: The Signing" (owner: "defaults"). Signature: "The thing that makes this unmistakable in a screenshot is that the invite is Makes's own living matchday poster, where every answer switches on a bank of floodlights until he holds up your shirt, with your name and number, as his new signing." Pixel's wording, accepted through "defaults"; the owner did not write it. A hybrid of phase 1 concepts S1 (living poster, the spine), S3 (floodlight meter) and S2 (call-up story frame).
+- AESTHETIC: Considered, not chosen. Directions A "Tabletop Ground", B "The Walk-Out" and C "Lights On" of 2026-10-15. Not hard constraints: D keeps B's call-up story and C's bank-by-bank floodlights. Rejected B "Terrace Ticket" and C "Scoreboard Broadcast" of 2026-10-14 still bind.
+- ACCEPTED: Decision 1, crests and club marks. None, anywhere, ever (`brand.md`, Marks and imagery). G1 is generated crest-free; his AI poster is a head-and-neck likeness reference only. (Owner: "defaults".)
+- ACCEPTED: Decision 2, the guest's shirt number is `ticketNo`: "17" on the shirt, "017" as the seat, revealed only in the finale. No backend change. (Owner: "defaults".)
+- ACCEPTED: Decision 3, no poster for a No. They get his wave, a warm line and "Changed your mind?". (Owner: "defaults".)
+- ACCEPTED: Decision 4, preferred name if given, otherwise first name, on the shirt and poster. Never the surname. (Owner: "defaults".)
+- ACCEPTED: Decision 5, go all out within limits: ambient embers, smoke and cloud at 30 Hz on T3 and T2, paused when hidden and on the code beat; a Still chip for anyone; nothing loops under reduced motion. (Owner: "defaults".)
+- ACCEPTED: Decision 6, the lanyard stays on the cover as one object inside the world canvas (B2); B3 (retire it, keep the DOM tear) is the cut line. (Owner: "defaults".)
+- ACCEPTED: Decision 7, Makes generates the plates with his own tool and the section 3 prompts; Claude does all processing. Needs his front-facing photo on disk and a tool with an edit mode. (Owner: "defaults".)
+- ACCEPTED: Decision 8, "Monday 21 December 2026 · Venue TBA" on the panel, "MON 21 DEC 2026 · VENUE TBA" on the poster, no kick-off time until there is one. (Owner: "defaults".)
+- ACCEPTED: The "defaults I'm taking unless you object" list: his AI poster's painted semi-real style with anime key-visual lighting; the ball as the power object, nothing pointed at the camera, Makes smiling; "THIRTY" on the cover becoming "THIRTY UNITED" at the signing; the section 2 copy as drafts for him to rewrite; sound stays on under reduced motion if opted in, synthesised only; the built haptic values plus 8 ms and 12 ms strikes and [10, 30, 10] for a wrong code, Android only; the plus-one as "+ name" on the credit line; no video, no bloom, a 1080 × 1920 poster only; the moon drawn at about 93 percent waxing gibbous (the phase itself is still an estimate). (Owner: "defaults".)
+- CORRECTION: Colour scheme light → dark. `color-scheme: dark`, panel `#18131F`, moonlight `#B7D3FA`, shirt red `#9F0B19` (button fills only, with a 2 px moonlight ring), poster red `#F81E24` (display and decoration only), error `#FF9E8F`. Every pair re-measured in `tokens.md`.
+- CORRECTION: `brand.md` amended. Illustration on every view (reverses "the ticket is the only illustration"); red in the scene (reverses "no red in the scene"); Makes's likeness as the hero (consent given, see 2026-10-15 follow-up); ambient motion within decision 5. The crest ban is kept unchanged.
+- LUX: Committed, recast. Quiet by default holds for the UI layer only (one panel, two chips, one primary button per beat); the world is loud by design, and the brand speaks at full voice once, at the finale ignition. See `lux-notes/save-the-date-2026-10-15.md`.
+- LUX: Committed, kept. Inevitability through restraint, held as a list of refusals: no bloom or post pass, no wipes, no gyro, no video, no forward camera travel, lamps instead of digits, one poster format, no poster for a No.
+- LUX: Reversed in part. Round-2 "nothing loops": reversed for ambient motion on T3 and T2 (decision 5); kept under reduced motion, in the UI layer, on the code beat and for anyone who presses Still.
+- LUX: Committed. Material truth (honest painted plates, a moon at its real phase, light that comes from the floodlights in the picture), specificity (his face, your shirt, your number), time visible in detail (every beat has its reduced-motion, forced-colours and No variant), multi-sensory (sound and haptics tuned per beat). Not committing: patina-aware.
+- INSIGHT: Contrast pairs that fail and stay by design: shirt red on the panel 2.20:1 (the moonlight ring carries the edge), white on poster red 4.04:1 (poster red is never a fill on the UI layer), moonlight on floodlight white 1.50:1 and on the moon core 1.38:1 (chips over the scene are solid panel chips, and their focus ring gets a 2 px panel halo). Do not drop the ring or the halo as clutter.
+
+### Pending (owner)
+- The owner's decision on G1: keep the photo-real attempt, or have it repainted in the painted poster style. The photo and the likeness consent are no longer pending.
+
+## 2026-10-15 (owner follow-up: likeness, wireframes, defaults)
+
+### Decisions
+- ACCEPTED: Likeness. Makes replied "likeness yes" to "may my likeness appear on every shared poster". His likeness may appear on every shared poster. G1 is unblocked; his photo arrived later the same day (see 2026-10-15 G1 attempt and phase 0a). (Owner: "likeness yes".)
+- ACCEPTED: The nine wireframes in `wireframes/save-the-date-signing-2026-10-15/` (`variant-C-01` to `variant-C-09`). (Owner: "wireframes ok".) `wireframes/save-the-date-signing-2026-10-15/CHOSEN.md` is written from `variant-C.md` before the build.
+- ACCEPTED: The moon drawn at about 93 percent waxing gibbous on 21 December 2026. The phase itself is still an estimate; the default is accepted, not verified.
+- ACCEPTED: Typography stays the four shipped faces plus SVG title lockups. The brush font is picked in the asset phase.
+- ACCEPTED: The draft copy ("You've been called up", "Your shirt", "Seal it", "SIGNED", "PENCILLED IN", "Save it now. We don't keep a copy.") stays as drafts until he rewrites it.
+
+## 2026-10-15 (G1 first attempt, phase 0a iPhone result)
+
+### Decisions
+- INSIGHT: His front-facing smiling photo is now on the owner's machine, outside the repo and deliberately not committed. The first G1 attempt came back on 2026-10-15. It passed the no-trademark checklist: no crest, sponsor, stripes, star ball, text or signage.
+- INSIGHT: **G1 in review, not approved.** It waits on the owner because: it is photo-real rather than the painted style; it is 941x1672, under the 1080x1920 minimum; the floodlights are already on; and the head sits about 17% down instead of 28%.
+- INSIGHT: Phase 0a, iPhone (owner's DEVICE PROBE screenshot). A link from a personal WhatsApp chat opened in Safari, the system browser, not a WebView (iPhone OS 18_7, Version/18.7.7 Mobile Safari). `canShare(files)` true; `vibrate` undefined; WebGL2 yes, max texture 16384, 4 cores, dpr 3, `deviceMemory` n/a. `sessionStorage` survived a reload (not a process kill). 3D chunk ready at 1730 ms, first frame at 2131 ms. Android is still untested.
+- CORRECTION: Stamp text colour. `tokens.md` said white on poster red, which measures 4.04:1 and fails 4.5:1. The build uses dark panel text (`panel` `#18131F`) on `#F81E24`, which measures 4.52:1. The contract now matches the build.
+
+### Pending (owner)
+- Keep the photo-real G1 attempt, or have it repainted in the painted poster style.
+
+## 2026-10-15 (owner decisions after the first G1 attempt)
+
+### Decisions
+- ACCEPTED: G1 style, photo-real. Makes keeps the photo-real render instead of the painted, anime-lit style. Direction D is now a cinematic, photo-real night poster with the same palette, light logic and composition rules. Revised style locks for G2 to G5 (9:16) and G6 (1:1) are in `direction.md`, Plate style. This supersedes the 2026-10-15 "defaults" line that took his AI poster's painted semi-real style with anime key-visual lighting, and the "honest painted plates" wording of the LUX line above. (Owner, 2026-10-15.)
+- ACCEPTED: The head sits about 17% down the frame instead of 28%, because the title layer sits behind the figure. (Owner, 2026-10-15.)
+- ACCEPTED: The footer line "Makes, 21 DEC 2026" is removed. The date is on the cover. (Owner, 2026-10-15.)
+- ACCEPTED: The team or "NEUTRAL" line and the sport are not shown after saving and not on the phase 6 poster. The data is still collected for the host. This was the status quo, taken as the default. (Owner, 2026-10-15.)
+- ACCEPTED: The draft copy and timing stay as built, and the drafts stay drafts until he rewrites them: the panel shows straight away (not after 2.2 s); the No ending has no warm closing line; Chapter 2's standfirst is "Your name goes on the back. A few lines so I can seat you properly." (Owner, 2026-10-15.)
+- ACCEPTED: Live shirt name. Until Surname has a value, the shirt shows only the first word of the name, so a surname typed into First name never shows. Also in `edge-cases/save-the-date.md` (W-8). (Owner, 2026-10-15.)
+- INSIGHT: **G1 stays in review, not approved.** Two fixes remain: a larger file (at least 1080 x 1920; it is 941 x 1672 now) by upscale or regeneration, and a lights-off edit because the floodlights are on in G1. The lights-on version becomes the source for the lit-stadium plate, which saves a generation.
+
+### Resolved (owner)
+- The 2026-10-15 pending question "keep the photo-real G1 attempt, or have it repainted in the painted poster style" is answered: keep photo-real.
+
+### Pending (owner)
+- G1 approval, after the two fixes above come back.
+
+- CORRECTION (2026-10-15): "Sorry you'll miss it, {firstName}" is the No end's heading and stays; the owner dropped only the separate warm closing line under it, so the No end shows the heading and "Changed your mind?".
+
+## 2026-10-15, AI credit on the saved poster (owner decision)
+
+- ACCEPTED: The exported 1080 x 1920 poster guests save (phase 6, the poster compositor) carries a small credit line, "Poster art made with AI", next to the existing credit line, in small type in `moonlight` over a `panel` scrim (7.66:1 worst case at 85 percent opacity; 11.90:1 on solid `panel`). It is on the saved poster only: not in the live page UI and not on the OG link-preview image. Why: the plates are generated in ChatGPT; OpenAI's terms assign ownership of the output to the user and require no label, and its older 2022 sharing policy asks that AI content be indicated, so this line covers that at near-zero cost. The original ChatGPT exports (C2PA metadata) stay with the owner outside the repo as provenance; processed layers will not carry it. (Owner, 2026-10-15.)
+
+## 2026-10-15, plate colours and title position (owner "defaults")
+
+- ACCEPTED: Title position. The THIRTY / UNITED lockup moves up so both words sit fully above Makes's hairline (poster y about 315) on every beat: THIRTY at about y 50 to 180, UNITED at about y 196 to 276. Nova implements. (Owner, "defaults", 2026-10-15.) Open check: the top-right chips now overlap the word's top-right at the cover shot.
+- ACCEPTED: Floodlight bank strikes get their drama from code effects, not from a new generation: glow sprites and beam cards on T2 and T3, a CSS glow per bank on T1. The lit plate has lamp heads but no beam cones. (Owner, "defaults", 2026-10-15.)
+- ACCEPTED: The `scene-*` tokens are re-sampled from the approved plates; smoke is taken from its lit parts, not the shadow-inclusive median; floodlight and ember stay true to the plates. (Owner, "defaults", 2026-10-15.) Result: `scene-floodlight` `#FEFCFB` to `#F1C7A0`, `scene-smoke-red` `#DB312B` to `#B22C28`, `scene-ember` `#F03F36` to `#E03D2B`. Method in `tokens.md`.
+- INSIGHT: With the warm floodlight the `panel` focus halo over a lit lamp measures 11.65:1 instead of 17.83:1, and `moonlight` on floodlight is 1.02:1, so the halo is the only thing that makes a chip's focus ring visible over a lamp. `panel` on `scene-smoke-red` is now 2.85:1, below 3:1; no readable text sits on smoke, so this is decorative only.
+
+## 2026-10-15, real plates in the app: chips, title, signing shot, moon (owner decisions)
+
+### Context
+The real plates are in the app (commit f0a1af8). On phones the labelled Sound and Still chips took 194 of 360 px across the top, so the implementer had shrunk the title to a small left-set THIRTY at about 28% of the poster width, against the contract's about 80%. This closes the open chip/title device check recorded in the "plate colours and title position" section above.
+
+### Decisions
+- ACCEPTED: Chips, option B. Sound and Still become icon-only buttons, at least 44 x 44 CSS px, stacked vertically in a narrow column at the top right (safe-area top + 12 px). They stay solid `panel` chips with the focus ring and the 2 px `panel` halo. Accessible names and states stay: an `aria-label` naming the action and state, and `aria-pressed` on Still. The visible words "SOUND" and "STILL" go. (Owner: "B".)
+- ACCEPTED: Title. The THIRTY / UNITED lockup returns to a headline at about 80% of the poster width, above Makes's hairline (poster y about 315), clear of the chip column at every phone width. The 28% left-set title is withdrawn.
+- ACCEPTED: Two-stage signing shot. On the signed beats the camera starts wide enough for all four floodlight banks to fire on screen at phone width, then pushes in to the face-and-shirt framing. Reduced motion cuts straight to the final framing. (Owner: "yes", to the default.)
+- ACCEPTED: Moon. A soft halo (`scene-moon-halo`) and subtle surface texture so the code-drawn moon sits in the photo sky. Phase and position are unchanged.
+- ACCEPTED: The chapter 1 to chapter 2 push-in is 1.03 to 1.12, above the earlier 3 to 4 percent, because it lets the title leave the frame whole.
+- ACCEPTED: Android device test deferred. The owner has no Android phone now. (Owner: "I do not have a phone at the moment. Can this be skipped".) Skipped for now, with the risk recorded.
+- INSIGHT: Risk. Unknown Android devices start on T2 and demote on slow frames, so the worst case is a plainer world. A real-device check (any Android phone, or a real-device cloud service) is required in phase 8, before merging to main. The two probe screenshots received so far were Chrome device emulation on a Mac (Apple M5 Pro GPU), not phones.
+
+### Resolved
+- The "Open check: the top-right chips overlap the word's top-right at the cover shot" note (2026-10-15, plate colours and title position) is closed by option B.
+
+## 2026-10-15, as built: title width, title over the lanyard cord (owner "defaults")
+
+The chip column (two 44 x 44 icon buttons, 12 px from the top and right, 8 px apart) and the title were built and checked against the contract. Two decisions follow, and three contract lines are brought into line with the build.
+
+### Decisions
+- ACCEPTED: Title width. The THIRTY / UNITED lockup is accepted at about 58% of the poster width (THIRTY [114, 50, 630, 130], UNITED [114, 196, 630, 79] in poster px), left-set, not about 80%. On screen that is 277 of 390 px at the 390 cover (about 71%). It is the widest that clears the chip column in every shot at 360 to 430 px. Supersedes the "about 80%" Title decision in the section above. (Owner: "defaults", decision 1.)
+- ACCEPTED: Title layering on the WebGL (T2/T3) cover. The title draws in front of the lanyard cord: the cord passes behind the letters and reappears below them. (Owner: "defaults", decision 2.)
+
+### Corrections to the contract (not owner decisions)
+- CORRECTION: Chip accessible names. The contract's examples ("Turn sound on", "Pause the animation") → as built: the Sound chip is named "Sound off" / "Sound on" and has no `aria-pressed` (the name carries the state); the Still chip is named "Still" and has `aria-pressed`. `aria-pressed` applies to Still only. Reason: a pressed state on a name that already changes says the state twice.
+- CORRECTION: Title face. The contract said an OFL brush font, to be picked later → as built: Barlow Condensed 700, outlined to SVG. No brush font ships.
+- CORRECTION: The `chip` text style in `tokens.md` has no user now that the chips carry no words. It is retired.
+- INSIGHT: Chip sizes live in one module (`src/world/chips.ts`) that the CSS and the title-clearance tests both read, so the title width and the chips cannot drift apart unnoticed.
+- INSIGHT: Signing shot as built: 0 to 1200 ms pull back to a wide shot fitting all four lamp cores, 1400 to 2000 ms banks fire, 2000 to 3200 ms push in to the signing framing (about 1.23x); T0 cuts to the final framing.

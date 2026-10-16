@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 940" width="800" height="940">
+<defs><clipPath id="ph7"><rect x="0" y="0" width="390" height="844"/></clipPath></defs>
+<rect x="0.0" y="0.0" width="800.0" height="940.0" fill="#fff" stroke="none" stroke-width="1" />
+<text x="24.0" y="30.0" font-family="Helvetica, Arial, sans-serif" font-size="16" fill="#000" text-anchor="start" font-weight="bold">08 Save your poster (the one overlay)</text>
+<text x="24.0" y="46.0" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#999" text-anchor="start" font-weight="normal">Direction D, Matchday: The Signing · phone 390 × 844 · greyscale, token names, not colours</text>
+<g transform="translate(24,56)"><g clip-path="url(#ph7)">
+<rect x="0.0" y="0.0" width="390.0" height="844.0" fill="#CFCFCF" stroke="none" stroke-width="1" /><text x="195.0" y="24.0" font-family="Helvetica, Arial, sans-serif" font-size="9" fill="#333" text-anchor="middle" font-weight="normal">void (z30 overlay, role=dialog)</text><rect x="0.0" y="85.3" width="390.0" height="693.3" fill="#fff" stroke="#333" stroke-width="2" /><text x="195.0" y="422.0" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#333" text-anchor="middle" font-weight="bold">[ poster &lt;img&gt;, 1080 × 1920 JPEG, data: URL ]</text><text x="195.0" y="440.0" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#333" text-anchor="middle" font-weight="normal">alt text names what is on it</text><rect x="330.0" y="40.0" width="48.0" height="48.0" fill="#fff" stroke="#333" stroke-width="1" /><rect x="344.0" y="54.0" width="20.0" height="20.0" fill="#fff" stroke="#333" stroke-width="1" /><text x="354.0" y="67.0" font-family="Helvetica, Arial, sans-serif" font-size="6" fill="#333" text-anchor="middle" font-weight="normal">icon</text><text x="354.0" y="102.0" font-family="Helvetica, Arial, sans-serif" font-size="8" fill="#333" text-anchor="middle" font-weight="normal">[msg: close]</text><rect x="24.0" y="792.7" width="342.0" height="22.0" fill="#E5E5E5" stroke="none" stroke-width="1" /><text x="28.0" y="807.2" font-family="Helvetica, Arial, sans-serif" font-size="9" fill="#333" text-anchor="start" font-weight="normal">[msg: press-and-hold-to-save]</text>
+</g>
+<rect x="0.0" y="0.0" width="390.0" height="844.0" fill="none" stroke="#000" stroke-width="2" />
+</g>
+<text x="446.0" y="76.0" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#000" text-anchor="start" font-weight="bold">Shot</text>
+<text x="446.0" y="94.0" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#333" text-anchor="start" font-weight="normal">None: the guest's finished poster as a still image, full</text>
+<text x="456.0" y="109.0" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#333" text-anchor="start" font-weight="normal">width, letterboxed in the void.</text>
+<text x="446.0" y="127.0" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#000" text-anchor="start" font-weight="bold">Layout</text>
+<text x="446.0" y="145.0" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#333" text-anchor="start" font-weight="normal">Full-screen &lt;img&gt; from a data: URL, a close button top right</text>
+<text x="456.0" y="160.0" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#333" text-anchor="start" font-weight="normal">(48px), one instruction line under the image. Focus moves</text>
+<text x="456.0" y="175.0" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#333" text-anchor="start" font-weight="normal">in, Esc and close return it to Save your poster.</text>
+<text x="446.0" y="193.0" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#000" text-anchor="start" font-weight="bold">Why an overlay</text>
+<text x="446.0" y="211.0" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#333" text-anchor="start" font-weight="normal">Long-press save needs the image itself on screen; Android</text>
+<text x="456.0" y="226.0" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#333" text-anchor="start" font-weight="normal">System WebView has no navigator.share, so this is</text>
+<text x="456.0" y="241.0" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#333" text-anchor="start" font-weight="normal">co-primary, not a fallback.</text>
+<text x="446.0" y="259.0" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#000" text-anchor="start" font-weight="bold">Messages → channel</text>
+<text x="446.0" y="277.0" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#333" text-anchor="start" font-weight="normal">press-and-hold-to-save → type (none fits: a gesture</text>
+<text x="456.0" y="292.0" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#333" text-anchor="start" font-weight="normal">instruction) · close → icon with an accessible name</text>
+<text x="446.0" y="310.0" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#000" text-anchor="start" font-weight="bold">Never</text>
+<text x="446.0" y="328.0" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#333" text-anchor="start" font-weight="normal">A No never reaches this frame. The poster carries no</text>
+<text x="456.0" y="343.0" font-family="Helvetica, Arial, sans-serif" font-size="10" fill="#333" text-anchor="start" font-weight="normal">surname, email, WhatsApp number or fun fact.</text>
+</svg>

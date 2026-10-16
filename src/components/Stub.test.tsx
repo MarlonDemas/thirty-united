@@ -1,10 +1,12 @@
-import { render, screen } from "@testing-library/react"
-import { describe, expect, it } from "vitest"
+import { act, fireEvent, render, screen } from "@testing-library/react"
+import { describe, expect, it, vi } from "vitest"
 import { Stamp } from "@/components/Stamp"
-import { Stub } from "@/components/Stub"
 import { StubView } from "@/components/StubView"
 import { formatSeat } from "@/lib/seat"
 import type { SavedResult } from "@/lib/api"
+import type { RsvpPayload } from "@/lib/schemas/rsvp"
+
+const PAYLOAD: RsvpPayload = { firstName: "Thandi", surname: "Nkosi", attending: "yes" }
 
 const saved = (over: Partial<SavedResult> = {}): SavedResult => ({
   status: "saved",
@@ -27,96 +29,72 @@ describe("formatSeat", () => {
 })
 
 describe("Stamp", () => {
-  it("Yes is the solid stamp with the date", () => {
+  it("Yes is the solid poster-red stamp, SIGNED with the date, and no white text on the red", () => {
     render(<Stamp variant="yes" />)
     const el = document.querySelector("[data-variant=yes]")!
-    expect(el).toHaveTextContent(/admit one/i)
+    expect(el).toHaveTextContent(/signed/i)
     expect(el).toHaveTextContent(/21 dec 2026/i)
-    expect(el.className).toContain("bg-red")
-    expect(screen.queryByText("Maybe")).not.toBeInTheDocument()
+    expect(el.className).toContain("bg-poster-red")
+    expect(el.className).toContain("text-panel")
+    expect(el.className).not.toMatch(/text-(white|foreground)\b/)
   })
 
-  it("Maybe is outlined, with the help icon and a MAYBE tag", () => {
+  it("Maybe is a panel-filled outline with the pencil, PENCILLED IN", () => {
     render(<Stamp variant="maybe" />)
     const el = document.querySelector("[data-variant=maybe]")!
-    expect(el.className).toContain("bg-transparent")
-    expect(el.className).not.toContain("bg-red ")
-    expect(screen.getByText("Maybe")).toBeInTheDocument()
-    expect(el.querySelector("svg.lucide-circle-help, svg.lucide-circle-question-mark")).not.toBeNull()
+    expect(el).toHaveTextContent(/pencilled in/i)
+    expect(el.className).toContain("bg-panel")
+    expect(el.className).not.toContain("bg-poster-red")
+    expect(el.querySelector("svg.lucide-pencil")).not.toBeNull()
   })
 })
 
-describe("Stub table", () => {
-  it("renders label and value rows", () => {
-    render(<Stub rows={[{ label: "SEAT", value: "007" }]} />)
-    expect(screen.getByText("SEAT")).toBeInTheDocument()
-    expect(screen.getByText("007")).toBeInTheDocument()
-  })
-})
-
-describe("StubView", () => {
-  it("Yes: name, team, three-digit seat, date and a heading", () => {
-    render(<StubView result={saved()} payload={{ firstName: "Thandi", surname: "Nkosi", attending: "yes" }} onChange={() => {}} />)
+describe("StubView (the signed panel and the No end)", () => {
+  it("Yes: heading takes focus; seat and shirt in mono, from the saved ticket number", () => {
+    render(<StubView payload={PAYLOAD} result={saved()} onChange={() => {}} />)
     expect(screen.getByRole("heading", { level: 1, name: "You're on the list" })).toHaveFocus()
-    expect(screen.getByTestId("guest-name")).toHaveTextContent("Thandi Nkosi")
-    expect(screen.getByTestId("team")).toHaveTextContent("ORLANDO PIRATES")
-    expect(screen.getByText("007")).toBeInTheDocument()
-    expect(screen.getAllByText("21 DEC 2026").length).toBeGreaterThan(0)
-    expect(screen.getByText("YES")).toBeInTheDocument()
+    expect(screen.getByTestId("seat-line")).toHaveTextContent("Seat 007 · Shirt 7")
+    expect(screen.getByText("Signed")).toHaveClass("sr-only")
   })
 
-  it("Maybe: held seat and the outlined stamp", () => {
-    render(<StubView result={saved({ attending: "maybe" })} onChange={() => {}} />)
+  it("Maybe: held seat, and the stamp's words for screen readers", () => {
+    render(<StubView payload={PAYLOAD} result={saved({ attending: "maybe" })} onChange={() => {}} />)
     expect(screen.getByRole("heading", { level: 1, name: "We've held your seat" })).toBeInTheDocument()
-    expect(document.querySelector("[data-variant=maybe]")).not.toBeNull()
-    expect(screen.getByText("MAYBE", { selector: "dd" })).toBeInTheDocument()
-  })
-
-  it("no team shows NEUTRAL in muted type", () => {
-    render(<StubView result={saved({ team: undefined })} onChange={() => {}} />)
-    const t = screen.getByTestId("team")
-    expect(t).toHaveTextContent("NEUTRAL")
-    expect(t.className).toContain("text-muted-foreground")
-  })
-
-  it("other sport shows the sport before the team", () => {
-    render(
-      <StubView
-        result={saved({ team: "Proteas" })}
-        payload={{ firstName: "Thandi", surname: "Nkosi", attending: "yes", sport: "other", otherSport: "Cricket", team: "Proteas" }}
-        onChange={() => {}}
-      />,
-    )
-    expect(screen.getByTestId("team")).toHaveTextContent("CRICKET: PROTEAS")
-  })
-
-  it("a 40+ character surname wraps instead of clipping", () => {
-    const surname = "Montgomery-Featherstonehaugh-Cholmondeley"
-    render(<StubView result={saved({ surname })} onChange={() => {}} />)
-    const el = screen.getByTestId("guest-name")
-    expect(el).toHaveTextContent(surname)
-    expect(el.className).toContain("break-words")
-  })
-
-  it("shows the server surname even when the local form surname differs", () => {
-    render(<StubView result={saved({ surname: "Nkosi" })} payload={{ firstName: "Thandi", surname: "Typo", attending: "yes" }} onChange={() => {}} />)
-    expect(screen.getByTestId("guest-name")).toHaveTextContent("Thandi Nkosi")
-    expect(screen.getByTestId("guest-name")).not.toHaveTextContent("Typo")
+    expect(screen.getByText("Pencilled in")).toHaveClass("sr-only")
   })
 
   it("updated: says so, keeps the seat", () => {
-    render(<StubView result={saved({ status: "updated" })} onChange={() => {}} />)
+    render(<StubView payload={PAYLOAD} result={saved({ status: "updated" })} onChange={() => {}} />)
     expect(screen.getByRole("heading", { level: 1, name: "Your answer is updated" })).toBeInTheDocument()
-    expect(screen.getByText("007")).toBeInTheDocument()
+    expect(screen.getByTestId("seat-line")).toHaveTextContent("007")
   })
 
-  it("No: sorry heading, void ticket, no seat, no stamp, change-of-mind link", () => {
-    render(<StubView result={saved({ attending: "no", team: undefined })} onChange={() => {}} />)
+  it("Change my answer goes back", () => {
+    const onChange = vi.fn()
+    render(<StubView payload={PAYLOAD} result={saved()} onChange={onChange} />)
+    fireEvent.click(screen.getByRole("button", { name: "Change my answer" }))
+    expect(onChange).toHaveBeenCalledOnce()
+  })
+
+  it("No: sorry heading, no seat, no stamp words, and a secondary (not red) Changed your mind?", () => {
+    render(<StubView payload={PAYLOAD} result={saved({ attending: "no", team: undefined })} onChange={() => {}} />)
     expect(screen.getByRole("heading", { level: 1, name: "Sorry you'll miss it, Thandi" })).toBeInTheDocument()
-    expect(screen.queryByText("SEAT")).not.toBeInTheDocument()
-    expect(screen.queryByText("007")).not.toBeInTheDocument()
-    expect(document.querySelector("[data-variant]")).toBeNull()
-    expect(document.querySelector("line")).not.toBeNull()
-    expect(screen.getByRole("button", { name: "Changed your mind?" })).toBeInTheDocument()
+    expect(screen.queryByTestId("seat-line")).not.toBeInTheDocument()
+    expect(screen.queryByText(/signed|pencilled/i)).not.toBeInTheDocument()
+    const back = screen.getByRole("button", { name: "Changed your mind?" })
+    expect(back.className).not.toMatch(/shirt-red|poster-red/)
+  })
+
+  it("Yes and Maybe: Save your poster arrives from its own lazy chunk, with the no-copy line", async () => {
+    render(<StubView payload={PAYLOAD} result={saved({ attending: "maybe" })} onChange={() => {}} />)
+    expect(await screen.findByRole("button", { name: "Save your poster" })).toBeInTheDocument()
+    expect(screen.getByText("Save it now. We don't keep a copy.")).toBeInTheDocument()
+  })
+
+  it("No: no poster, so no Save or Share", async () => {
+    render(<StubView payload={PAYLOAD} result={saved({ attending: "no" })} onChange={() => {}} />)
+    await act(async () => {})
+    expect(screen.queryByRole("button", { name: "Save your poster" })).toBeNull()
+    expect(screen.queryByRole("button", { name: "Share" })).toBeNull()
   })
 })

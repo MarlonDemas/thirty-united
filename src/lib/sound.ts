@@ -1,9 +1,9 @@
-import { forcedColors, prefersReducedMotion } from "@/lib/motionPrefs"
+import { forcedColors } from "@/lib/motionPrefs"
 
-// Opt-in, synthesized only (no media files). Off by default; the choice lives in sessionStorage.
+// Opt-in, synthesized only (no media files). Off by default; the choice lives in sessionStorage. Sound follows only
+// its own opt-in: reduced motion does not silence it (tokens.md, Sound). Forced colours hides the chip, so it stays silent.
 const KEY = "thirty-united:sound"
 const MASTER = 0.25
-const STAMP_DB = -18
 
 export function getSoundOn(): boolean {
   try {
@@ -21,106 +21,98 @@ export function setSoundOn(on: boolean): void {
   }
 }
 
-export const dbToGain = (db: number) => 10 ** (db / 20)
-
-/** Drag speed (px per ms) to a tear-noise gain, 0.15..1 of the master level. */
-export function tearGain(speed: number): number {
-  return 0.15 + 0.85 * Math.min(1, Math.max(0, speed) / 2)
-}
-
-/** Drag speed to the band-pass centre, 1.2 to 4 kHz. */
-export function tearFreq(speed: number): number {
-  return 1200 + 2800 * Math.min(1, Math.max(0, speed) / 2)
-}
-
 type Ctor = typeof AudioContext
 let ctx: AudioContext | null = null
-let noise: AudioBuffer | null = null
 
 function ctor(): Ctor | undefined {
   if (typeof window === "undefined") return undefined
   return window.AudioContext ?? (window as unknown as { webkitAudioContext?: Ctor }).webkitAudioContext
 }
 
+/** The beat cues (phase 7), plus "on", the opt-in's confirmation. All one-shots: nothing loops, so the Still chip has no sound to stop. */
+export type Cue = "clunk" | "hum" | "swell" | "swellSoft" | "hush" | "drum" | "crackle" | "tick" | "on"
+type Synth = typeof import("@/lib/synth")
+let synth: Synth | null = null
+let loading: Promise<Synth | null> | null = null
+
+/** The synthesiser (cues, tear, stamp) is its own chunk, fetched on the opt-in tap (or once a remembered opt-in is armed). */
+export function loadCues(): Promise<Synth | null> {
+  return (loading ??= import("@/lib/synth").then(
+    (m) => {
+      synth = m
+      return m
+    },
+    () => (loading = null), // deliberate: offline resolves to null (no sound, no error); the next tap asks again
+  ))
+}
+
 /** Create or resume the AudioContext. Call only inside a user gesture. Returns null when unsupported. */
 export function unlockAudio(): AudioContext | null {
-  if (prefersReducedMotion() || forcedColors()) return null // forced colors hides the Sound tab; it stays silent too
+  if (forcedColors()) return null // forced colors hides the Sound tab; it stays silent too
   const C = ctor()
   if (!C) return null
   try {
-    ctx ??= new C()
-    if (ctx.state === "suspended") void ctx.resume()
+    if (!ctx) {
+      ctx = new C()
+      // Hidden tab: let the audio device sleep. Visible again with sound on, it resumes (so do the next cue and tap).
+      document.addEventListener("visibilitychange", () => {
+        if (document.hidden) void ctx?.suspend()
+        else if (ctx && ctx.state !== "running" && getSoundOn()) void ctx.resume()
+      })
+    }
+    if (ctx.state !== "running") void ctx.resume() // iOS can also report "interrupted"
+    void loadCues()
     return ctx
   } catch {
     return null
   }
 }
 
-function noiseBuffer(c: AudioContext): AudioBuffer {
-  if (noise && noise.sampleRate === c.sampleRate) return noise
-  const len = Math.floor(c.sampleRate * 0.3)
-  noise = c.createBuffer(1, len, c.sampleRate)
-  const d = noise.getChannelData(0)
-  for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1
-  return noise
+/** While the Sound chip is mounted: with the opt-in on (remembered across a reload too), any tap or key unlocks or resumes audio. */
+export function armAudio(): () => void {
+  const on = () => getSoundOn() && unlockAudio()
+  if (getSoundOn()) void loadCues() // a remembered opt-in: have the cues in before the first beat's tap
+  const types = ["pointerdown", "keydown"] as const
+  types.forEach((t) => document.addEventListener(t, on, true))
+  return () => types.forEach((t) => document.removeEventListener(t, on, true))
 }
 
 function ready(): AudioContext | null {
-  if (!ctx || !getSoundOn() || prefersReducedMotion() || forcedColors()) return null
-  if (ctx.state === "suspended") void ctx.resume()
+  if (!ctx || !getSoundOn() || forcedColors() || document.hidden) return null
+  if (ctx.state !== "running") void ctx.resume()
   return ctx
 }
 
-function burst(c: AudioContext, opts: { freq: number; q: number; gain: number; ms: number }) {
-  const src = c.createBufferSource()
-  src.buffer = noiseBuffer(c)
-  const band = c.createBiquadFilter()
-  band.type = "bandpass"
-  band.frequency.value = opts.freq
-  band.Q.value = opts.q
-  const g = c.createGain()
-  const t = c.currentTime
-  const end = t + opts.ms / 1000
-  g.gain.setValueAtTime(0.0001, t)
-  g.gain.linearRampToValueAtTime(opts.gain * MASTER, t + 0.008)
-  g.gain.exponentialRampToValueAtTime(0.0001, end)
-  src.connect(band).connect(g).connect(c.destination)
-  src.start(t)
-  src.stop(end + 0.02)
-}
-
-/** One tick of paper tearing; louder and brighter the faster the hand moves (60 ms). */
+/** One tick of paper tearing (synth.ts). Like every sound here: silent until opt-in, unlock and the synth chunk. */
 export function playTearTick(speed: number): void {
   const c = ready()
-  if (c) burst(c, { freq: tearFreq(speed), q: 1.2, gain: tearGain(speed), ms: 60 })
+  if (c && synth) synth.playTearTick(c, speed, MASTER)
 }
 
-/** The separation: a longer rip (140 ms). */
+/** The separation: a longer rip. */
 export function playTearSeparate(): void {
   const c = ready()
-  if (c) burst(c, { freq: 2400, q: 0.9, gain: 1, ms: 140 })
+  if (c && synth) synth.playTearSeparate(c, MASTER)
 }
 
-/** The stamp: 140 Hz sine decaying over 90 ms plus a 6 ms noise click, at -18 dB. */
+/** The stamp, at -18 dB. */
 export function playStamp(): void {
   const c = ready()
-  if (!c) return
-  const t = c.currentTime
-  const level = dbToGain(STAMP_DB)
-  const osc = c.createOscillator()
-  osc.frequency.value = 140
-  const g = c.createGain()
-  g.gain.setValueAtTime(level, t)
-  g.gain.exponentialRampToValueAtTime(0.0001, t + 0.09)
-  osc.connect(g).connect(c.destination)
-  osc.start(t)
-  osc.stop(t + 0.1)
-  const click = c.createBufferSource()
-  click.buffer = noiseBuffer(c)
-  const cg = c.createGain()
-  cg.gain.setValueAtTime(level, t)
-  cg.gain.exponentialRampToValueAtTime(0.0001, t + 0.006)
-  click.connect(cg).connect(c.destination)
-  click.start(t)
-  click.stop(t + 0.01)
+  if (c && synth) synth.playStamp(c)
+}
+
+/** One beat cue (synth.ts), once the opt-in is on, audio unlocked and the cue chunk in. Otherwise silent. */
+export function playCue(cue: Cue): void {
+  const c = ready()
+  // Before the chunk is in, the cue is dropped, not queued. Deliberate: a late clunk is worse than none.
+  if (c && synth) synth.play(c, cue, MASTER)
+}
+
+/**
+ * The Sound chip's confirmation as sound turns on. The one cue that waits for the synth chunk (on this tap only): every
+ * other cue is dropped until it is in. It still goes through ready(), so turning sound off before the chunk lands, or
+ * a failed load, stays silent.
+ */
+export function confirmSoundOn(): void {
+  void loadCues().then(() => playCue("on"))
 }

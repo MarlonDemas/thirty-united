@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react"
 import { m } from "motion/react"
-import { CircleHelp } from "lucide-react"
+import { Pencil } from "lucide-react"
 import { cn } from "cn"
 import { useReducedMotion } from "@/hooks/useReducedMotion"
 import { haptic, HAPTICS } from "@/lib/haptics"
@@ -17,11 +17,15 @@ const FROM = {
 export type StampVariant = "yes" | "maybe"
 
 /**
- * The ADMIT ONE rubber stamp, rotated -4deg: the only rotated element on the page.
- * Yes is solid red. Maybe is outlined, with a circle-help icon and a MAYBE tag, so the two differ
- * by shape and wording, not colour alone. It lands with an impact (spring, haptic, optional sound)
- * and calls `onImpact` at the moment of contact; reduced motion appears in place with none of it.
+ * The signing stamp, rotated -4deg, in the world over the finale (aria-hidden there: its meaning is the panel's
+ * heading). Yes is solid poster red with panel-dark words (white on poster red is 4.04:1, so no white text sits on it),
+ * "SIGNED · 21 DEC 2026". Maybe is a panel-filled outline with a pencil,
+ * "PENCILLED IN", so the two differ by shape, words and icon, not colour alone. It lands with an impact (spring,
+ * haptic, optional sound) and calls `onImpact` at contact; reduced motion shows it in place with only the (opt-in) sound.
+ * Placed twice (CHOSEN.md): live by WorldStage (`STAMP_LIVE`), on the exported poster by the compositor (`STAMP_POSTER`, src/poster/layout.ts).
  */
+// Sized in em from its 24 px type (4 px padding, 12 x 4 px inner padding, a 28 px line), so the world can clamp the
+// whole stamp by its font size alone (index.css, `.world-stamp`).
 export function Stamp({ variant, className, onImpact }: { variant: StampVariant; className?: string; onImpact?: () => void }) {
   const reduced = useReducedMotion()
   const maybe = variant === "maybe"
@@ -31,10 +35,11 @@ export function Stamp({ variant, className, onImpact }: { variant: StampVariant;
   })
 
   useEffect(() => {
-    if (reduced) return
     const t = setTimeout(() => {
+      playStamp() // sound follows only its own opt-in, so it plays under reduced motion too
+      // Reduced motion shows the stamp in place: there is no landing, so no contact for the haptic or onImpact to mark.
+      if (reduced) return
       haptic(maybe ? HAPTICS.stampSoft : HAPTICS.stamp)
-      playStamp()
       impact.current?.()
     }, IMPACT_MS)
     return () => clearTimeout(t)
@@ -44,40 +49,41 @@ export function Stamp({ variant, className, onImpact }: { variant: StampVariant;
       initial={reduced ? false : FROM[variant]}
       animate={{ opacity: 1, scale: 1, rotate: -4 }}
       transition={{ default: LAND, opacity: { duration: 0.05 } }}
-      className={cn("relative inline-flex w-fit max-w-full", className)}
+      className={cn("relative inline-flex w-fit max-w-full text-2xl", className)}
     >
       {/* Contact shadow: a sibling of the masked face so the speckle mask cannot clip it. It lands at contact. */}
-      {!maybe && (
-        <m.span
-          aria-hidden="true"
-          className="stamp-shadow"
-          initial={reduced ? false : { opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.08, delay: IMPACT_MS / 1000 }}
-        />
-      )}
+      <m.span
+        aria-hidden="true"
+        className="stamp-shadow"
+        initial={reduced ? false : { opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.08, delay: IMPACT_MS / 1000 }}
+      />
       <div
         data-variant={variant}
         className={cn(
-          "stamp-worn inline-flex w-fit max-w-full flex-col items-center border-2 border-red p-1 forced-colors:border-[CanvasText]",
-          maybe ? "bg-transparent text-red" : "bg-red text-paper-raised",
+          "stamp-worn inline-flex w-fit max-w-full border-2 p-[0.1667em] forced-colors:border-[CanvasText]",
+          maybe ? "border-foreground bg-panel text-foreground" : "border-poster-red bg-poster-red text-panel",
         )}
       >
         <div
           className={cn(
-            "flex flex-col items-center justify-center gap-y-1 border px-3 py-1.5 text-center font-mono text-sm leading-5 font-medium tracking-wide uppercase md:flex-row md:gap-x-2 md:text-base",
-            maybe ? "border-red" : "border-paper-raised",
+            "flex items-center justify-center gap-[0.3333em] border px-[0.5em] py-[0.1667em] text-center font-display leading-[1.1667em] font-bold tracking-[0.06em] whitespace-nowrap uppercase",
+            maybe ? "border-foreground" : "border-panel",
           )}
         >
-          {maybe && <CircleHelp aria-hidden="true" className="size-5" strokeWidth={1.5} />}
-          <span className="inline-flex flex-col items-center md:flex-row md:gap-x-2">
-            <span className="whitespace-nowrap">Admit one</span>
-            <span aria-hidden="true" className="hidden md:inline">·</span>
-            <span className="sr-only">, </span>
-            <span className="whitespace-nowrap">21 Dec 2026</span>
-          </span>
-          {maybe && (
-            <span className="rounded-mark border border-red px-1.5 text-xs font-medium tracking-widest md:text-sm">Maybe</span>
+          {maybe ? (
+            <>
+              <Pencil aria-hidden="true" className="size-[0.8333em]" strokeWidth={2} />
+              <span>Pencilled in</span>
+            </>
+          ) : (
+            <>
+              <span>Signed</span>
+              <span aria-hidden="true">·</span>
+              <span className="sr-only">, </span>
+              <span>21 Dec 2026</span>
+            </>
           )}
         </div>
       </div>

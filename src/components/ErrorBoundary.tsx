@@ -22,8 +22,8 @@ export class ErrorBoundary extends Component<Props, { failed: boolean }> {
     if (!this.state.failed) return this.props.children
     if (this.props.fallback !== undefined) return this.props.fallback
     return (
-      <section role="alert" className="mx-auto flex max-w-[640px] flex-col gap-6 border border-ink bg-paper p-6">
-        <h1 className="heading-view m-0">Something slipped</h1>
+      <section role="alert" className="mx-auto flex max-w-[640px] flex-col gap-6 border border-line bg-panel p-6">
+        <h1 className="heading-panel m-0">Something slipped</h1>
         <p className="m-0 flex items-start gap-2 text-status-error">
           <CircleAlert aria-hidden="true" className="mt-0.5 size-5 shrink-0" strokeWidth={1.5} />
           Your answers are kept. Try again.

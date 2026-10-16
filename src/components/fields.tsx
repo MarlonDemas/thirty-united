@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 
 export function OptionalTag() {
-  return <span className="helper rounded-mark border border-rule-soft px-1.5 text-sm font-normal">optional</span>
+  return <span className="helper rounded-mark border border-line px-1.5 text-sm font-normal">optional</span>
 }
 
 type Common = {
@@ -41,12 +41,14 @@ export function TextField({
   type = "text",
   autoComplete,
   inputMode,
+  maxLength,
   ...c
 }: Common & {
   reg: UseFormRegisterReturn
   type?: string
   autoComplete?: string
   inputMode?: "text" | "email" | "tel" | "numeric"
+  maxLength?: number
 }) {
   return (
     <Shell {...c}>
@@ -55,6 +57,7 @@ export function TextField({
         type={type}
         autoComplete={autoComplete}
         inputMode={inputMode}
+        maxLength={maxLength}
         aria-invalid={!!c.error || undefined}
         aria-describedby={describedBy(c.name, c.helper, c.error)}
         {...reg}

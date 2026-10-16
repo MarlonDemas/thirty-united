@@ -3,6 +3,8 @@ import userEvent from "@testing-library/user-event"
 import { describe, expect, it } from "vitest"
 import { InvitePage } from "@/components/InvitePage"
 import type { VerifyResult } from "@/lib/api"
+import { emptyForm } from "@/lib/schemas/rsvp"
+import { CODE_TTL_MS } from "@/lib/timing"
 import { fakeApi, setReducedMotion } from "@/test-utils"
 
 type Api = ReturnType<typeof fakeApi>
@@ -19,7 +21,7 @@ const live = () => screen.getAllByRole("status")
 async function pick(user: ReturnType<typeof userEvent.setup>, who: "Yes" | "Maybe" | "No") {
   await user.click(screen.getByRole("radio", { name: who }))
   await user.click(screen.getByRole("button", { name: /continue/i }))
-  await findHeading(/your details|just your name/i) // the form chunk loads lazily
+  await findHeading(/your shirt|just your name/i) // the form chunk loads lazily
 }
 async function fillNo(user: ReturnType<typeof userEvent.setup>, email = "sipho@example.com") {
   await user.type(screen.getByLabelText("First name"), "Sipho")
@@ -44,7 +46,7 @@ const typeCode = async (user: ReturnType<typeof userEvent.setup>, code: string) 
 describe("sealed ticket", () => {
   it("shows the title, the owner's opening line and one Tear open action", () => {
     setup()
-    expect(heading("Thirty United")).toBeInTheDocument()
+    expect(heading("You've been called up")).toBeInTheDocument()
     expect(screen.getByText("Thirty feels like half time. Come for the oranges.")).toBeInTheDocument()
     expect(screen.getByRole("button", { name: /tear open/i })).toBeInTheDocument()
     expect(screen.getByText("Venue TBA")).toBeInTheDocument()
@@ -56,7 +58,7 @@ describe("sealed ticket", () => {
     const btn = screen.getByRole("button", { name: /tear open/i })
     await user.click(btn)
     await user.click(btn) // second press during the tear is absorbed
-    await waitFor(() => expect(heading("Are you coming?")).toHaveFocus(), { timeout: 3000 })
+    await waitFor(() => expect(heading("Are you in?")).toHaveFocus(), { timeout: 3000 })
     expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1)
     expect(live().some((n) => n.textContent === "Ticket opened")).toBe(true)
   })
@@ -66,7 +68,7 @@ describe("sealed ticket", () => {
     const { user } = setup()
     expect(screen.queryByTestId("tear-handle")).not.toBeInTheDocument()
     await user.click(screen.getByRole("button", { name: /tear open/i }))
-    expect(heading("Are you coming?")).toHaveFocus()
+    expect(heading("Are you in?")).toHaveFocus()
     expect(live().some((n) => n.textContent === "Ticket opened")).toBe(true)
   })
 
@@ -79,7 +81,7 @@ describe("sealed ticket", () => {
 describe("sealed ticket without an invite key", () => {
   it("shows one calm line instead of Tear open and drops the drag handle", () => {
     setup(fakeApi(), true)
-    expect(heading("Thirty United")).toBeInTheDocument()
+    expect(heading("You've been called up")).toBeInTheDocument()
     expect(screen.queryByRole("button", { name: /tear open/i })).not.toBeInTheDocument()
     expect(screen.queryByTestId("tear-handle")).not.toBeInTheDocument()
     const line = screen.getByText("This link is missing its invite key. Ask Makes to send you the full link.")
@@ -88,14 +90,14 @@ describe("sealed ticket without an invite key", () => {
 })
 
 describe("attendance", () => {
-  it("previews the pick on the stub and asks for a pick before continuing", async () => {
+  it("asks for a pick before continuing, and keeps the pick", async () => {
     setReducedMotion(true)
     const { user } = setup()
     await user.click(screen.getByRole("button", { name: /tear open/i }))
     await user.click(screen.getByRole("button", { name: /continue/i }))
     expect(screen.getByText("Pick Yes, Maybe or No")).toBeInTheDocument()
     await user.click(screen.getByRole("radio", { name: "Maybe" }))
-    expect(screen.getByText("MAYBE")).toBeInTheDocument()
+    expect(screen.getByRole("radio", { name: "Maybe" })).toBeChecked()
   })
 })
 
@@ -114,7 +116,7 @@ describe("the No path", () => {
     await submit(user)
 
     expect(api.requestCode).toHaveBeenCalledWith("sipho@example.com")
-    expect(await findHeading("Check your email")).toHaveFocus()
+    expect(await findHeading("Seal it")).toHaveFocus()
     expect(screen.getByText("Code sent to")).toBeInTheDocument()
     expect(screen.getByText("sipho@example.com")).toBeInTheDocument()
 
@@ -214,7 +216,7 @@ describe("the code step", () => {
     await pick(user, "Yes")
     await fillYes(user)
     await submit(user)
-    await screen.findByRole("heading", { name: "Check your email" })
+    await screen.findByRole("heading", { name: "Seal it" })
     return user
   }
 
@@ -222,7 +224,7 @@ describe("the code step", () => {
     const api = fakeApi()
     const user = await toCodeView(api)
     expect(api.requestCode).toHaveBeenCalledWith("thandi@example.com")
-    expect(await findHeading("Check your email")).toHaveFocus()
+    expect(await findHeading("Seal it")).toHaveFocus()
     await typeCode(user, "123456")
     expect(api.verifyAndSave).toHaveBeenCalledWith({
       email: "thandi@example.com",
@@ -237,10 +239,12 @@ describe("the code step", () => {
       }),
     })
     expect(heading("You're on the list")).toHaveFocus()
-    expect(screen.getByTestId("guest-name")).toHaveTextContent("Thandi Nkosi")
-    expect(screen.getByTestId("team")).toHaveTextContent("ORLANDO PIRATES")
-    expect(screen.getByText("007")).toBeInTheDocument()
-    expect(document.querySelector("[data-variant=yes]")).toHaveTextContent(/admit one/i)
+    // The shirt in his hands: first name only, never the surname; the number is the ticket number.
+    const names = [...document.querySelectorAll("[data-name]")].map((n) => n.getAttribute("data-name"))
+    expect(names).toEqual(["THANDI"])
+    expect(document.querySelector("[data-number]")).toHaveAttribute("data-number", "7")
+    expect(screen.getByTestId("seat-line")).toHaveTextContent("Seat 007 · Shirt 7")
+    expect(document.querySelector("[data-variant=yes]")).toHaveTextContent(/signed/i)
     expect(window.sessionStorage.getItem("thirty-united:answers")).toBeNull()
     expect(live().some((n) => /You're on the list\. Seat 007/.test(n.textContent ?? ""))).toBe(true)
   })
@@ -315,7 +319,7 @@ describe("the code step", () => {
     const user = await toCodeView(api)
     await typeCode(user, "123456")
     expect(await screen.findByText("Add your team")).toBeInTheDocument()
-    expect(await findHeading("Your details")).toBeInTheDocument()
+    expect(await findHeading("Your shirt")).toBeInTheDocument()
     await waitFor(() => expect(screen.getByLabelText("Football team")).toHaveFocus())
     expect(screen.getByLabelText("First name")).toHaveValue("Thandi")
   })
@@ -323,9 +327,136 @@ describe("the code step", () => {
   it("goes back to the form with answers kept", async () => {
     const user = await toCodeView(fakeApi())
     await user.click(screen.getByRole("button", { name: /back to my answers/i }))
-    expect(await findHeading("Your details")).toBeInTheDocument()
+    expect(await findHeading("Your shirt")).toBeInTheDocument()
     expect(screen.getByLabelText("First name")).toHaveValue("Thandi")
     expect(screen.getByLabelText("Football team")).toHaveValue("Orlando Pirates")
+  })
+})
+
+describe("the code step after a reload or discarded tab", () => {
+  const STEP = "thirty-united:step"
+  const step = () => JSON.parse(window.sessionStorage.getItem(STEP) ?? "null") as { view: string; sentAt: number } | null
+  const seed = (sentAt: number) => {
+    const answers = { ...emptyForm("yes"), firstName: "Thandi", surname: "Nkosi", email: "thandi@example.com" }
+    window.sessionStorage.setItem("thirty-united:answers", JSON.stringify(answers))
+    window.sessionStorage.setItem(STEP, JSON.stringify({ view: "code", sentAt }))
+  }
+  const toCodeView = async (api: Api) => {
+    setReducedMotion(true)
+    const { user } = setup(api)
+    await user.click(screen.getByRole("button", { name: /tear open/i }))
+    await pick(user, "Yes")
+    await fillYes(user)
+    await submit(user)
+    await findHeading("Seal it")
+    return user
+  }
+
+  it("the step holds only the view and when the code was sent: never the code, and the invite key stays in its own slot", async () => {
+    window.sessionStorage.setItem("thirty-united:k", "invite-key-7f3a") // captured from the link at start, by design
+    const api = fakeApi({ verifyAndSave: async () => ({ status: "invalid_code", attemptsLeft: 2 }) as VerifyResult })
+    const before = Date.now()
+    const user = await toCodeView(api)
+    expect(step()).toEqual({ view: "code", sentAt: expect.any(Number) })
+    expect(step()!.sentAt).toBeGreaterThanOrEqual(before)
+    await typeCode(user, "482913")
+    await screen.findByText(/didn't match/i)
+    const all = Object.keys(window.sessionStorage).map((k) => window.sessionStorage.getItem(k)).join("|")
+    expect(all).not.toContain("482913")
+    expect(Object.keys(step()!).sort()).toEqual(["sentAt", "view"])
+    // The key stays only where the app already kept it; the step and the answers never carry it.
+    expect(window.sessionStorage.getItem(STEP)).not.toContain("invite-key-7f3a")
+    expect(window.sessionStorage.getItem("thirty-united:answers")).not.toContain("invite-key-7f3a")
+    expect(Object.keys(window.sessionStorage).sort()).toEqual(["thirty-united:answers", "thirty-united:k", STEP].sort())
+  })
+
+  it("ignores and clears a step older than the code's 10-minute life: the guest lands on the form", async () => {
+    seed(Date.now() - CODE_TTL_MS - 1000)
+    const api = fakeApi()
+    setup(api)
+    expect(await findHeading("Your shirt")).toBeInTheDocument()
+    expect(screen.getByLabelText("First name")).toHaveValue("Thandi")
+    expect(screen.queryByRole("heading", { name: "Seal it" })).toBeNull()
+    expect(step()).toBeNull()
+    expect(api.requestCode).not.toHaveBeenCalled()
+  })
+
+  it("restores a step sent just inside the code's life", async () => {
+    seed(Date.now() - CODE_TTL_MS + 30_000)
+    setup()
+    expect(await findHeading("Seal it")).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "Send a new code" })).toBeEnabled() // the 60 s cooldown is long over
+  })
+
+  it("restores the code step with the resend cooldown still running", async () => {
+    seed(Date.now() - 15_000)
+    const api = fakeApi()
+    setup(api)
+    expect(await findHeading("Seal it")).toHaveFocus()
+    expect(screen.getByRole("button", { name: /resend in 0:4\d/i })).toBeDisabled()
+    expect(screen.getByText(/keep this page open/i)).toBeInTheDocument()
+    expect(api.requestCode).not.toHaveBeenCalled()
+  })
+
+  it("keeps the new send time after a resend", async () => {
+    const old = Date.now() - 70_000
+    seed(old)
+    const { user } = setup(fakeApi())
+    await findHeading("Seal it")
+    await user.click(screen.getByRole("button", { name: "Send a new code" }))
+    await screen.findByText(/new code sent to/i)
+    expect(step()!.sentAt).toBeGreaterThan(old + 60_000)
+  })
+
+  it("ignores a stored step without stored answers", () => {
+    window.sessionStorage.setItem(STEP, JSON.stringify({ view: "code", sentAt: Date.now() }))
+    setup()
+    expect(heading("You've been called up")).toBeInTheDocument()
+  })
+
+  it("ignores a stored step sent in the future", async () => {
+    seed(Date.now() + 60 * 60 * 1000)
+    setup()
+    expect(await findHeading("Your shirt")).toBeInTheDocument()
+    expect(screen.queryByRole("heading", { name: "Seal it" })).toBeNull()
+  })
+
+  it("clears the step once the answer is saved", async () => {
+    const user = await toCodeView(fakeApi())
+    expect(step()).not.toBeNull()
+    await typeCode(user, "123456")
+    await findHeading("You're on the list")
+    expect(step()).toBeNull()
+  })
+
+  it("clears the step when the guest goes back to edit", async () => {
+    const user = await toCodeView(fakeApi())
+    await user.click(screen.getByRole("button", { name: /back to my answers/i }))
+    await findHeading("Your shirt")
+    expect(step()).toBeNull()
+  })
+})
+
+describe("restored answers are checked before use", () => {
+  const ANSWERS = "thirty-united:answers"
+  const store = (v: unknown) => window.sessionStorage.setItem(ANSWERS, JSON.stringify(v))
+
+  it.each<[string, unknown]>([
+    ["a numeric firstName", { ...emptyForm("yes"), firstName: 42 }],
+    ["a non-object", "yes"],
+    ["an array", [{ ...emptyForm("yes"), firstName: "Thandi" }]],
+  ])("%s is cleared and the guest starts at the ticket", (_, v) => {
+    store(v)
+    setup()
+    expect(heading("You've been called up")).toBeInTheDocument()
+    expect(window.sessionStorage.getItem(ANSWERS)).toBeNull()
+  })
+  it("a valid record still restores to the form", async () => {
+    store({ ...emptyForm("yes"), firstName: "Thandi", surname: "Nkosi" })
+    setup()
+    expect(await findHeading("Your shirt")).toBeInTheDocument()
+    expect(screen.getByLabelText("First name")).toHaveValue("Thandi")
+    expect(window.sessionStorage.getItem(ANSWERS)).not.toBeNull()
   })
 })
 
@@ -413,7 +544,7 @@ describe("sending the code", () => {
     expect(api.requestCode).toHaveBeenCalledTimes(1)
     expect(screen.getByText("Sending your code")).toBeInTheDocument()
     release()
-    await screen.findByRole("heading", { name: "Check your email" })
+    await screen.findByRole("heading", { name: "Seal it" })
   })
 })
 
@@ -437,7 +568,7 @@ describe("change my answer", () => {
     await pick(user, "Yes")
     await fillYes(user)
     await submit(user)
-    await screen.findByRole("heading", { name: "Check your email" })
+    await screen.findByRole("heading", { name: "Seal it" })
     await typeCode(user, "123456")
     await screen.findByRole("heading", { name: "You're on the list" })
 
@@ -449,11 +580,11 @@ describe("change my answer", () => {
     await user.click(screen.getByRole("button", { name: /continue/i }))
     expect(screen.getByLabelText("First name")).toHaveValue("Thandi")
     await submit(user)
-    await screen.findByRole("heading", { name: "Check your email" })
+    await screen.findByRole("heading", { name: "Seal it" })
     await typeCode(user, "654321")
     expect(await screen.findByRole("heading", { name: "Your answer is updated" })).toBeInTheDocument()
     expect(screen.getByText("007")).toBeInTheDocument()
-    expect(document.querySelector("[data-variant=maybe]")).toHaveTextContent(/maybe/i)
+    expect(document.querySelector("[data-variant=maybe]")).toHaveTextContent(/pencilled in/i)
   })
 })
 
@@ -470,5 +601,90 @@ describe("details form revalidation", () => {
     await user.click(screen.getByRole("radio", { name: "Football" }))
     expect(screen.getByRole("radio", { name: "Football" })).toBeChecked()
     expect(screen.queryByText(/pick football or another sport/i)).not.toBeInTheDocument()
+  })
+})
+
+describe("the world behind the panel", () => {
+  const world = () => screen.getByTestId("world-stage")
+  const bank = (n: number) => world().querySelector<HTMLElement>(`[data-layer=l2b-stadium-on-b${n}]`)!.style.opacity
+  const banks = () => [1, 2, 3, 4].map((n) => Number(bank(n)))
+
+  it("is aria-hidden, a sibling of main, and holds the pass in its pass zone", () => {
+    setup()
+    expect(world()).toHaveAttribute("aria-hidden", "true")
+    expect(world().closest("main")).toBeNull()
+    expect(world().querySelector(".pass-zone [data-testid=tear-handle]")).not.toBeNull()
+    expect(screen.getByRole("main")).toContainElement(screen.getByRole("button", { name: /tear open/i }))
+  })
+
+  it("lights a bank per beat and announces each strike; the lamps mirror the digits; no number before the code", async () => {
+    const api = fakeApi()
+    setReducedMotion(true)
+    const { user } = setup(api)
+    expect(world()).toHaveAttribute("data-beat", "cover")
+    expect(banks()).toEqual([0, 0, 0, 0])
+
+    await user.click(screen.getByRole("button", { name: /tear open/i }))
+    expect(world()).toHaveAttribute("data-beat", "chapter1")
+    expect(banks()).toEqual([1, 0, 0, 0])
+    expect(live().some((n) => n.textContent === "1 of 4 floodlights on")).toBe(true)
+
+    await pick(user, "Yes")
+    expect(banks()).toEqual([1, 1, 0, 0])
+    expect(live().some((n) => n.textContent === "You're in. The lights are coming on.")).toBe(true)
+    // The shirt mirrors the name field: first name only, even with the surname typed into it. No number yet.
+    await user.type(screen.getByLabelText("First name"), "Thandi Nkosi")
+    await user.type(screen.getByLabelText("Surname"), "Nkosi")
+    expect(world().querySelector("[data-name]")).toHaveAttribute("data-name", "THANDI")
+    expect(world().querySelector("[data-number]")).toHaveAttribute("data-number", "")
+    await user.clear(screen.getByLabelText("First name"))
+    await user.type(screen.getByLabelText("First name"), "Thandi")
+    await user.click(screen.getByRole("radio", { name: "Football" }))
+    await user.type(screen.getByLabelText("Football team"), "Orlando Pirates")
+    await user.type(screen.getByLabelText("Email"), "thandi@example.com")
+    await user.click(screen.getByRole("radio", { name: "Email" }))
+    await submit(user)
+    await findHeading("Seal it")
+
+    expect(world()).toHaveAttribute("data-beat", "code")
+    expect(banks()).toEqual([1, 1, 1, 0])
+    expect(live().some((n) => n.textContent === "3 of 4 floodlights on")).toBe(true)
+    await user.type(screen.getByLabelText("6-digit code"), "123")
+    const lamps = world().querySelectorAll(".code-lamp")
+    expect(lamps).toHaveLength(6)
+    expect(world().querySelectorAll(".code-lamp[data-on=true]")).toHaveLength(3)
+    expect(world()).not.toHaveTextContent(/\d/) // lamps, never numerals
+    for (const n of world().querySelectorAll("[data-number]")) expect(n).toHaveAttribute("data-number", "")
+    expect(api.verifyAndSave).not.toHaveBeenCalled()
+  })
+
+  it("Maybe holds the second bank at half", async () => {
+    setReducedMotion(true)
+    const { user } = setup()
+    await user.click(screen.getByRole("button", { name: /tear open/i }))
+    await pick(user, "Maybe")
+    expect(banks()).toEqual([1, 0.5, 0, 0])
+    expect(live().some((n) => n.textContent === "Maybe. We'll keep a light on.")).toBe(true)
+  })
+
+  it("No: the world holds at one bank, Makes waves, no shirt, no stamp", async () => {
+    setReducedMotion(true)
+    const api = fakeApi({
+      verifyAndSave: async () => ({ status: "saved", ticketNo: 4, firstName: "Sipho", surname: "Dlamini", attending: "no" }) as VerifyResult,
+    })
+    const { user } = setup(api)
+    await user.click(screen.getByRole("button", { name: /tear open/i }))
+    await pick(user, "No")
+    expect(banks()).toEqual([1, 0, 0, 0])
+    expect(world().querySelector("[data-name]")).toBeNull()
+    await fillNo(user)
+    await submit(user)
+    await typeCode(user, "123456")
+    await findHeading("Sorry you'll miss it, Sipho")
+    expect(world()).toHaveAttribute("data-beat", "no-end")
+    expect(banks()).toEqual([1, 0, 0, 0])
+    expect(world().querySelector("[data-layer=l6-makes-wave]")).toHaveAttribute("data-on", "true")
+    expect(world().querySelector("[data-variant]")).toBeNull()
+    expect(world().querySelector("[data-name]")).toBeNull()
   })
 })
