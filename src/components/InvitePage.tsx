@@ -271,7 +271,7 @@ export function InvitePage({ api, missingKey = false }: { api: RsvpApi; missingK
             />
           )}
           {view === "stub" && result && (
-            <StubView result={result.saved} onChange={() => toForm(valuesRef.current)} />
+            <StubView result={result.saved} payload={result.payload} onChange={() => toForm(valuesRef.current)} />
           )}
         </div>
         </Suspense>

@@ -157,5 +157,4 @@ export function placementFor(beat: Beat, attending: Attending | undefined, l: La
 
 /** The stamp, placed twice (CHOSEN.md). Live finale: screen px from the visible shot's lower right, above the panel. */
 export const STAMP_LIVE = { right: 16, abovePanel: 16 } as const
-/** Exported poster (phase 6 compositor): poster px, the lower right corner of the 9:16 frame. */
-export const STAMP_POSTER = { right: 64, bottom: 96, rotateDeg: -4 } as const
+// The exported poster's stamp (the second placement) is `STAMP_POSTER` in src/poster/layout.ts.

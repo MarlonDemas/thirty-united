@@ -22,7 +22,7 @@ export type StampVariant = "yes" | "maybe"
  * "SIGNED · 21 DEC 2026". Maybe is a panel-filled outline with a pencil,
  * "PENCILLED IN", so the two differ by shape, words and icon, not colour alone. It lands with an impact (spring,
  * haptic, optional sound) and calls `onImpact` at contact; reduced motion shows it in place with none of it.
- * Placed twice (CHOSEN.md): live by WorldStage (`STAMP_LIVE`), on the exported poster by phase 6 (`STAMP_POSTER`).
+ * Placed twice (CHOSEN.md): live by WorldStage (`STAMP_LIVE`), on the exported poster by the compositor (`STAMP_POSTER`, src/poster/layout.ts).
  */
 export function Stamp({ variant, className, onImpact }: { variant: StampVariant; className?: string; onImpact?: () => void }) {
   const reduced = useReducedMotion()

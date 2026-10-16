@@ -1,9 +1,12 @@
-import { fireEvent, render, screen } from "@testing-library/react"
+import { act, fireEvent, render, screen } from "@testing-library/react"
 import { describe, expect, it, vi } from "vitest"
 import { Stamp } from "@/components/Stamp"
 import { StubView } from "@/components/StubView"
 import { formatSeat } from "@/lib/seat"
 import type { SavedResult } from "@/lib/api"
+import type { RsvpPayload } from "@/lib/schemas/rsvp"
+
+const PAYLOAD: RsvpPayload = { firstName: "Thandi", surname: "Nkosi", attending: "yes" }
 
 const saved = (over: Partial<SavedResult> = {}): SavedResult => ({
   status: "saved",
@@ -48,37 +51,50 @@ describe("Stamp", () => {
 
 describe("StubView (the signed panel and the No end)", () => {
   it("Yes: heading takes focus; seat and shirt in mono, from the saved ticket number", () => {
-    render(<StubView result={saved()} onChange={() => {}} />)
+    render(<StubView payload={PAYLOAD} result={saved()} onChange={() => {}} />)
     expect(screen.getByRole("heading", { level: 1, name: "You're on the list" })).toHaveFocus()
     expect(screen.getByTestId("seat-line")).toHaveTextContent("Seat 007 · Shirt 7")
     expect(screen.getByText("Signed")).toHaveClass("sr-only")
   })
 
   it("Maybe: held seat, and the stamp's words for screen readers", () => {
-    render(<StubView result={saved({ attending: "maybe" })} onChange={() => {}} />)
+    render(<StubView payload={PAYLOAD} result={saved({ attending: "maybe" })} onChange={() => {}} />)
     expect(screen.getByRole("heading", { level: 1, name: "We've held your seat" })).toBeInTheDocument()
     expect(screen.getByText("Pencilled in")).toHaveClass("sr-only")
   })
 
   it("updated: says so, keeps the seat", () => {
-    render(<StubView result={saved({ status: "updated" })} onChange={() => {}} />)
+    render(<StubView payload={PAYLOAD} result={saved({ status: "updated" })} onChange={() => {}} />)
     expect(screen.getByRole("heading", { level: 1, name: "Your answer is updated" })).toBeInTheDocument()
     expect(screen.getByTestId("seat-line")).toHaveTextContent("007")
   })
 
   it("Change my answer goes back", () => {
     const onChange = vi.fn()
-    render(<StubView result={saved()} onChange={onChange} />)
+    render(<StubView payload={PAYLOAD} result={saved()} onChange={onChange} />)
     fireEvent.click(screen.getByRole("button", { name: "Change my answer" }))
     expect(onChange).toHaveBeenCalledOnce()
   })
 
   it("No: sorry heading, no seat, no stamp words, and a secondary (not red) Changed your mind?", () => {
-    render(<StubView result={saved({ attending: "no", team: undefined })} onChange={() => {}} />)
+    render(<StubView payload={PAYLOAD} result={saved({ attending: "no", team: undefined })} onChange={() => {}} />)
     expect(screen.getByRole("heading", { level: 1, name: "Sorry you'll miss it, Thandi" })).toBeInTheDocument()
     expect(screen.queryByTestId("seat-line")).not.toBeInTheDocument()
     expect(screen.queryByText(/signed|pencilled/i)).not.toBeInTheDocument()
     const back = screen.getByRole("button", { name: "Changed your mind?" })
     expect(back.className).not.toMatch(/shirt-red|poster-red/)
+  })
+
+  it("Yes and Maybe: Save your poster arrives from its own lazy chunk, with the no-copy line", async () => {
+    render(<StubView payload={PAYLOAD} result={saved({ attending: "maybe" })} onChange={() => {}} />)
+    expect(await screen.findByRole("button", { name: "Save your poster" })).toBeInTheDocument()
+    expect(screen.getByText("Save it now. We don't keep a copy.")).toBeInTheDocument()
+  })
+
+  it("No: no poster, so no Save or Share", async () => {
+    render(<StubView payload={PAYLOAD} result={saved({ attending: "no" })} onChange={() => {}} />)
+    await act(async () => {})
+    expect(screen.queryByRole("button", { name: "Save your poster" })).toBeNull()
+    expect(screen.queryByRole("button", { name: "Share" })).toBeNull()
   })
 })

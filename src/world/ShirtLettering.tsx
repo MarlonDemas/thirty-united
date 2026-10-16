@@ -1,21 +1,10 @@
 import { useEffect, useRef } from "react"
-import type { Point, Quad } from "@/world/layers"
+import type { Quad } from "@/world/layers"
 import { quadMatrix } from "@/world/draw"
+import { LETTERING_COLOR, LETTERING_FONT, LETTERING_RES, NAME_Y, NUMBER_SIZE, NUMBER_Y, nameFont, quadBox } from "@/world/lettering"
 
-const dist = (p: Point, q: Point) => Math.hypot(p[0] - q[0], p[1] - q[1])
-const FONT = "'Barlow Condensed', 'Arial Narrow', sans-serif"
-const RES = 2 // canvas pixels per poster pixel
 const PAINT_PAUSE_MS = 120 // letter-paint: a pause in typing...
 const PAINT_MS = 150 // ...then the new letters paint in
-
-/** Name fits 80 percent of the quad width and never above 22 percent of its height (tokens.md, scene type). */
-function nameFont(ctx: CanvasRenderingContext2D, name: string, w: number, h: number) {
-  let size = h * 0.22
-  ctx.font = `700 ${size}px ${FONT}`
-  const width = ctx.measureText(name).width
-  if (width > w * 0.8) size *= (w * 0.8) / width
-  ctx.font = `700 ${size}px ${FONT}`
-}
 
 /**
  * The guest's name (and, once verified, the number) lettered onto a shirt quad, drawn to a DOM canvas (no blob
@@ -38,8 +27,7 @@ export function ShirtLettering({
   /** The finale: the number lands (scale 1.15 to 1) at 900 ms. */
   landNumber?: boolean
 }) {
-  const w = Math.round(Math.max(dist(quad[0], quad[1]), dist(quad[3], quad[2])))
-  const h = Math.round(Math.max(dist(quad[0], quad[3]), dist(quad[1], quad[2])))
+  const { w, h } = quadBox(quad)
   const nameRef = useRef<HTMLCanvasElement>(null)
   const numRef = useRef<HTMLCanvasElement>(null)
   const painted = useRef("")
@@ -49,18 +37,18 @@ export function ShirtLettering({
     const draw = (solid: number, alpha: number) => {
       const ctx = nameRef.current?.getContext("2d")
       if (!ctx) return
-      ctx.setTransform(RES, 0, 0, RES, 0, 0)
+      ctx.setTransform(LETTERING_RES, 0, 0, LETTERING_RES, 0, 0)
       ctx.clearRect(0, 0, w, h)
       if (!name) return
       nameFont(ctx, name, w, h)
-      ctx.fillStyle = "#FFFFFF"
+      ctx.fillStyle = LETTERING_COLOR
       ctx.textBaseline = "middle"
       const x0 = (w - ctx.measureText(name).width) / 2
       const head = name.slice(0, solid)
       ctx.globalAlpha = 1
-      ctx.fillText(head, x0, h * 0.2)
+      ctx.fillText(head, x0, h * NAME_Y)
       ctx.globalAlpha = alpha
-      ctx.fillText(name.slice(solid), x0 + ctx.measureText(head).width, h * 0.2)
+      ctx.fillText(name.slice(solid), x0 + ctx.measureText(head).width, h * NAME_Y)
       ctx.globalAlpha = 1
     }
     const paint = () => {
@@ -77,7 +65,7 @@ export function ShirtLettering({
     }
     const t = setTimeout(paint, animate ? PAINT_PAUSE_MS : 0)
     // Redraw in the real face once Barlow Condensed has loaded (the first draw may use the fallback).
-    document.fonts?.load(`700 64px ${FONT}`).then(
+    document.fonts?.load(`700 64px ${LETTERING_FONT}`).then(
       () => painted.current === name && draw(name.length, 1),
       () => {},
     )
@@ -90,14 +78,14 @@ export function ShirtLettering({
   useEffect(() => {
     const ctx = numRef.current?.getContext("2d")
     if (!ctx) return
-    ctx.setTransform(RES, 0, 0, RES, 0, 0)
+    ctx.setTransform(LETTERING_RES, 0, 0, LETTERING_RES, 0, 0)
     ctx.clearRect(0, 0, w, h)
     if (number) {
-      ctx.font = `700 ${h * 0.4}px ${FONT}`
-      ctx.fillStyle = "#FFFFFF"
+      ctx.font = `700 ${h * NUMBER_SIZE}px ${LETTERING_FONT}`
+      ctx.fillStyle = LETTERING_COLOR
       ctx.textAlign = "center"
       ctx.textBaseline = "middle"
-      ctx.fillText(number, w / 2, h * 0.6)
+      ctx.fillText(number, w / 2, h * NUMBER_Y)
     } else if (ghostNumber) {
       ctx.setLineDash([8, 8])
       ctx.strokeStyle = "rgba(183, 211, 250, 0.55)"
@@ -116,12 +104,12 @@ export function ShirtLettering({
   }
   return (
     <div className="layer" style={{ ...style, zIndex: 7 }} data-layer="shirt-lettering">
-      <canvas ref={nameRef} width={w * RES} height={h * RES} data-name={name} className="absolute inset-0 size-full" />
+      <canvas ref={nameRef} width={w * LETTERING_RES} height={h * LETTERING_RES} data-name={name} className="absolute inset-0 size-full" />
       <canvas
         key={number ?? "none"}
         ref={numRef}
-        width={w * RES}
-        height={h * RES}
+        width={w * LETTERING_RES}
+        height={h * LETTERING_RES}
         data-number={number ?? ""}
         className={landNumber && number ? "number-land absolute inset-0 size-full" : "absolute inset-0 size-full"}
       />

@@ -51,7 +51,7 @@ There is no logo: Makes's poster is the mark. The draft lines ("You've been call
 
 **Direction (hard constraints):** Direction D is chosen. B "Terrace Ticket" (letterpress ink bleed, deckled edge, off-register stamp, one question per screen) and C "Scoreboard Broadcast" (solid ink strips, scrolling ticker, wipes, shirt-number form rows, scoreboard digits), rejected on 2026-10-14, still bind. The 2026-10-15 candidates A "Tabletop Ground", B "The Walk-Out" and C "Lights On" are recorded as considered, not chosen.
 
-**Open Graph image:** a teaser composite, never a guest's poster: Makes from the chest up, moonlit, looking up at four dark floodlight towers, red smoke low in the frame, "THIRTY" in the sky and "21 DEC 2026" beneath. 1200 × 630 JPEG (planned; `public/og.png` still shows the Direction A ticket).
+**Open Graph image:** a teaser composite, never a guest's poster: Makes from the chest up, moonlit, looking up at four dark floodlight towers, red smoke low in the frame, "THIRTY" in the sky and "21 DEC 2026" beneath. 1200 × 630 JPEG, `public/og.jpg`, rendered by `npm run og` (`scripts/render-og.mjs`, `src/poster/og.ts`).
 
 ## 4. Color Tokens
 
@@ -269,7 +269,7 @@ The paper `Ticket` and `HeaderTicket` as page objects, the `Stub` ruled table, t
 
 **Assets:**
 - `public/favicon.svg`: favicon
-- `public/og.png`: 1200×630 Open Graph image, still the Direction A sealed ticket (the Direction D teaser composite is planned)
+- `public/og.jpg`: 1200×630 Open Graph image, the Direction D teaser composite (`npm run og` renders it from the poster layers)
 - Fonts: self-hosted from `@fontsource/barlow-condensed`, `source-serif-4`, `inter`, `jetbrains-mono`
 - Poster plates (planned): six generations (G1 master, G2 to G5 edits, G6 the shirt), made by Makes and processed by Claude; all approved by the owner on 2026-10-15 (photo-real; G3 dropped, the lights-on G1 is the lit stadium) and processed to 1080 x 1920 in a git-excluded `.specno-design/plates/` folder (likeness consent given)
 - Wireframes: `.specno-design/wireframes/save-the-date-signing-2026-10-15/` (Direction D, one phone frame per beat); `.specno-design/wireframes/save-the-date-2026-10-14/` (Direction A, history)

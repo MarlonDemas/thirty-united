@@ -17,9 +17,9 @@ describe("shirtName (never the surname)", () => {
     expect(shirtName({ preferredName: "Mary Ann", firstName: "Mary" })).toBe("MARY")
     expect(shirtName({ preferredName: "Mary Ann", firstName: "Mary", surname: "Smith" })).toBe("MARY ANN")
   })
-  it("keeps a double first name and a name that only equals the surname", () => {
+  it("keeps a double first name; a name that only equals the surname leaves the shirt empty", () => {
     expect(shirtName({ firstName: "Mary Jane", surname: "Watson" })).toBe("MARY JANE")
-    expect(shirtName({ firstName: "Nkosi", surname: "Nkosi" })).toBe("NKOSI")
+    expect(shirtName({ firstName: "Nkosi", surname: "Nkosi" })).toBe("")
     expect(shirtName({ surname: "Nkosi" })).toBe("")
   })
 })
@@ -43,9 +43,9 @@ describe("shirtName (surname variants, cap, format characters)", () => {
     expect(shirtName({ firstName: `${nfd} Thandi`, surname: nfc })).toBe("THANDI")
     expect(shirtName({ firstName: nfd, surname: "Dube" })).toBe(nfd.toLocaleUpperCase())
   })
-  it("leaves a name that is only the surname unchanged", () => {
-    expect(shirtName({ firstName: "Nkosi", surname: "Nkosi" })).toBe("NKOSI")
-    expect(shirtName({ firstName: "Nkosi Nkosi", surname: "Nkosi" })).toBe("NKOSI NKOSI")
+  it("never prints the surname, even when it is the whole name", () => {
+    expect(shirtName({ firstName: "Nkosi", surname: "Nkosi" })).toBe("")
+    expect(shirtName({ firstName: "Nkosi Nkosi", surname: "Nkosi" })).toBe("")
   })
   it("caps at 24 characters on a token boundary, hard-slicing one long token", () => {
     expect(shirtName({ firstName: "Alexandria Bartholomew Christopher", surname: "Smith" })).toBe("ALEXANDRIA BARTHOLOMEW")
@@ -55,6 +55,26 @@ describe("shirtName (surname variants, cap, format characters)", () => {
   it("strips Unicode format characters such as the right-to-left override", () => {
     expect(shirtName({ firstName: "Than\u202Edi\u200B" })).toBe("THANDI")
     expect(shirtName({ firstName: "\u202EThandi Nkosi", surname: "Nkosi" })).toBe("THANDI")
+  })
+})
+
+describe("shirtName (addresses, the preferred-name cap, the surname fallback)", () => {
+  it("drops an email or a web address, in either field", () => {
+    expect(shirtName({ firstName: "thandi@example.com", surname: "Nkosi" })).toBe("")
+    expect(shirtName({ preferredName: "thandi@example.com", firstName: "Thandi", surname: "Nkosi" })).toBe("THANDI")
+    expect(shirtName({ preferredName: "Tee thandi@example.com", surname: "Nkosi" })).toBe("TEE")
+    expect(shirtName({ preferredName: "Tee example.com", surname: "Nkosi" })).toBe("TEE")
+    expect(shirtName({ firstName: "thandi@example.com" })).toBe("")
+  })
+  it("caps a preferred name at two tokens", () => {
+    expect(shirtName({ preferredName: "Thandi Mokoena", firstName: "Thandi", surname: "Nkosi" })).toBe("THANDI MOKOENA")
+    expect(shirtName({ preferredName: "Thandi Lee Mokoena", firstName: "Thandi", surname: "Nkosi" })).toBe("THANDI LEE")
+    expect(shirtName({ preferredName: "Nkosi Thandi Lee Mokoena", surname: "Nkosi" })).toBe("THANDI LEE")
+  })
+  it("a preferred name that is only the surname falls back to the first name's first token, never the surname", () => {
+    expect(shirtName({ preferredName: "Nkosi", firstName: "Thandi Zola", surname: "Nkosi" })).toBe("THANDI")
+    expect(shirtName({ preferredName: "Nkosi", firstName: "Nkosi Thandi", surname: "Nkosi" })).toBe("")
+    expect(shirtName({ preferredName: "Nkosi", firstName: "Nkosi", surname: "Nkosi" })).toBe("")
   })
 })
 
