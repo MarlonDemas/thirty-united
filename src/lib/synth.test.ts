@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest"
 import type { Cue } from "@/lib/sound"
 import { FLOOR_HZ, dbToGain, play, tearFreq, tearGain } from "@/lib/synth"
 
-const CUES: Cue[] = ["clunk", "hum", "swell", "swellSoft", "hush", "drum", "crackle", "tick"]
+const CUES: Cue[] = ["clunk", "hum", "swell", "swellSoft", "hush", "drum", "crackle", "tick", "on"]
 
 /** A Web Audio stand-in that records every node and every frequency set on an oscillator. */
 function recorder() {

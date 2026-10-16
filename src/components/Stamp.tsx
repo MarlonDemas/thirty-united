@@ -24,6 +24,8 @@ export type StampVariant = "yes" | "maybe"
  * haptic, optional sound) and calls `onImpact` at contact; reduced motion shows it in place with only the (opt-in) sound.
  * Placed twice (CHOSEN.md): live by WorldStage (`STAMP_LIVE`), on the exported poster by the compositor (`STAMP_POSTER`, src/poster/layout.ts).
  */
+// Sized in em from its 24 px type (4 px padding, 12 x 4 px inner padding, a 28 px line), so the world can clamp the
+// whole stamp by its font size alone (index.css, `.world-stamp`).
 export function Stamp({ variant, className, onImpact }: { variant: StampVariant; className?: string; onImpact?: () => void }) {
   const reduced = useReducedMotion()
   const maybe = variant === "maybe"
@@ -47,7 +49,7 @@ export function Stamp({ variant, className, onImpact }: { variant: StampVariant;
       initial={reduced ? false : FROM[variant]}
       animate={{ opacity: 1, scale: 1, rotate: -4 }}
       transition={{ default: LAND, opacity: { duration: 0.05 } }}
-      className={cn("relative inline-flex w-fit max-w-full", className)}
+      className={cn("relative inline-flex w-fit max-w-full text-2xl", className)}
     >
       {/* Contact shadow: a sibling of the masked face so the speckle mask cannot clip it. It lands at contact. */}
       <m.span
@@ -60,19 +62,19 @@ export function Stamp({ variant, className, onImpact }: { variant: StampVariant;
       <div
         data-variant={variant}
         className={cn(
-          "stamp-worn inline-flex w-fit max-w-full border-2 p-1 forced-colors:border-[CanvasText]",
+          "stamp-worn inline-flex w-fit max-w-full border-2 p-[0.1667em] forced-colors:border-[CanvasText]",
           maybe ? "border-foreground bg-panel text-foreground" : "border-poster-red bg-poster-red text-panel",
         )}
       >
         <div
           className={cn(
-            "flex items-center justify-center gap-2 border px-3 py-1 text-center font-display text-2xl leading-7 font-bold tracking-[0.06em] whitespace-nowrap uppercase",
+            "flex items-center justify-center gap-[0.3333em] border px-[0.5em] py-[0.1667em] text-center font-display leading-[1.1667em] font-bold tracking-[0.06em] whitespace-nowrap uppercase",
             maybe ? "border-foreground" : "border-panel",
           )}
         >
           {maybe ? (
             <>
-              <Pencil aria-hidden="true" className="size-5" strokeWidth={2} />
+              <Pencil aria-hidden="true" className="size-[0.8333em]" strokeWidth={2} />
               <span>Pencilled in</span>
             </>
           ) : (

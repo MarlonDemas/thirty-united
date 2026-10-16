@@ -28,7 +28,13 @@ const FINISH = { type: "spring", stiffness: 180, damping: 26 } as const
 const CANCEL = { type: "spring", stiffness: 400, damping: 34 } as const
 const SETTLE = { type: "spring", stiffness: 260, damping: 22 } as const
 const FLICK = { duration: 0.42, delay: 0.2, ease: [0.4, 0, 1, 1] as const }
-const STAGE_FADE_MS = 160 // the 3D pass cross-fades to the DOM one before the tear
+// The torn pass fades out before the beat changes: a large bright area, so one way and 300 ms or more (brand.md,
+// tokens.md Motion rules). The same 300 ms, ease-in-out, one-way fade as `finale-dim`.
+const PASS_EXIT = { duration: 0.3, ease: "easeInOut" } as const
+const STAGE_FADE_MS = 160 // pressed with no 3D pass up: the stage fades before the tear
+// The hand-off from the 3D pass: the DOM ticket (on top) fades in over the 3D one, which stays lit under it until it is
+// gone. The two differ in size and light, so this is the one visible change: one way, 300 ms, ease-in-out (`finale-dim`).
+const HANDOFF_MS = 300
 const SEPARATE_MS = 200 // the moment the stub lets go: haptic, rip and the main half's settle
 const THRESHOLD = 0.35
 const HANDLE = 56
@@ -45,16 +51,23 @@ const tipAt = (p: number, h: number) => TIP0 + p * span(h)
 /** "Monday 21 December 2026 · Venue TBA" (draft): icon + mono date, dashed map-pin + muted venue. */
 export function DateVenue() {
   return (
-    <p className="m-0 flex flex-wrap items-center gap-x-2 gap-y-1">
-      <CalendarDays aria-hidden="true" className="size-5 shrink-0 text-moonlight" strokeWidth={1.5} />
-      <span className="data-label">Monday 21 December 2026</span>
-      <span aria-hidden="true" className="text-moonlight">·</span>
-      <span className="sr-only">, </span>
-      <span className="inline-flex items-center gap-2">
-        <span aria-hidden="true" className="inline-flex size-6 items-center justify-center border border-dashed border-moonlight text-moonlight">
-          <MapPin className="size-4" strokeWidth={1.5} />
+    // The separator leads the venue group, and a group that starts a row has its lead pulled into the 1rem the row
+    // is shifted left by, which the paragraph clips: one row shows the dot, a wrapped row drops it at the break.
+    <p className="m-0 overflow-x-clip">
+      <span className="-ms-4 flex flex-wrap items-center gap-x-2 gap-y-1">
+        <span className="inline-flex items-center gap-2">
+          <span aria-hidden="true" className="w-2" />
+          <CalendarDays aria-hidden="true" className="size-5 shrink-0 text-moonlight forced-colors:text-[CanvasText]" strokeWidth={1.5} />
+          <span className="data-label">Monday 21 December 2026</span>
         </span>
-        <span className="helper">Venue TBA</span>
+        <span className="sr-only">, </span>
+        <span className="inline-flex items-center gap-2">
+          <span aria-hidden="true" className="w-2 text-center text-moonlight">·</span>
+          <span aria-hidden="true" className="inline-flex size-6 items-center justify-center border border-dashed border-moonlight text-moonlight">
+            <MapPin className="size-4" strokeWidth={1.5} />
+          </span>
+          <span className="helper">Venue TBA</span>
+        </span>
       </span>
     </p>
   )
@@ -90,6 +103,7 @@ export function SealedView({
   const flick = useMotionValue(0)
   const lift = useMotionValue(0)
   const mainScale = useMotionValue(1)
+  const passOpacity = useMotionValue(1)
   const trackH = useMotionValue(0)
   const ticketRef = useRef<HTMLDivElement>(null)
   const busy = useRef(false)
@@ -100,7 +114,8 @@ export function SealedView({
   const alive = useRef(true)
   const [lanyard, setLanyard] = useState<"off" | "loading" | "ready">("off")
   const [boxed, setBoxed] = useState(false) // the 30rem stage box stays until the view is left, so nothing jumps at the hand-off
-  const [domShown, setDomShown] = useState(false) // the DOM ticket cross-fades in over the 3D one
+  const [domShown, setDomShown] = useState(false) // the DOM ticket (on top) shows again over the 3D one
+  const [handOff, setHandOff] = useState(false) // the tear's hand-off: the 3D pass stays lit under the DOM one
   const [peeling, setPeeling] = useState(false)
   const settleRef = useRef<SettleFn | null>(null)
   const hostRef = useRef<HTMLDivElement>(null)
@@ -141,7 +156,9 @@ export function SealedView({
     setLanyard("loading")
     setBoxed(false)
   }, [])
-  const shown = lanyard === "ready" && !domShown
+  // Fading both at once would show the night through two half-faded tickets (a dip, then a rise): in the hand-off the
+  // 3D pass stays at full strength until it unmounts, under a DOM ticket that is opaque by then.
+  const shown = lanyard === "ready" && (!domShown || handOff)
   useEffect(() => {
     const host = hostRef.current
     const hit = hitRef.current
@@ -261,7 +278,9 @@ export function SealedView({
             animate(mainScale, 1, SETTLE)
           }, SEPARATE_MS),
         )
-        Promise.all([animate(progress, 1, { ...FINISH, velocity }), animate(flick, 1, FLICK)]).then(() => onTorn())
+        Promise.all([animate(progress, 1, { ...FINISH, velocity }), animate(flick, 1, FLICK)])
+          .then(() => animate(passOpacity, 0, PASS_EXIT))
+          .then(() => onTorn())
       }
       const wait = (ms: number, then: () => void) => timers.current.push(setTimeout(then, ms))
       const rect = ticketRef.current?.getBoundingClientRect()
@@ -273,9 +292,10 @@ export function SealedView({
         settleRef.current(rect).then(() => {
           window.removeEventListener("resize", onResize)
           if (!alive.current) return
+          setHandOff(true)
           setDomShown(true)
           endStage()
-          wait(resized ? 0 : STAGE_FADE_MS, () => {
+          wait(resized ? 0 : HANDOFF_MS, () => {
             setLanyard("off")
             tear()
           })
@@ -288,7 +308,7 @@ export function SealedView({
       if (progress.get() > 0) tear() // a drag already tore along: the stage fades as the hand lets go
       else wait(STAGE_FADE_MS, tear) // pressed: the night fades to paper first, then the tear
     },
-    [onTorn, progress, flick, mainScale, reduced, lanyard, endStage],
+    [onTorn, progress, flick, mainScale, passOpacity, reduced, lanyard, endStage],
   )
 
   const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
@@ -325,11 +345,12 @@ export function SealedView({
   }
 
   const pass = (
-    <div className="relative size-full">
+    <m.div className="relative size-full" style={{ opacity: passOpacity }}>
       <div
         className={cn(
           "absolute inset-x-0 bottom-0",
-          boxed && "pointer-events-none transition-opacity duration-160 ease-(--ease-fade)",
+          boxed && "pointer-events-none transition-opacity",
+          boxed && (handOff ? "duration-300 ease-in-out" : "duration-160 ease-(--ease-fade)"),
           boxed && !domShown && "opacity-0",
         )}
       >
@@ -412,7 +433,7 @@ export function SealedView({
           <DebugOverlay />
         </Suspense>
       )}
-    </div>
+    </m.div>
   )
 
   return (

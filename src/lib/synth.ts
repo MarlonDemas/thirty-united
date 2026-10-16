@@ -98,12 +98,13 @@ function envelope(c: AudioContext, t: number, env: Env, level: number): GainNode
 const end = (env: Env) => env[env.length - 1][0] + 0.02
 
 /** Filtered noise: crowd, hush, the clunk's contact and the clicks. */
-function hiss(c: AudioContext, t: number, level: number, o: { type: BiquadFilterType; hz: number; q: number; env: Env }) {
+function hiss(c: AudioContext, t: number, level: number, o: { type: BiquadFilterType; hz: number; to?: number; q: number; env: Env }) {
   const src = c.createBufferSource()
   src.buffer = noiseOf(c)
   const f = c.createBiquadFilter()
   f.type = o.type
   f.frequency.setValueAtTime(o.hz, t)
+  if (o.to) f.frequency.exponentialRampToValueAtTime(o.to, t + end(o.env))
   f.Q.setValueAtTime(o.q, t)
   src.connect(f).connect(envelope(c, t, o.env, level))
   src.start(t)
@@ -155,8 +156,13 @@ export function play(c: AudioContext, cue: Cue, master: number): void {
       for (let i = 0; i < 7; i++)
         hiss(c, t + Math.random() * 0.45, master, { type: "bandpass", hz: 3000, q: 1, env: [[0.002, 0.25], [0.02, 0.0001]] })
       return
-    case "tick": // one code lamp
-      tone(c, t, master, { hz: 1800, env: [[0.003, 0.25], [0.03, 0.0001]] })
+    case "tick": // one code lamp: a soft paper-dry click, band noise falling 2.4 to 1.5 kHz, not a beep. At this Q the band
+      // passes about a third of the noise's RMS, so 0.8 sits a touch under the old 0.25 sine
+      hiss(c, t, master, { type: "bandpass", hz: 2400, to: 1500, q: 1.2, env: [[0.003, 0.8], [0.028, 0.0001]] })
+      return
+    case "on": // the opt-in tap's answer: a soft, low two-note knock, quieter than the clunk, so the guest hears sound is on
+      tone(c, t, master * 0.5, { hz: 220, env: [[0.01, 0.6], [0.22, 0.0001]] })
+      tone(c, t + 0.09, master * 0.5, { hz: 330, env: [[0.01, 0.45], [0.3, 0.0001]] })
       return
   }
 }

@@ -5,7 +5,7 @@ import { cn } from "cn"
 // Direction D: square, 48px target. Shirt red only on the primary action, always with its 2px moonlight ring
 // (shirt red on the panel is 2.20:1); focus adds the 3px ring 2px outside it.
 const buttonVariants = cva(
-  "group/button inline-flex min-h-12 shrink-0 items-center justify-center gap-2 border px-6 text-base font-medium whitespace-nowrap transition-[color,background-color,border-color,transform] duration-100 select-none active:translate-y-px motion-reduce:transition-none motion-reduce:active:translate-y-0 disabled:pointer-events-none disabled:opacity-60 aria-disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-5",
+  "group/button inline-flex min-h-12 shrink-0 items-center justify-center gap-2 border px-6 text-base font-medium whitespace-nowrap transition-[color,background-color,border-color,transform] duration-100 select-none active:translate-y-px motion-reduce:transition-none motion-reduce:active:translate-y-0 disabled:pointer-events-none disabled:opacity-60 forced-colors:disabled:opacity-100 aria-disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-5",
   {
     variants: {
       variant: {

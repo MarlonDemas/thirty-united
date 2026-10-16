@@ -1,6 +1,6 @@
 import { useEffect, useState, type CSSProperties } from "react"
 import { Pause, Volume2, VolumeX } from "lucide-react"
-import { armAudio, getSoundOn, setSoundOn, unlockAudio } from "@/lib/sound"
+import { armAudio, confirmSoundOn, getSoundOn, setSoundOn, unlockAudio } from "@/lib/sound"
 import { useReducedMotion } from "@/hooks/useReducedMotion"
 import { chipVars } from "@/world/chips"
 import { setStill, useTier } from "@/world/tier"
@@ -21,7 +21,7 @@ export function WorldChips({ hidden, missingKey, style }: { hidden: boolean; mis
   const toggleSound = () => {
     const next = !sound
     setSoundOn(next)
-    if (next) unlockAudio() // created on this tap, never earlier
+    if (next && unlockAudio()) confirmSoundOn() // the context is created on this tap, never earlier; then one soft "on" cue
     setSound(next)
   }
 

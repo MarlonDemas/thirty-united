@@ -44,6 +44,13 @@ const FOV = 30
 // The shadow falls down and right, scaled with the ticket width (14 and 22px on a 358px ticket).
 const SHADOW_DX = 0.039
 const SHADOW_DY = 0.061
+/**
+ * Lux move 2 (2026-10-16): the strap is pinned left of Makes's face (this fraction of the pass box's width, from its
+ * centre) and leans in to the card, so it never crosses his eyes on the cover, through the swing included (checked
+ * across phone and desktop cover shots). LEAN_K is the softest pull on the card's top that keeps the face clear.
+ */
+const ANCHOR_X = -0.4
+const LEAN_K = 0.05
 /** The composite sits over everything else the world draws (plates, smoke, embers). */
 const PASS_ORDER = 1000
 
@@ -123,9 +130,15 @@ function Scene({ faces, W, H, camera, rt, quad, composite, request, wake, busyRe
     [strapTex, sheenTex, shadow],
   )
 
+  const ropeLen = Math.hypot(ANCHOR_X * W, H * 0.58) // the pin is off to the side: the same drop, on the slant
   const sim = useMemo(
-    () => new Lanyard(0, H * 0.54, H * 0.58, SEGMENTS, cardH, { x: W / 2 - cardW / 2, yMin: -H / 2 + 0.03 * H }, cardW * 0.18),
-    [W, H, cardW, cardH],
+    () =>
+      // The first swing goes away from his face (a negative kick).
+      new Lanyard(ANCHOR_X * W, H * 0.54, ropeLen, SEGMENTS, cardH, { x: W / 2 - cardW / 2, yMin: -H / 2 + 0.03 * H }, -cardW * 0.18, {
+        x: 0,
+        k: LEAN_K,
+      }),
+    [W, H, cardW, cardH, ropeLen],
   )
   const card = useRef<Group>(null)
   const cardMesh = useRef<Mesh>(null)
@@ -335,7 +348,7 @@ function Scene({ faces, W, H, camera, rt, quad, composite, request, wake, busyRe
     // strap ribbon
     const pos = strap.getAttribute("position") as BufferAttribute
     const uv = strap.getAttribute("uv") as BufferAttribute
-    const tile = (H * 0.58) / SEGMENTS / (strapW * 8) // one 64x512 texture tile is 8 strap widths long
+    const tile = ropeLen / SEGMENTS / (strapW * 8) // one 64x512 texture tile is 8 strap widths long
     for (let i = 0; i <= SEGMENTS; i++) {
       uv.setXY(i * 2, 0, i * tile)
       uv.setXY(i * 2 + 1, 1, i * tile)

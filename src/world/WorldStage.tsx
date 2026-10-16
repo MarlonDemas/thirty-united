@@ -133,8 +133,8 @@ export function WorldStage({
 
   const stampStyle: CSSProperties =
     layout.mode === "phone"
-      ? { right: STAMP_LIVE.right, bottom: frame.h - layout.panelTop + STAMP_LIVE.abovePanel }
-      : { right: STAMP_LIVE.right, bottom: STAMP_LIVE.right }
+      ? { left: STAMP_LIVE.right, right: STAMP_LIVE.right, bottom: frame.h - layout.panelTop + STAMP_LIVE.abovePanel }
+      : { left: STAMP_LIVE.right, right: STAMP_LIVE.right, bottom: STAMP_LIVE.right }
 
   return (
     <div

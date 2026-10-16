@@ -6,6 +6,8 @@ export function settleScale(rectW: number, rectH: number, cardPxW: number, cardP
 /**
  * Hand-rolled 2D verlet lanyard: a pinned rope of `segments` links, then a rigid card rod hanging from
  * its end. Plain maths, no dependencies. Point `a` is the card's top edge, `b` its bottom edge.
+ * With a `lean`, the card's top is pulled softly toward `lean.x` (stiffness `k` per solver pass), so a rope pinned off to
+ * one side leans in to the card instead of hanging straight down from the pin.
  */
 export class Lanyard {
   readonly n: number
@@ -24,6 +26,7 @@ export class Lanyard {
   readonly anchorY: number
   readonly cardH: number
   readonly bounds: { x: number; yMin: number }
+  readonly lean: { x: number; k: number } | null
 
   constructor(
     anchorX: number,
@@ -33,11 +36,13 @@ export class Lanyard {
     cardH: number,
     bounds: { x: number; yMin: number },
     kick = 0,
+    lean: { x: number; k: number } | null = null,
   ) {
     this.anchorX = anchorX
     this.anchorY = anchorY
     this.cardH = cardH
     this.bounds = bounds
+    this.lean = lean
     this.n = segments + 2
     this.a = segments
     this.b = segments + 1
@@ -46,9 +51,13 @@ export class Lanyard {
     this.w = new Float64Array(this.n).fill(1)
     this.len = new Float64Array(this.n - 1)
     const seg = ropeLen / segments
+    // A leaning rope starts on the straight line from the pin to the card's rest point, so it does not whip across.
+    const toX = lean ? lean.x : anchorX
+    const drop = Math.sqrt(Math.max(0, ropeLen * ropeLen - (toX - anchorX) ** 2))
     for (let i = 0; i < this.n; i++) {
-      this.x[i] = anchorX
-      this.y[i] = anchorY - (i < segments + 1 ? i * seg : segments * seg + cardH)
+      const f = Math.min(i, segments) / segments
+      this.x[i] = anchorX + (toX - anchorX) * f
+      this.y[i] = anchorY - drop * f - (i > segments ? cardH : 0)
       if (i < segments + 1) this.len[i] = seg
     }
     this.len[this.a] = cardH
@@ -110,6 +119,7 @@ export class Lanyard {
         x[i + 1] -= (dx * diff * wj) / s
         y[i + 1] -= (dy * diff * wj) / s
       }
+      if (this.lean) x[this.a] += (this.lean.x - x[this.a]) * this.lean.k
     }
     // keep the card inside the frame (a fling must not leave the screen)
     for (const i of [this.a, this.b]) {

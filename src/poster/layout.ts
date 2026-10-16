@@ -29,8 +29,12 @@ export const TYPE = {
   ai: { size: 24, tracking: SCENE_TRACKING, color: INK.moonlight },
 } as const satisfies Record<string, LineStyle>
 
-/** The panel scrim behind the foot block: full width, at least 85 percent (7.66:1 worst case, tokens.md). */
-export const SCRIM = { alpha: 0.88, padY: 24, gap: 16 } as const
+/**
+ * The panel scrim behind the foot block: full width, at least 85 percent (7.66:1 worst case, tokens.md). Its top
+ * `feather` px ramp up from clear to `alpha`, so the slab reads as part of the poster; that is the padding above the
+ * first line, so every line still sits on the full alpha.
+ */
+export const SCRIM = { alpha: 0.88, padY: 24, gap: 16, feather: 24 } as const
 
 export type Line = LineStyle & { text: string; /** Centre of the line box. */ y: number }
 export type FootBlock = { top: number; height: number; lines: Line[] }
@@ -76,6 +80,12 @@ export const STAMP_PARTS = {
   gap: 8 * k,
   icon: 20 * k,
 } as const
+/**
+ * Wear, as the live `.stamp-worn` mask (about 94 percent coverage, crisp, fixed seed) and `.stamp-shadow`
+ * (4 px 6 px 5 px at 55 percent black, outside the stamp only), at the poster's scale.
+ */
+export const STAMP_WEAR = { cover: 0.06, seed: 7 } as const
+export const STAMP_SHADOW = { x: 4 * k, y: 6 * k, blur: 5 * k, color: "rgba(0, 0, 0, 0.55)" } as const
 /** The pencil's stroke in its own 24-unit box, as Stamp.tsx draws it (`<Pencil strokeWidth={2} />`). */
 export const STAMP_ICON_STROKE = 2
 /** The stamp's words: Yes "SIGNED · 21 DEC 2026", Maybe "PENCILLED IN" (with the pencil). */

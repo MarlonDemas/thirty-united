@@ -60,26 +60,35 @@ function bankGlow(ctx: CanvasRenderingContext2D, i: number) {
   glow(ctx, x, y, r, SCENE.floodlight, i === 2 ? BANK3_STOPS : BANK_STOPS)
 }
 
-/** Moon.tsx: the halo screened onto the sky, the faint unlit disc, then the lit part with its limb darkening. */
+/**
+ * Moon.tsx: the halo screened onto the sky, the faint unlit disc, then the lit part with its limb darkening. The 2D
+ * copy has no SVG filter, so it softens the same way with what the canvas has: a halo that brightens close to the
+ * limb, an unlit disc whose rim fades out instead of ending in an edge, and a little bloom of halo light on the lit
+ * part's edge (where Moon.tsx blurs the disc by 0.6 px).
+ */
 function moon(ctx: CanvasRenderingContext2D) {
   const { x, y, r } = ANCHORS.moon
   const R = r * MOON.haloScale
   const core = r / R
-  glow(ctx, x, y, R, SCENE.moonHalo, [[0, 0.55], [core, 0.55], [core + 0.09, 0.24], [core + 0.28, 0.09], [0.82, 0.03], [1, 0]])
+  glow(ctx, x, y, R, SCENE.moonHalo, [[0, 0.6], [core, 0.6], [core + 0.04, 0.36], [core + 0.14, 0.17], [core + 0.32, 0.07], [0.85, 0.02], [1, 0]])
   if (typeof Path2D !== "function") return
   ctx.save()
   ctx.translate(x, y)
-  ctx.globalAlpha = 0.55
-  ctx.fillStyle = "#2B3142"
+  const unlit = ctx.createRadialGradient(0, 0, 0, 0, 0, r)
+  unlit.addColorStop(0, rgba("#2B3142", 0.5))
+  unlit.addColorStop(0.9, rgba("#2B3142", 0.42))
+  unlit.addColorStop(1, rgba("#2B3142", 0))
+  ctx.fillStyle = unlit
   ctx.beginPath()
   ctx.arc(0, 0, r, 0, 2 * Math.PI)
   ctx.fill()
-  ctx.globalAlpha = 1
   // The SVG gradient is on the disc's box (cx, cy 0.46, r 0.56 of 2r), stops at 0.55 and 1.
   const limb = ctx.createRadialGradient(-0.08 * r, -0.08 * r, 0, -0.08 * r, -0.08 * r, 1.12 * r)
   limb.addColorStop(0.55, SCENE.moonCore)
   limb.addColorStop(1, SCENE.moonHalo)
   ctx.fillStyle = limb
+  ctx.shadowColor = rgba(SCENE.moonHalo, 0.85)
+  ctx.shadowBlur = 0.12 * r
   ctx.fill(new Path2D(moonPath(r, MOON.illuminated, MOON.litSide)))
   ctx.restore()
 }

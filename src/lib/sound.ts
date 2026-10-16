@@ -29,8 +29,8 @@ function ctor(): Ctor | undefined {
   return window.AudioContext ?? (window as unknown as { webkitAudioContext?: Ctor }).webkitAudioContext
 }
 
-/** The beat cues (phase 7). All one-shots: nothing loops, so the Still chip has no sound to stop. */
-export type Cue = "clunk" | "hum" | "swell" | "swellSoft" | "hush" | "drum" | "crackle" | "tick"
+/** The beat cues (phase 7), plus "on", the opt-in's confirmation. All one-shots: nothing loops, so the Still chip has no sound to stop. */
+export type Cue = "clunk" | "hum" | "swell" | "swellSoft" | "hush" | "drum" | "crackle" | "tick" | "on"
 type Synth = typeof import("@/lib/synth")
 let synth: Synth | null = null
 let loading: Promise<Synth | null> | null = null
@@ -106,4 +106,13 @@ export function playCue(cue: Cue): void {
   const c = ready()
   // Before the chunk is in, the cue is dropped, not queued. Deliberate: a late clunk is worse than none.
   if (c && synth) synth.play(c, cue, MASTER)
+}
+
+/**
+ * The Sound chip's confirmation as sound turns on. The one cue that waits for the synth chunk (on this tap only): every
+ * other cue is dropped until it is in. It still goes through ready(), so turning sound off before the chunk lands, or
+ * a failed load, stays silent.
+ */
+export function confirmSoundOn(): void {
+  void loadCues().then(() => playCue("on"))
 }

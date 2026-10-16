@@ -98,18 +98,34 @@ describe("audio lifecycle", () => {
     const s = await import("@/lib/sound")
     s.setSoundOn(true)
     const ctx = s.unlockAudio() as unknown as { createOscillator: ReturnType<typeof vi.fn> }
-    s.playCue("tick") // the import unlockAudio started has not resolved yet
+    s.playCue("drum") // the import unlockAudio started has not resolved yet
     expect(ctx.createOscillator).not.toHaveBeenCalled()
     await s.loadCues()
-    s.playCue("tick")
+    s.playCue("drum")
     expect(ctx.createOscillator).toHaveBeenCalledTimes(1)
+  })
+  it("turning sound on waits for the cue chunk and then plays the one confirmation; off before it lands stays silent", async () => {
+    fakeCtx()
+    const s = await import("@/lib/sound")
+    s.setSoundOn(true)
+    const ctx = s.unlockAudio() as unknown as { createOscillator: ReturnType<typeof vi.fn> }
+    s.confirmSoundOn()
+    expect(ctx.createOscillator).not.toHaveBeenCalled() // the chunk is not in yet
+    await s.loadCues()
+    await Promise.resolve()
+    expect(ctx.createOscillator).toHaveBeenCalledTimes(2) // the two soft notes
+    s.setSoundOn(false)
+    s.confirmSoundOn()
+    await s.loadCues()
+    await Promise.resolve()
+    expect(ctx.createOscillator).toHaveBeenCalledTimes(2)
   })
   it("a cue is silent when sound is off, chunk loaded or not", async () => {
     fakeCtx()
     const s = await import("@/lib/sound")
     const ctx = s.unlockAudio() as unknown as { createOscillator: ReturnType<typeof vi.fn> }
     await s.loadCues()
-    s.playCue("tick")
+    s.playCue("drum")
     expect(ctx.createOscillator).not.toHaveBeenCalled()
   })
   it("suspends on a hidden tab and stays silent there; a tap resumes it", async () => {
@@ -122,7 +138,7 @@ describe("audio lifecycle", () => {
     document.dispatchEvent(new Event("visibilitychange"))
     expect(ctx.suspend).toHaveBeenCalledTimes(1)
     ctx.state = "suspended"
-    s.playCue("tick")
+    s.playCue("drum")
     expect(ctx.createOscillator).not.toHaveBeenCalled()
     vis.mockReturnValue(false)
     const off = s.armAudio()

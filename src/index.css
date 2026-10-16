@@ -630,9 +630,18 @@
   position: absolute;
   pointer-events: auto;
 }
+/* The live stamp, in a box from 16 px in on the left to its right offset (WorldStage), set to its right edge. Its type
+   is clamped to that box: the Yes stamp, turned -4deg, is about 10.5 em wide (Stamp.tsx is sized in em), so it is 24 px
+   until the box is narrower than that, and never overflows the frame at 200 percent text. */
 .world-stamp {
   position: absolute;
   pointer-events: none;
+  display: flex;
+  justify-content: flex-end;
+  container-type: inline-size;
+}
+.world-stamp > * {
+  font-size: min(1.5rem, 100cqw / 10.6);
 }
 
 /* The step panel: <main>. Phone: docked at the bottom, its top edge fixed between beats. Desktop: a 420 px column. */

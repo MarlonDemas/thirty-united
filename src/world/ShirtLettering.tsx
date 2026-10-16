@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react"
 import type { Quad } from "@/world/layers"
 import { quadMatrix } from "@/world/draw"
-import { LETTERING_COLOR, LETTERING_FONT, LETTERING_RES, NAME_Y, NUMBER_SIZE, NUMBER_Y, nameFont, quadBox } from "@/world/lettering"
+import { LETTERING_COLOR, LETTERING_FONT, LETTERING_RES, NUMBER_SIZE, NUMBER_Y, nameLayout, quadBox } from "@/world/lettering"
 
 const PAINT_PAUSE_MS = 120 // letter-paint: a pause in typing...
 const PAINT_MS = 150 // ...then the new letters paint in
@@ -40,15 +40,18 @@ export function ShirtLettering({
       ctx.setTransform(LETTERING_RES, 0, 0, LETTERING_RES, 0, 0)
       ctx.clearRect(0, 0, w, h)
       if (!name) return
-      nameFont(ctx, name, w, h)
+      const { lines } = nameLayout(ctx, name, w, h)
       ctx.fillStyle = LETTERING_COLOR
       ctx.textBaseline = "middle"
-      const x0 = (w - ctx.measureText(name).width) / 2
-      const head = name.slice(0, solid)
-      ctx.globalAlpha = 1
-      ctx.fillText(head, x0, h * NAME_Y)
-      ctx.globalAlpha = alpha
-      ctx.fillText(name.slice(solid), x0 + ctx.measureText(head).width, h * NAME_Y)
+      for (const l of lines) {
+        // The first `solid` letters of the name are painted; the rest paint in at `alpha`, line by line.
+        const x0 = (w - ctx.measureText(l.text).width) / 2
+        const head = l.text.slice(0, Math.max(0, solid - l.start))
+        ctx.globalAlpha = 1
+        ctx.fillText(head, x0, l.y)
+        ctx.globalAlpha = alpha
+        ctx.fillText(l.text.slice(head.length), x0 + ctx.measureText(head).width, l.y)
+      }
       ctx.globalAlpha = 1
     }
     const paint = () => {
