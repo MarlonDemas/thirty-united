@@ -5,6 +5,7 @@ import type { FieldErrors, SubmitOutcome } from "@/components/DetailsView"
 import { SealedView } from "@/components/SealedView"
 import { Announcer } from "@/components/StatusLine"
 import { StubView } from "@/components/StubView"
+import { usePanelFade } from "@/hooks/usePanelFade"
 import type { RsvpApi, SavedResult } from "@/lib/api"
 import {
   FIELD_MESSAGES,
@@ -146,6 +147,7 @@ export function InvitePage({ api, missingKey = false }: { api: RsvpApi; missingK
   const valuesRef = useRef(values)
   const viewport = useViewport()
   const layout = layoutFor(viewport)
+  const { ghostRef, viewRef, hold: holdPanel } = usePanelFade()
 
   // Warm both chunks while the guest reads the ticket, so the views open without a gap.
   useEffect(() => {
@@ -158,6 +160,7 @@ export function InvitePage({ api, missingKey = false }: { api: RsvpApi; missingK
 
   const go = (next: View, message = "") => {
     if (next !== "code") clearStep() // saved, back to edit, or the backend sent the guest to the form
+    if (next !== view || next === "form") holdPanel() // a new view (the form always comes with a new formKey)
     setNavigated(true)
     setAnnounce(message)
     setView(next)
@@ -239,7 +242,8 @@ export function InvitePage({ api, missingKey = false }: { api: RsvpApi; missingK
       <WorldChips hidden={layout.keyboard} missingKey={missingKey} style={chipsStyle} />
       <main className="panel">
         <Suspense fallback={null}>
-        <div key={view + (view === "form" ? formKey : "")} className="view-enter">
+        {/* The first view fades in; after that the ghost cross-fades each change (usePanelFade). */}
+        <div key={view + (view === "form" ? formKey : "")} ref={viewRef} className={navigated ? undefined : "view-enter"}>
           {view === "sealed" && (
             <SealedView missingKey={missingKey} focusHeading={navigated} passSlot={passSlot} onTorn={() => go("attendance", "Ticket opened")} />
           )}
@@ -306,6 +310,7 @@ export function InvitePage({ api, missingKey = false }: { api: RsvpApi; missingK
         </div>
         </Suspense>
       </main>
+      <div ref={ghostRef} className="panel panel-ghost" aria-hidden="true" inert />
       <Announcer message={announce} />
       <Announcer message={world.line} />
     </div>

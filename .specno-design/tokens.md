@@ -246,8 +246,8 @@ Budget: signature. The `motion` library drives the DOM (panel content, stamp), R
 | `tear-embers` | 600 ms | one-shot | Embers spill from the tear line |
 | `bank-strike` | 600 ms | `cubic-bezier(0.2, 0, 0, 1)`, one way | A bank's lamps come on (small area) and the stand under it lifts from dark to lit |
 | `push-in` | 1,200 ms | `cubic-bezier(0.33, 1, 0.68, 1)` | Chapter 1 to Chapter 2 runs 1.03 to 1.12 (owner, 2026-10-15). The signed beats start wide (all four banks on screen at phone width) and push in to the face-and-shirt framing; reduced motion cuts to the final framing. Nothing else pushes more than 3 to 4 percent |
-| `panel-change` | 250 ms | `cubic-bezier(0.2, 0, 0, 1)` | Panel content out and in between beats; focus moves to the new heading |
-| `flags-lift` | 400 ms | same | Yes: the crowd's flags lift about 6 px |
+| `panel-change` | 300 ms | `ease-in-out`, one way | Panel content between beats: one cross-fade in place (the old content fades out over the new; the panel never moves). Focus moves to the new heading at once. The keyboard strip's reframe also runs at this speed (index.css) |
+| `flags-lift` | 400 ms | `cubic-bezier(0.2, 0, 0, 1)` | Yes: the crowd's flags lift about 6 px |
 | `pose-swap` | 250 ms (wave), 350 ms (signing) | linear cross-fade | Makes's plate changes pose |
 | `shirt-swing` | 600 ms | ease-out, no overshoot | The hanging shirt swings in beside Makes |
 | `letter-paint` | 150 ms per letter, after a 120 ms pause in typing | ease-out | The guest's name lettered onto the shirt |

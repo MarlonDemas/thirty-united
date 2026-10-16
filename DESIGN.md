@@ -177,8 +177,8 @@ Budget: signature. "The lights answer you": every answer is a one-way floodlight
 | `tear-embers` | 600ms | one-shot | Embers spill from the tear line |
 | `bank-strike` | 600ms | `cubic-bezier(0.2, 0, 0, 1)`, one way | A bank of floodlights comes on |
 | `push-in` | 1,200ms | `cubic-bezier(0.33, 1, 0.68, 1)` | 1.03 to 1.12 from Chapter 1 to Chapter 2; the signed beats start wide and push in to the face-and-shirt framing (reduced motion cuts to it) |
-| `panel-change` | 250ms | `cubic-bezier(0.2, 0, 0, 1)` | Panel content out and in; focus to the new heading |
-| `flags-lift` | 400ms | same | Yes: the crowd's flags lift about 6px |
+| `panel-change` | 300ms | ease-in-out, one way | One cross-fade in place between beats; focus to the new heading at once (the keyboard reframe uses it too) |
+| `flags-lift` | 400ms | `cubic-bezier(0.2, 0, 0, 1)` | Yes: the crowd's flags lift about 6px |
 | `pose-swap` | 250ms / 350ms | linear | Makes's pose (wave / signing) |
 | `shirt-swing` | 600ms | ease-out, no overshoot | The shirt swings in |
 | `letter-paint` | 150ms per letter after a 120ms pause | ease-out | The guest's name on the shirt |
