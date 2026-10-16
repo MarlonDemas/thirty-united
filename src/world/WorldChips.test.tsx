@@ -29,10 +29,19 @@ describe("Sound chip", () => {
     expect(sound()).toHaveAccessibleName("Sound off")
     expect(getSoundOn()).toBe(false)
   })
-  it("is not rendered under reduced motion", () => {
+  it("stays under reduced motion: sound follows only its own opt-in (Still goes)", async () => {
     setReducedMotion(true)
+    const user = userEvent.setup()
     mount()
-    expect(sound()).toBeNull()
+    expect(sound()).toHaveAccessibleName("Sound off")
+    expect(still()).toBeNull()
+    await user.click(sound()!)
+    expect(getSoundOn()).toBe(true)
+  })
+  it("renders nothing under reduced motion when the invite key is missing too", () => {
+    setReducedMotion(true)
+    const { container } = mount({ missingKey: true })
+    expect(container).toBeEmptyDOMElement()
   })
   it("is not rendered when the invite key is missing", () => {
     mount({ missingKey: true })

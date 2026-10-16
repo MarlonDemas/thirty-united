@@ -8,6 +8,7 @@ import { StubView } from "@/components/StubView"
 import type { RsvpApi, SavedResult } from "@/lib/api"
 import {
   FIELD_MESSAGES,
+  FORM_FIELDS,
   emptyForm,
   mapBackendErrors,
   normalizeEmail,
@@ -17,9 +18,10 @@ import {
   type RsvpFormValues,
 } from "@/lib/schemas/rsvp"
 import { formatSeat } from "@/lib/seat"
-import { withTimeout } from "@/lib/timing"
+import { CODE_TTL_MS, withTimeout } from "@/lib/timing"
 import { banksFor, beatFor, worldLine, type Banks, type Beat, type View } from "@/world/beats"
 import { CHIP } from "@/world/chips"
+import { useWorldHits } from "@/world/cues"
 import { layoutFor } from "@/world/shots"
 import { shirtName, shirtNumber } from "@/world/shirt"
 import { useViewport } from "@/world/useViewport"
@@ -35,16 +37,33 @@ const sameBanks = (a: Banks, b: Banks) => a.every((l, i) => l === b[i])
 
 export const STORAGE_KEY = "thirty-united:answers"
 
-/** Answers (never the code) survive a reload or back. Cleared once saved. */
+/**
+ * Hand-written on purpose: zod loads after first paint (rsvpSchema.ts) and this runs at first paint. A tampered record
+ * (say a numeric firstName) would otherwise make the shirt's name throw on every reload. FORM_FIELDS is every string
+ * field of the form; attending and plusOne are checked on their own.
+ */
+function isAnswers(v: unknown): v is RsvpFormValues {
+  if (!v || typeof v !== "object" || Array.isArray(v)) return false
+  const r = v as Record<string, unknown>
+  return (
+    (r.attending === "yes" || r.attending === "maybe" || r.attending === "no") &&
+    FORM_FIELDS.every((k) => r[k] === undefined || typeof r[k] === "string") &&
+    (r.plusOne === undefined || typeof r.plusOne === "boolean")
+  )
+}
+
+/** Answers (never the code) survive a reload or back. Cleared once saved, or when they fail the shape check. */
 function loadAnswers(): RsvpFormValues | null {
   try {
     const raw = window.sessionStorage.getItem(STORAGE_KEY)
     if (!raw) return null
-    const v = JSON.parse(raw) as RsvpFormValues
-    return v && ["yes", "maybe", "no"].includes(v.attending) ? v : null
+    const v: unknown = JSON.parse(raw)
+    if (isAnswers(v)) return v
   } catch {
-    return null
+    /* unreadable: cleared below */
   }
+  clearAnswers()
+  return null
 }
 function saveAnswers(v: RsvpFormValues) {
   try {
@@ -63,14 +82,24 @@ function clearAnswers() {
 
 export const STEP_KEY = "thirty-united:step"
 
-/** The code step (when the code was sent, never the code) survives a discarded tab, so the cooldown holds. */
+/**
+ * The code step (when the code was sent, never the code) survives a discarded tab, so the cooldown holds. It lasts
+ * as long as the code does (CODE_TTL_MS, the backend's validity window): after that the guest lands on the form.
+ */
 function loadSentAt(): number | null {
   try {
-    const v = JSON.parse(window.sessionStorage.getItem(STEP_KEY) ?? "null") as { view?: string; sentAt?: unknown } | null
-    return v?.view === "code" && typeof v.sentAt === "number" && Number.isFinite(v.sentAt) && v.sentAt > 0 && v.sentAt <= Date.now() ? v.sentAt : null
+    const raw = window.sessionStorage.getItem(STEP_KEY)
+    if (raw === null) return null // nothing stored: nothing to clear
+    const v = JSON.parse(raw) as { view?: unknown; sentAt?: unknown } | null
+    if (v?.view === "code" && typeof v?.sentAt === "number") {
+      const age = Date.now() - v.sentAt
+      if (age >= 0 && age < CODE_TTL_MS) return v.sentAt
+    }
   } catch {
-    return null
+    /* unreadable: cleared below */
   }
+  clearStep() // present but expired, sent in the future, or malformed
+  return null
 }
 function saveStep(sentAt: number) {
   try {
@@ -182,6 +211,7 @@ export function InvitePage({ api, missingKey = false }: { api: RsvpApi; missingK
   const banks = banksFor(beat, attending)
   const [world, setWorld] = useState({ beat, banks, line: "" })
   if (world.beat !== beat || !sameBanks(world.banks, banks)) setWorld({ beat, banks, line: worldLine(world, { beat, banks }, attending) })
+  useWorldHits(beat, attending, digits) // the strikes' sound (opt-in) and haptics
   const signed = beat === "signed" && result
   // The shirt carries the preferred or first name, never the surname; the number only once the code is verified.
   const name = signed

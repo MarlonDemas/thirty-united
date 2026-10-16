@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest"
 import { InvitePage } from "@/components/InvitePage"
 import type { VerifyResult } from "@/lib/api"
 import { emptyForm } from "@/lib/schemas/rsvp"
+import { CODE_TTL_MS } from "@/lib/timing"
 import { fakeApi, setReducedMotion } from "@/test-utils"
 
 type Api = ReturnType<typeof fakeApi>
@@ -351,7 +352,8 @@ describe("the code step after a reload or discarded tab", () => {
     return user
   }
 
-  it("stores only the step and when the code was sent, never the code", async () => {
+  it("the step holds only the view and when the code was sent: never the code, and the invite key stays in its own slot", async () => {
+    window.sessionStorage.setItem("thirty-united:k", "invite-key-7f3a") // captured from the link at start, by design
     const api = fakeApi({ verifyAndSave: async () => ({ status: "invalid_code", attemptsLeft: 2 }) as VerifyResult })
     const before = Date.now()
     const user = await toCodeView(api)
@@ -362,6 +364,28 @@ describe("the code step after a reload or discarded tab", () => {
     const all = Object.keys(window.sessionStorage).map((k) => window.sessionStorage.getItem(k)).join("|")
     expect(all).not.toContain("482913")
     expect(Object.keys(step()!).sort()).toEqual(["sentAt", "view"])
+    // The key stays only where the app already kept it; the step and the answers never carry it.
+    expect(window.sessionStorage.getItem(STEP)).not.toContain("invite-key-7f3a")
+    expect(window.sessionStorage.getItem("thirty-united:answers")).not.toContain("invite-key-7f3a")
+    expect(Object.keys(window.sessionStorage).sort()).toEqual(["thirty-united:answers", "thirty-united:k", STEP].sort())
+  })
+
+  it("ignores and clears a step older than the code's 10-minute life: the guest lands on the form", async () => {
+    seed(Date.now() - CODE_TTL_MS - 1000)
+    const api = fakeApi()
+    setup(api)
+    expect(await findHeading("Your shirt")).toBeInTheDocument()
+    expect(screen.getByLabelText("First name")).toHaveValue("Thandi")
+    expect(screen.queryByRole("heading", { name: "Seal it" })).toBeNull()
+    expect(step()).toBeNull()
+    expect(api.requestCode).not.toHaveBeenCalled()
+  })
+
+  it("restores a step sent just inside the code's life", async () => {
+    seed(Date.now() - CODE_TTL_MS + 30_000)
+    setup()
+    expect(await findHeading("Seal it")).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "Send a new code" })).toBeEnabled() // the 60 s cooldown is long over
   })
 
   it("restores the code step with the resend cooldown still running", async () => {
@@ -370,6 +394,7 @@ describe("the code step after a reload or discarded tab", () => {
     setup(api)
     expect(await findHeading("Seal it")).toHaveFocus()
     expect(screen.getByRole("button", { name: /resend in 0:4\d/i })).toBeDisabled()
+    expect(screen.getByText(/keep this page open/i)).toBeInTheDocument()
     expect(api.requestCode).not.toHaveBeenCalled()
   })
 
@@ -409,6 +434,29 @@ describe("the code step after a reload or discarded tab", () => {
     await user.click(screen.getByRole("button", { name: /back to my answers/i }))
     await findHeading("Your shirt")
     expect(step()).toBeNull()
+  })
+})
+
+describe("restored answers are checked before use", () => {
+  const ANSWERS = "thirty-united:answers"
+  const store = (v: unknown) => window.sessionStorage.setItem(ANSWERS, JSON.stringify(v))
+
+  it.each<[string, unknown]>([
+    ["a numeric firstName", { ...emptyForm("yes"), firstName: 42 }],
+    ["a non-object", "yes"],
+    ["an array", [{ ...emptyForm("yes"), firstName: "Thandi" }]],
+  ])("%s is cleared and the guest starts at the ticket", (_, v) => {
+    store(v)
+    setup()
+    expect(heading("You've been called up")).toBeInTheDocument()
+    expect(window.sessionStorage.getItem(ANSWERS)).toBeNull()
+  })
+  it("a valid record still restores to the form", async () => {
+    store({ ...emptyForm("yes"), firstName: "Thandi", surname: "Nkosi" })
+    setup()
+    expect(await findHeading("Your shirt")).toBeInTheDocument()
+    expect(screen.getByLabelText("First name")).toHaveValue("Thandi")
+    expect(window.sessionStorage.getItem(ANSWERS)).not.toBeNull()
   })
 })
 

@@ -245,12 +245,12 @@ export function SealedView({
       if (busy.current) return // a second press during the tear is absorbed
       busy.current = true
       interacted.current = true
+      if (getSoundOn()) unlockAudio() // under reduced motion too: sound follows only its own opt-in
       if (reduced) {
         endStage()
         onTorn()
         return
       }
-      if (getSoundOn()) unlockAudio()
       setPeeling(true)
       const tear = () => {
         timers.current.push(

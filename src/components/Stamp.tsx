@@ -21,7 +21,7 @@ export type StampVariant = "yes" | "maybe"
  * heading). Yes is solid poster red with panel-dark words (white on poster red is 4.04:1, so no white text sits on it),
  * "SIGNED · 21 DEC 2026". Maybe is a panel-filled outline with a pencil,
  * "PENCILLED IN", so the two differ by shape, words and icon, not colour alone. It lands with an impact (spring,
- * haptic, optional sound) and calls `onImpact` at contact; reduced motion shows it in place with none of it.
+ * haptic, optional sound) and calls `onImpact` at contact; reduced motion shows it in place with only the (opt-in) sound.
  * Placed twice (CHOSEN.md): live by WorldStage (`STAMP_LIVE`), on the exported poster by the compositor (`STAMP_POSTER`, src/poster/layout.ts).
  */
 export function Stamp({ variant, className, onImpact }: { variant: StampVariant; className?: string; onImpact?: () => void }) {
@@ -33,10 +33,11 @@ export function Stamp({ variant, className, onImpact }: { variant: StampVariant;
   })
 
   useEffect(() => {
-    if (reduced) return
     const t = setTimeout(() => {
+      playStamp() // sound follows only its own opt-in, so it plays under reduced motion too
+      // Reduced motion shows the stamp in place: there is no landing, so no contact for the haptic or onImpact to mark.
+      if (reduced) return
       haptic(maybe ? HAPTICS.stampSoft : HAPTICS.stamp)
-      playStamp()
       impact.current?.()
     }, IMPACT_MS)
     return () => clearTimeout(t)

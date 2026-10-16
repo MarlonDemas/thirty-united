@@ -237,7 +237,7 @@ Code is the source of truth for components that exist; `.specno-design/component
 - **OgCompositor** and the offline asset scripts (planned): build-time only, never ship.
 
 ### Navigation
-- **InvitePage** (`InvitePage.tsx`, exists): the state machine; answers persist in `sessionStorage` (never the code). Planned: persist `{ view: "code", sentAt }` so a reload lands on the code step with the cooldown intact.
+- **InvitePage** (`InvitePage.tsx`, exists): the state machine; answers persist in `sessionStorage` (never the code). The code step persists `{ view: "code", sentAt }` for the code's 10-minute lifetime, so a reload lands on the code step with the cooldown intact.
 - Views (exist, Direction A): `SealedView`, `AttendanceView`, `DetailsView` (lazy), `CodeView` (lazy), `StubView`; they become the panel content of each beat.
 
 ### Overlays

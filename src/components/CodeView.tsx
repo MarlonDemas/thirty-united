@@ -6,6 +6,7 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp
 import { RuledBox } from "@/components/RuledBox"
 import { Announcer, StatusLine, type Tone } from "@/components/StatusLine"
 import { useFocusOnMount } from "@/hooks/useFocusOnMount"
+import { haptic, HAPTICS } from "@/lib/haptics"
 import { useSlowPending } from "@/hooks/useSlowPending"
 import { MISSING_KEY_MESSAGE } from "@/lib/inviteKey"
 import type { RequestCodeResult, SavedResult, VerifyResult } from "@/lib/api"
@@ -201,6 +202,7 @@ export function CodeView({
             onSaved(r)
             return
           case "invalid_code":
+            haptic(HAPTICS.wrong) // the six lamps go out together
             setCode("")
             setStatus(r.attemptsLeft > 0 ? { kind: "wrong", attemptsLeft: r.attemptsLeft } : { kind: "locked" })
             if (r.attemptsLeft > 0) requestAnimationFrame(focusCode)
@@ -244,6 +246,8 @@ export function CodeView({
       <StatusLine id="code-status" tone={d.tone} icon={d.icon}>
         {d.text}
       </StatusLine>
+      {/* Recommendation, chapter 3: the promise the code-step persistence keeps (InvitePage STEP_KEY). */}
+      <p className="standfirst m-0">Keep this page open. If it closes, open the link again and your answers will be waiting.</p>
       {busy && (
         <StatusLine>
           {resend.pending

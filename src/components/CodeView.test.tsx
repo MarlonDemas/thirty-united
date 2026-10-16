@@ -1,4 +1,5 @@
 import { act, render, screen } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { CodeView } from "@/components/CodeView"
 import type { RequestCodeResult } from "@/lib/api"
@@ -70,5 +71,42 @@ describe("CodeView timing (computed from timestamps)", () => {
     })
     expect(screen.getByText(/New code sent to/)).toBeInTheDocument()
     expect(screen.getByRole("button", { name: /resend in 1:00/i })).toBeDisabled()
+  })
+})
+
+describe("CodeView haptics and copy", () => {
+  afterEach(() => {
+    delete (navigator as unknown as { vibrate?: unknown }).vibrate
+    delete (navigator as unknown as { userActivation?: unknown }).userActivation
+  })
+
+  it("a wrong code buzzes [10, 30, 10] (Android, after the first tap)", async () => {
+    const vibrate = vi.fn(() => true)
+    Object.defineProperty(navigator, "vibrate", { value: vibrate, configurable: true, writable: true })
+    Object.defineProperty(navigator, "userActivation", { value: { hasBeenActive: true }, configurable: true })
+    const user = userEvent.setup()
+    render(
+      <CodeView
+        email="a@example.com"
+        initialStatus={{ kind: "sent" }}
+        initialSentAt={Date.now()}
+        onRequestCode={async () => ({ status: "sent" })}
+        onVerify={async () => ({ status: "invalid_code", attemptsLeft: 2 })}
+        onSaved={noop}
+        onInvalidPayload={noop}
+        onBack={noop}
+      />,
+    )
+    await user.type(screen.getByLabelText("6-digit code"), "111111")
+    await user.click(screen.getByRole("button", { name: "Confirm code" }))
+    await screen.findByText(/didn't match/i)
+    expect(vibrate).toHaveBeenCalledWith([10, 30, 10])
+  })
+
+  it("asks the guest to keep the page open (recommendation, chapter 3)", () => {
+    renderCode()
+    expect(
+      screen.getByText("Keep this page open. If it closes, open the link again and your answers will be waiting."),
+    ).toBeInTheDocument()
   })
 })
