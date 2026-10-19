@@ -10,6 +10,7 @@ import { Ticket } from "@/components/Ticket"
 import { useFocusOnMount } from "@/hooks/useFocusOnMount"
 import { useReducedMotion } from "@/hooks/useReducedMotion"
 import { useTilt } from "@/hooks/useTilt"
+import { debugProbeOn } from "@/lib/debugProbe"
 import { haptic, HAPTICS, ticksBetween } from "@/lib/haptics"
 import { getSoundOn, playTearSeparate, playTearTick, unlockAudio } from "@/lib/sound"
 import { forcedColors } from "@/lib/motionPrefs"
@@ -17,9 +18,12 @@ import { hasWebGL } from "@/lib/webgl"
 import { demote, isWebGLTier, useTier } from "@/world/tier"
 import { clearPass, setPass, type SettleFn } from "@/world/pass"
 
-// `?debug=1` only: the pass's readout (fps, renderer, frame times), in its own small chunk.
-const DebugOverlay = lazy(() => import("@/components/three/DebugOverlay").then((m) => ({ default: m.DebugOverlay })))
-const debug = () => new URLSearchParams(window.location.search).get("debug") === "1"
+// `?debug=1` in dev and preview builds only (see debugProbe.ts): the pass's readout (fps, renderer, frame times).
+// In production the chunk is not emitted; the gate is inline because the bundler needs the literal env reads.
+const DebugOverlay =
+  (import.meta.env.DEV || import.meta.env.VITE_DEBUG_PROBE === "1")
+    ? lazy(() => import("@/components/three/DebugOverlay").then((m) => ({ default: m.DebugOverlay })))
+    : null
 
 export const HOST_LINE = "Thirty feels like half time. Come for the oranges."
 
@@ -126,7 +130,7 @@ export function SealedView({
   })
   // 3D is for guests who can take motion and effects, on a WebGL tier (T3, T2); WebGL is probed once per mount.
   const [glOk] = useState(hasWebGL)
-  const [debugOn] = useState(debug)
+  const [debugOn] = useState(debugProbeOn)
   const { tier } = useTier()
   const canLanyard = !reduced && !missingKey && glOk && !forcedColors() && isWebGLTier(tier)
   // The 3D pass failed (its textures failed; a lost context or a world chunk failure demotes the tier, below): step
@@ -428,7 +432,7 @@ export function SealedView({
           <div ref={hitRef} data-testid="lanyard-hit" hidden className="lanyard-hit pointer-events-auto absolute touch-none" />
         </div>
       )}
-      {debugOn && lanyard !== "off" && (
+      {debugOn && DebugOverlay && lanyard !== "off" && (
         <Suspense fallback={null}>
           <DebugOverlay />
         </Suspense>

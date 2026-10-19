@@ -11,6 +11,28 @@
 [context."feature/3d-ticket".environment]
   VITE_CONVEX_URL = "https://incredible-crane-757.convex.cloud"
 
+# Preview of fix/debug-gate-assets-404 only: frontend build, no `convex deploy`.
+# Same public production Convex URL as above; the probe flag is preview-only.
+[context."fix/debug-gate-assets-404"]
+  command = "pnpm build"
+
+[context."fix/debug-gate-assets-404".environment]
+  VITE_CONVEX_URL = "https://incredible-crane-757.convex.cloud"
+  VITE_DEBUG_PROBE = "1"
+
+# VITE_DEBUG_PROBE enables the ?debug=1 device probe on preview builds only; production builds drop the probe.
+[context.deploy-preview.environment]
+  VITE_DEBUG_PROBE = "1"
+
+[context.branch-deploy.environment]
+  VITE_DEBUG_PROBE = "1"
+
+# Missing /assets/* files (stale chunks after a deploy) must 404, not fall through to index.html with a 200 under an immutable cache header.
+[[redirects]]
+  from = "/assets/*"
+  to = "/index.html"
+  status = 404
+
 [[redirects]]
   from = "/*"
   to = "/index.html"
