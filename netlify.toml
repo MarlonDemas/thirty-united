@@ -2,29 +2,22 @@
   command = "npx convex deploy --cmd 'pnpm build'"
   publish = "dist"
 
-# Preview of feature/3d-ticket only: frontend build, no `convex deploy`.
-# Points at the existing production Convex backend (public URL, not a secret).
-# CONVEX_DEPLOY_KEY is Production-scoped in the Netlify UI and must stay that way.
-[context."feature/3d-ticket"]
-  command = "pnpm build"
-
-[context."feature/3d-ticket".environment]
-  VITE_CONVEX_URL = "https://incredible-crane-757.convex.cloud"
-
-# Preview of fix/debug-gate-assets-404 only: frontend build, no `convex deploy`.
-# Same public production Convex URL as above; the probe flag is preview-only.
-[context."fix/debug-gate-assets-404"]
-  command = "pnpm build"
-
-[context."fix/debug-gate-assets-404".environment]
-  VITE_CONVEX_URL = "https://incredible-crane-757.convex.cloud"
-  VITE_DEBUG_PROBE = "1"
-
+# Previews (PR deploy previews and branch deploys) build the frontend only, without `convex deploy`,
+# and use the production Convex backend (public URL, not a secret). RSVPs submitted on a preview are
+# real production writes. CONVEX_DEPLOY_KEY stays Production-scoped in the Netlify UI.
 # VITE_DEBUG_PROBE enables the ?debug=1 device probe on preview builds only; production builds drop the probe.
+[context.deploy-preview]
+  command = "pnpm build"
+
 [context.deploy-preview.environment]
+  VITE_CONVEX_URL = "https://incredible-crane-757.convex.cloud"
   VITE_DEBUG_PROBE = "1"
+
+[context.branch-deploy]
+  command = "pnpm build"
 
 [context.branch-deploy.environment]
+  VITE_CONVEX_URL = "https://incredible-crane-757.convex.cloud"
   VITE_DEBUG_PROBE = "1"
 
 # Missing /assets/* files (stale chunks after a deploy) must 404, not fall through to index.html with a 200 under an immutable cache header.
