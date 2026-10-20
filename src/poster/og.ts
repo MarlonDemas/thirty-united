@@ -52,7 +52,7 @@ export function drawOg(ctx: CanvasRenderingContext2D, image: (name: string) => C
   const title = image("thirty")
   if (title) ctx.drawImage(title, box.x, box.y, box.w, box.h)
   ctx.font = `700 ${OG_TITLE.dateSize}px ${LETTERING_FONT}`
-  ctx.fillStyle = INK.text
+  ctx.fillStyle = INK.posterRed
   ctx.textBaseline = "middle"
   fillTracked(ctx, OG_DATE, box.x, box.dateY, OG_TITLE.dateSize, OG_TITLE.tracking)
 }
