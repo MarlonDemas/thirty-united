@@ -21,7 +21,8 @@ import {
   type CanvasTexture,
 } from "three"
 import { toWorld } from "@/world/gl/config"
-import { boundsOf, fadeToward, passTarget, posterRect, type PassRequest } from "@/world/pass"
+import { boundsOf, passTarget, posterRect, type PassRequest } from "@/world/pass"
+import { fadeToward } from "@/world/passFade"
 import { POSTER } from "@/world/layers"
 import { Lanyard, settleScale } from "./rope"
 import { makeTicketTextures, TICKET_ASPECT } from "./ticketTexture"
@@ -414,7 +415,7 @@ function Scene({ faces, W, H, camera, rt, quad, composite, request, wake, busyRe
     }
     v.wasMoving = moving
 
-    // The cross-fade with the DOM pass, in step with its 160 ms CSS fade.
+    // The cross-fade with the DOM pass, same 160 ms and --ease-fade curve as its CSS fade.
     const want = input.current.shown ? 1 : 0
     if (v.opacity !== want) {
       v.opacity = fadeToward(v.opacity, want, v.fadeAt ? now - v.fadeAt : 0)

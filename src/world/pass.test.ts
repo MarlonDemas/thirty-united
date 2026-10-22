@@ -1,6 +1,6 @@
 import { act, renderHook } from "@testing-library/react"
 import { afterEach, describe, expect, it } from "vitest"
-import { boundsOf, clearPass, fadeToward, getPass, PASS_FADE_MS, posterRect, setPass, passTarget, PASS_MAX_DPR, usePass, type PassRequest } from "@/world/pass"
+import { boundsOf, clearPass, getPass, posterRect, setPass, passTarget, PASS_MAX_DPR, usePass, type PassRequest } from "@/world/pass"
 
 const request = (): PassRequest => ({
   hostLine: "line",
@@ -80,20 +80,6 @@ describe("passTarget", () => {
   it("never asks for an empty target", () => {
     expect(passTarget({ x0: 5, y0: 5, x1: 5, y1: 5 }, 0.88, 0.88)).toMatchObject({ w: 1, h: 1 })
     expect(passTarget({ x0: 5, y0: 5, x1: 5, y1: 5 }, 0.88, 0.2)).toMatchObject({ w: 1, h: 1 })
-  })
-})
-
-describe("fadeToward", () => {
-  it("covers the whole fade in the stage fade's 160 ms, either way, and never overshoots", () => {
-    expect(fadeToward(0, 1, PASS_FADE_MS / 2)).toBeCloseTo(0.5)
-    expect(fadeToward(0.5, 1, PASS_FADE_MS)).toBe(1)
-    expect(fadeToward(1, 0, PASS_FADE_MS / 4)).toBeCloseTo(0.75)
-    expect(fadeToward(0.1, 0, PASS_FADE_MS)).toBe(0)
-  })
-
-  it("holds still with no time passed", () => {
-    expect(fadeToward(0.3, 1, 0)).toBe(0.3)
-    expect(fadeToward(0.3, 1, -5)).toBe(0.3)
   })
 })
 

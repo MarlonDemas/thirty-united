@@ -91,14 +91,6 @@ export function passTarget(r: { x0: number; y0: number; x1: number; y1: number }
   return { rect: { x0: x0 / dpr, y0: y0 / dpr, x1: (x0 + w) / dpr, y1: (y0 + h) / dpr }, w, h }
 }
 
-/** The pass's cross-fade with the DOM pass (160 ms, as the stage fade). Linear in time; returns the new opacity. */
-export const PASS_FADE_MS = 160
-
-export function fadeToward(opacity: number, target: number, dtMs: number): number {
-  const step = Math.max(0, dtMs) / PASS_FADE_MS
-  return target > opacity ? Math.min(target, opacity + step) : Math.max(target, opacity - step)
-}
-
 /** The smallest screen box around some projected points (the card's corners), or null with none. */
 export function boundsOf(points: readonly (readonly [number, number])[]): Box | null {
   if (!points.length) return null

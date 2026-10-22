@@ -206,3 +206,11 @@ The chip column (two 44 x 44 icon buttons, 12 px from the top and right, 8 px ap
 - CORRECTION: The `chip` text style in `tokens.md` has no user now that the chips carry no words. It is retired.
 - INSIGHT: Chip sizes live in one module (`src/world/chips.ts`) that the CSS and the title-clearance tests both read, so the title width and the chips cannot drift apart unnoticed.
 - INSIGHT: Signing shot as built: 0 to 1200 ms pull back to a wide shot fitting all four lamp cores, 1400 to 2000 ms banks fire, 2000 to 3200 ms push in to the signing framing (about 1.23x); T0 cuts to the final framing.
+
+## 2026-10-22, lanyard pass: stub, render cap, layering, fade (owner decisions)
+
+### Decisions
+- ACCEPTED: "Seat 017 · Shirt 17" on the stub keeps both numbers. (Owner, 2026-10-22.)
+- ACCEPTED: The lanyard pass keeps its 1.5 render cap per CSS px on phones (`PASS_MAX_DPR`), the same cost as its own canvas had. Revisit only if the card's print looks soft beside the world on an iPhone. (Owner, 2026-10-22.)
+- ACCEPTED: The pass sits under the world vignette and grain (lens and film over the whole frame), and must draw in front of the moon. Whether a dragged card can pass behind the DOM moon disc is unverified: it is a phone-check item. (Owner, 2026-10-22.)
+- ACCEPTED: The GL pass's 160 ms fade uses `--ease-fade`, like the app's other 160 ms fades. It was linear. (Owner, 2026-10-22.)
