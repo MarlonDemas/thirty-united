@@ -96,29 +96,44 @@ export default function SavePoster({ saved, payload }: { saved: SavedResult; pay
   const share = poster && canShareFile(poster.file) ? poster.file : null
 
   return (
-    <div className="flex flex-col gap-3">
-      <Button
-        ref={saveRef}
-        type="button"
-        className="w-full"
-        onClick={() => (poster ? setOpen(true) : setWantOpen(true))}
-      >
-        <Icon d={ICONS.save} />
-        {wantOpen ? "Making your poster…" : "Save your poster"}
-      </Button>
-      {share && (
+    <div className="flex items-center gap-4">
+      {/* The keepsake thumbnail reuses the viewer's data URL, so the poster isn't drawn twice. The slot is reserved from
+          mount, so the panel doesn't shift when the image appears. */}
+      <div data-testid="poster-slot" aria-hidden="true" className="aspect-[9/16] w-[72px] shrink-0">
+        {poster && (
+          <img
+            data-testid="poster-thumb"
+            src={poster.url}
+            alt=""
+            aria-hidden="true"
+            className="size-full"
+          />
+        )}
+      </div>
+      <div className="flex min-w-0 flex-1 flex-col gap-3">
         <Button
+          ref={saveRef}
           type="button"
-          variant="outline"
-          className="w-full"
-          // Synchronous in the tap: the file is already made, so the user activation is still live.
-          onClick={() => void navigator.share({ files: [share] }).catch(() => {})}
+          className="w-full whitespace-normal text-center"
+          onClick={() => (poster ? setOpen(true) : setWantOpen(true))}
         >
-          <Icon d={ICONS.share} />
-          Share
+          <Icon d={ICONS.save} />
+          {wantOpen ? "Making your poster…" : "Save your poster"}
         </Button>
-      )}
-      <p className="helper m-0">Save it now. We don't keep a copy.</p>
+        {share && (
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full whitespace-normal text-center"
+            // Synchronous in the tap: the file is already made, so the user activation is still live.
+            onClick={() => void navigator.share({ files: [share] }).catch(() => {})}
+          >
+            <Icon d={ICONS.share} />
+            Share
+          </Button>
+        )}
+        <p className="helper m-0">Save it now. We don't keep a copy.</p>
+      </div>
       {open && poster && (
         <PosterViewer
           url={poster.url}

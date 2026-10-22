@@ -100,6 +100,23 @@ describe("SavePoster", () => {
     expect(save).toHaveFocus()
   })
 
+  it("shows a decorative thumbnail of the poster once drawn", async () => {
+    stubShare(undefined)
+    let done: (v: unknown) => void = () => {}
+    renderPoster.mockReturnValue(new Promise((ok) => (done = ok)))
+    render(<SavePoster saved={saved()} payload={payload} />)
+    await ready()
+    expect(screen.queryByTestId("poster-thumb")).toBeNull()
+    expect(screen.getByTestId("poster-slot")).toBeInTheDocument() // the slot is reserved before the draw
+    await act(async () => done({ file, url: URL_ }))
+    const thumb = screen.getByTestId("poster-thumb")
+    expect(thumb).toHaveAttribute("src", URL_)
+    expect(thumb).toHaveAttribute("aria-hidden", "true")
+    expect(thumb).toHaveAttribute("alt", "")
+    fireEvent.click(screen.getByRole("button", { name: "Save your poster" }))
+    expect(screen.getByRole("img")).toHaveAttribute("src", URL_) // the viewer's image is the same URL
+  })
+
   it("a tap on Save before the poster is drawn opens the viewer as soon as it is", async () => {
     stubShare(undefined)
     let done: (v: unknown) => void = () => {}
