@@ -18,7 +18,7 @@ Generated from the `.specno-design/` contract (Direction D, "Matchday: The Signi
 - **Icons:** `lucide-react`
 - **Testing:** Vitest + Testing Library + convex-test; Playwright for e2e
 - **Delivery:** Netlify. CSP and security headers in `netlify.toml`
-- **Budgets (Direction D, estimates):** entry at most 160 kB gzip; about 2 MB (T2) or 3.5 MB (T3) over the journey; decoded memory up to 60 / 120 / 200 MB for T1 / T2 / T3
+- **Budgets (Direction D, estimates):** entry at most 160 kB gzip (160,000 B, every script, modulepreload and stylesheet that dist/index.html references, gzipped per file with Node zlib level 6, measured by `pnpm budget` after `pnpm build`; Vite's printed gz reads about 1% higher); about 2 MB (T2) or 3.5 MB (T3) over the journey; decoded memory up to 60 / 120 / 200 MB for T1 / T2 / T3
 
 ## 2. Project Context
 
