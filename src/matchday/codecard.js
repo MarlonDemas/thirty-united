@@ -63,7 +63,6 @@ export function codeCard({ side, getValues, setEmail, onSaved, onFix, onClosed, 
     const code = input.value.replace(/\D/g, '');
     if (code.length !== CODE_LEN) { say('err', 'Enter the 6-digit code.'); input.setAttribute('aria-invalid', 'true'); input.focus(); return; }
     input.removeAttribute('aria-invalid');
-    if (!hasCodeFor(email())) { await request(); return; }
     busy = true; fix.hidden = true; sync(); say('info', 'Checking your code…');
     const r = await verifyAndSave(side, getValues(), code);
     if (disposed) return;
@@ -71,12 +70,13 @@ export function codeCard({ side, getValues, setEmail, onSaved, onFix, onClosed, 
     switch (r.status) {
       case 'saved': case 'updated': haptic(HAPTICS.number); onSaved(getSent() ?? r); return;   // the code was right and the reply is saved: the number lands
       case 'closed': onClosed(); return;
-      case 'invalid_code': if (r.attemptsLeft > 0) say('warn', `That code didn't match. ${tries(r.attemptsLeft)}`); else { needNew = true; say('err', 'Too many wrong tries. Send a new code.'); } input.value = ''; input.setAttribute('aria-invalid', 'true'); break;
+      case 'invalid_code': if (r.attemptsLeft == null) say('warn', "That code didn't match."); else if (r.attemptsLeft > 0) say('warn', `That code didn't match. ${tries(r.attemptsLeft)}`); else { needNew = true; say('err', 'Too many wrong tries. Send a new code.'); } input.value = ''; input.setAttribute('aria-invalid', 'true'); break;
       case 'code_expired': needNew = true; say('err', 'That code has expired. Send a new one.'); break;
       case 'too_many_attempts': needNew = true; say('err', 'Too many wrong tries. Send a new code.'); break;
-      case 'no_code': needNew = true; say('err', "There's no code for this email yet. Send one."); break;
+      case 'no_code':   // the server has no live code for this email: if we never saw one requested, ask for it now; otherwise it was used or has lapsed
+        if (!hasCodeFor(email())) { await request(); return; }
+        needNew = true; say('err', "There's no code for this email yet. Send one."); break;
       case 'invalid_payload': case 'invalid_answers': say('err', 'A few answers need another look.'); fix.hidden = false; fix.dataset.errors = JSON.stringify(r.errors ?? {}); break;
-      case 'needs_code': await request(); return;
       case 'service_unavailable': say('err', "Saving isn't working right now. Try again in a minute."); break;
       default: say('err', SEND_FAILED);
     }

@@ -44,7 +44,7 @@ export const DRIBBLE_VIEW = (() => { const [sx, sz] = COURSE.start, l = Math.hyp
   return { pos: c.map((v) => +v.toFixed(2)), target: [0, +(c[1] + Math.tan(PITCH) * d).toFixed(2), GOAL_Z], fov: FOV, at: [12.6, 1.1], feet: [+x.toFixed(2), +z.toFixed(2)] }; })();
 
 export function createDribble(world, { tl, hud, roam, audio, cine, teammates, signal, rng }) {
-  const { camera, controls: ctl, renderer, scene, crowd, goals, sim, bloom } = world;
+  const { camera, controls: ctl, renderer, scene, crowd, goals, sim } = world;
   const dom = renderer.domElement;
   const S = { x: COURSE.start[0], z: COURSE.start[1] };
   const u = new THREE.Vector2(0 - S.x, GOAL_Z - S.z).normalize(), right = new THREE.Vector2(-u.y, u.x);   // the course axis and the guest's screen right along it
@@ -266,7 +266,7 @@ export function createDribble(world, { tl, hud, roam, audio, cine, teammates, si
         J.hipR.rotation.set(0.75 * b * (1 - f) - 0.9 * smoother(f), 0, -0.05); J.kneeR.rotation.set(1.1 * b * (1 - f) + 0.1, 0, 0); J.shL.rotation.set(0.4 * b - 0.3 * f, 0, 0.5); J.shR.rotation.set(-0.4 * b + 0.4 * f, 0, -0.45);
         return kickU >= 1 ? 'done' : undefined;
       });
-      const from = V3(rest.x, 0.11, rest.z), to = V3(feet0.x, 0.11, feet0.z), d = from.distanceTo(to);
+      const from = V3(rest.x, 0.11, rest.z), to = V3(feet0.x, 0.11, feet0.z);
       passT = tl.tween(PACE.prepare, (v) => {
         kickU = clamp(v / 0.55, 0, 1); const r = clamp((v - 0.42) / 0.58, 0, 1), e = 1 - (1 - r) * (1 - r);
         if (r > 0) { const px = ball.position.x, pz = ball.position.z; ball.position.lerpVectors(from, to, e); const m = Math.hypot(ball.position.x - px, ball.position.z - pz); if (m > 1e-4) { ax.set(ball.position.z - pz, 0, -(ball.position.x - px)).normalize(); ball.rotateOnWorldAxis(ax, m / 0.11); } }

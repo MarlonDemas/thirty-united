@@ -1,5 +1,5 @@
 // matchday-rsvp: DOM builders shared by the game (flow.js) and the no-WebGL page (fallback.js). NO three.js import here, so the fallback path never depends on it.
-// User text is only ever written with textContent / text nodes (see h()). Validation is f.validate() from config.js, the same for every path.
+// User text is only ever written with textContent / text nodes (see h()). Validation is f.validate() from fields.js, the same for every path.
 import { EVENT } from './config.js';
 import { FIELD, FAST_KEYS, keysFor, valueOf } from './fields.js';
 import { getState, onState, closedText } from './submit.js';
@@ -160,8 +160,10 @@ export function fastLaneForm({ onSend, capped = true, init = {}, errors = null }
     onChange: (v) => notice.setSide(v.attending === 'no' ? 'away' : 'home') });
   const form = f.form; form.id = 'fast-form'; form.name = 'rsvp';
   const btn = h('button', { class: 'btn', type: 'submit', text: 'Continue' });
-  const sync = (st) => { btn.disabled = st === 'sending' || st === 'sent'; };
-  onState(sync); sync(getState());
+  // The card replaces this form's nodes when it closes; the first state change after that releases the subscription (there is no close event to hook).
+  let shown = false;
+  const sync = (st) => { if (form.isConnected) shown = true; else if (shown) { off(); return; } btn.disabled = st === 'sending' || st === 'sent'; };
+  const off = onState(sync); sync(getState());
   form.prepend(notice); form.append(h('div', { class: 'row' }, btn));
   if (errors) f.setErrors(errors);
   return { form, focusFirst: f.focusFirst };

@@ -19,7 +19,7 @@ const setState = (s) => { state = s; for (const fn of [...subs]) { try { fn(s); 
 
 export const getState = () => state;
 export const onState = (fn) => { subs.add(fn); return () => subs.delete(fn); };
-export const CLOSED_TEXT = 'RSVPs open soon';
+const CLOSED_TEXT = 'RSVPs open soon';
 
 // Allowlist check for EVENT.privacy: returns the keys that are not a real value (missing, non-string, blank, [bracket] placeholder, TBC/TODO, contact not an email or https URL, policyUrl not a real https URL). Pure.
 const PRIVACY_KEYS = ['responsibleParty', 'contact', 'retention', 'policyUrl'], NOT_REAL = /^(tbc|tbd|todo|n\/?a|-+)$/i, EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
@@ -27,7 +27,7 @@ const httpsUrl = (t) => { try { const u = new URL(t); return u.protocol === 'htt
 export function privacyProblems(P) {
   return PRIVACY_KEYS.filter((k) => {
     const v = P?.[k]; if (typeof v !== 'string') return true;
-    const t = v.trim(); if (!t || /[\[\]]/.test(t) || NOT_REAL.test(t)) return true;
+    const t = v.trim(); if (!t || /[[\]]/.test(t) || NOT_REAL.test(t)) return true;
     return k === 'policyUrl' ? !httpsUrl(t) : k === 'contact' ? !(EMAIL.test(t) || httpsUrl(t)) : false;
   });
 }
@@ -47,7 +47,7 @@ export function isClosed() {
   return closed;
 }
 // The invite link: no ?k=, or a call came back invalid_link. Both show the same message.
-export const linkProblem = () => !INVITE_KEY || linkBad;
+const linkProblem = () => !INVITE_KEY || linkBad;
 // The text a closed page shows instead of the questions, or null while the form is open.
 export const closedText = () => (linkProblem() ? MISSING_KEY_MESSAGE : isClosed() ? CLOSED_TEXT : null);
 const closeLink = () => { linkBad = true; setState('closed'); };
@@ -80,29 +80,30 @@ export async function requestCode(email) {
 }
 
 // Verifies the 6-digit `code` and saves the answers. side 'home'|'away', values = the flat answers (fields.js). Resolves to { status, ... }:
-//   saved | updated (+ firstName, attending, ticketNo) | invalid_code (+ attemptsLeft) | code_expired | too_many_attempts | no_code | invalid_payload (+ errors) | needs_code | invalid_answers | service_unavailable | failed | closed
-// A second call while one is in flight shares it; after a save it returns the saved reply.
+//   saved | updated (+ firstName, attending, ticketNo) | invalid_code (+ attemptsLeft, null if the server sent none) | code_expired | too_many_attempts | no_code | invalid_payload (+ errors) | invalid_answers | service_unavailable | failed | closed
+// A second call while one is in flight shares it; after a save it returns the saved reply. It does not need requestCode to have answered first: a request that timed out may still have sent the email, and the server's no_code says when nothing was.
 export function verifyAndSave(side, values, code) {
   if (state === 'sent' && sent) return Promise.resolve({ ...sent });
   if (state === 'sending' && inflight) return inflight;
   if (closedText()) return Promise.resolve({ status: 'closed' });
   let built;
   try { built = buildPayload(side, values); } catch { return Promise.resolve({ status: 'invalid_answers' }); }
-  if (!hasCodeFor(built.email)) return Promise.resolve({ status: 'needs_code' });
   setState('sending');
   inflight = (async () => {
     try {
       const r = await timed(client().then(({ http, api }) => http.action(api.rsvp.verifyAndSave, { email: built.email, code: String(code || '').trim(), payload: built.payload, inviteKey: INVITE_KEY })));
       inflight = null;
       if (r.status === 'saved' || r.status === 'updated') {
+        const ticketNo = Number(r.ticketNo);
+        if (!Number.isFinite(ticketNo)) throw new Error('no ticket number');   // never a confirmation reading "Seat NaN": the catch below reports failed
         // `answers` is what the guest typed that the shirts and the poster use (the confirmation heading uses preferredName; every other confirmation field comes from the server). In memory only.
-        sent = Object.freeze({ status: r.status, firstName: String(r.firstName ?? built.payload.firstName), attending: r.attending, ticketNo: Number(r.ticketNo),
+        sent = Object.freeze({ status: r.status, firstName: String(r.firstName ?? built.payload.firstName), attending: r.attending, ticketNo,
           answers: Object.freeze({ surname: built.payload.surname, preferredName: built.payload.preferredName, plusOne: !!built.payload.plusOne, plusOneName: built.payload.plusOneName }) });
         setState('sent'); return { ...sent };
       }
       if (r.status === 'invalid_link') { closeLink(); return { status: 'closed' }; }
       setState('idle');
-      if (r.status === 'invalid_code') return { status: r.status, attemptsLeft: Number(r.attemptsLeft) };
+      if (r.status === 'invalid_code') return { status: r.status, attemptsLeft: typeof r.attemptsLeft === 'number' && Number.isFinite(r.attemptsLeft) ? r.attemptsLeft : null };
       if (r.status === 'invalid_payload') return { status: r.status, errors: r.errors && typeof r.errors === 'object' ? { ...r.errors } : {} };
       return { status: String(r.status) };
     } catch { inflight = null; setState('failed'); return { status: 'failed' }; }

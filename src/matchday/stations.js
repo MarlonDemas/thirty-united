@@ -8,7 +8,7 @@
 // Never blocking: confirming saves the answer at once; "Skip ..." completes the station without the challenge; challenges allow at most one failure.
 import * as THREE from 'three';
 import { THEME, KIT_HEX, fontCss } from './config.js';
-import { FIELD, GROUPS } from './fields.js';
+import { GROUPS } from './fields.js';
 import { h, fieldsForm, closedNote, privacyNotice } from './ui.js';
 import { closedText } from './submit.js';
 import { canvasTex, anglesFor, reducedMotion } from './util.js';
@@ -30,7 +30,7 @@ const BLURB = {
 };
 const NEAR = 3, FAR = 4;
 
-export function createStations(world, { tl, hud, roam, challenges, getSide, getValues, onSave, onComplete, onChallenge, canOpen, signal }) {
+export function createStations(world, { hud, roam, challenges, getSide, getValues, onSave, onComplete, onChallenge, canOpen, signal }) {
   const { scene, bloom, plaza } = world;
   const list = STATIONS.map((s) => ({ ...s, keys: GROUPS[s.k] }));
   for (const s of list) if (s.id === 1) {   // station 1 lives at the kiosk of its END (plaza.js)

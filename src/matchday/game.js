@@ -5,7 +5,7 @@ import { createAudio } from './audio.js';
 import { createFx } from './fx.js';
 import { createFlow, VIEWS } from './flow.js';
 import { createTeammates } from './teammates.js';
-import { onTeardown } from './teardown.js';
+import { onTeardown, onSalvage } from './teardown.js';
 
 const { sim, crowd, renderer } = world;
 const ac = new AbortController();   // everything this module adds to window; aborted by teardown
@@ -17,6 +17,7 @@ const fx = createFx(world, { onBang: () => audio.bang() });
 const teammates = createTeammates(world);
 const flow = createFlow(world, { audio, fx, teammates });
 onTeardown(() => flow.dispose());
+onSalvage(() => flow.answers());   // a lost context hands the answers so far to the fast-lane form
 
 // The sim clock drives everything: scene (crowd, keeper, net, flags) first, then the teammates, the flow (timeline, the guest's walk, stations) and the effects.
 // Big steps (e.g. smoke's simStep) are sub-stepped so the flow's timeline and the walk stay correct. sim.scale is the goal beat's slow motion

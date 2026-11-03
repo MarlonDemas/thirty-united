@@ -8,7 +8,7 @@ const PW = 82.6, PL = 119.6;               // grass plane (pitch 68 x 105 plus r
 const PPM = 20;
 
 function markingsTexture() {
-  return canvasTex(Math.round(PW * PPM), Math.round(PL * PPM), (c, w, h) => {
+  return canvasTex(Math.round(PW * PPM), Math.round(PL * PPM), (c, w, _h) => {
     const X = (x) => (x + PW / 2) * PPM, Z = (z) => (z + PL / 2) * PPM;
     // mown stripes: R channel = brightness multiplier, one band per 5.25 m of pitch length
     for (let z0 = -PL / 2; z0 < PL / 2; z0 += 0.25) {

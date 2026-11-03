@@ -13,7 +13,7 @@ import { mulberry32, reducedMotion, lerp, smoother, bezier, anglesFor } from './
 import { EVENT, TITLE_UC, DATE_LINE, THEME, applyMotion, clean } from './config.js';
 import { h, fastLaneForm, confirmCard } from './ui.js';   // three-free builders shared with fallback.js
 import { codeCard } from './codecard.js';
-import { mapServerErrors } from './fields.js';
+import { mapServerErrors, withAttending } from './fields.js';
 import { closedText, resetForDev } from './submit.js';
 import { createTimeline } from './timeline.js';
 import { createHud } from './hud.js';
@@ -28,13 +28,12 @@ import { createCorner, CORNER_VIEW, PACE as CORNER_PACE } from './challenges/cor
 import { createShirt } from './shirt.js';
 import { haptic, HAPTICS } from '../lib/haptics.ts';   // vibrates only where supported, after a first tap, and never under reduced motion
 import { shirtFor } from '../lib/keepsake.ts';
-export { EVENT };   // organisers: edit config.js, not this file
 
 const SEED = 20261212;
 // Forced waits (sim seconds) on top of the challenges' own PACE and stations.PACE.arrive (2.2 s per arrival). An unskipped HOME run spends about 29.7 s
 // in skippable moves the guest cannot act through (kiosk arrival, ticket 2.5, gate + walk-out 6.9, three arrivals, the dribble's lay-off and the corner
 // walk 1.2 each, penalty ~0.9, the Siuuu sprint + jump to the landing ~2.6 (cine.js SIU; the corner huddle forms during the crane), the full-time crane
-// 2.8, and a ~0.8 s slow-motion beat per goal); budget 30 (tests/matchday-rsvp/flow.mjs check h measured 29.73 s). A skipped last station keeps the 2.2 s huddle.
+// 2.8, and a ~0.8 s slow-motion beat per goal); budget 30 (measured 29.73 s; e2e/world-walk.spec.ts skips these). A skipped last station keeps the 2.2 s huddle.
 // Skip (tap, click, Space, Enter, Escape) always wins over every one of these. Ball flights and the short waits after a goal or a miss are not skippable
 // (they are the guest's own result), about 8 s in a full HOME run. The cinematic moves themselves live in cine.js (walk-out rig, slow-mo, tracking, letterbox).
 const PACE = { huddle: 2.2, squadHold: 4.0, arm: 0.6, gate: 0.5, walkOut: 6.4, awayWalk: 8.0, fullTime: 2.8, fireworks: 0.9, confetti: 1.6, dim: 1.2, awayPull: 3.2, awayLook: 2.0, awayHold: 2.0, awayEnd: 0.8, hint: 6 };
@@ -91,7 +90,7 @@ export function createFlow(world, { audio, fx, teammates }) {
   };
   const ticket = challenges.ticket;
   const stations = createStations(world, {
-    tl, hud, roam, challenges, signal,
+    hud, roam, challenges, signal,
     getSide: () => S.side, getValues: () => S.values,
     onSave: (s, v) => { Object.assign(S.values, v); },
     onComplete: stationDone,
@@ -172,7 +171,7 @@ export function createFlow(world, { audio, fx, teammates }) {
       return;
     }
     guideBoard(prev);
-    if (r.skipped) hud.toast('Answer saved. Point banked', 1.8);
+    if (r.skipped) hud.toast('Answer kept · point banked', 1.8);
     if (stations.remaining() === 0) { if (!r.skipped && r.outcome === 'goal') siuuu(); else finale(); return; }   // the last station scored: the Siuuu
     S.stage = 'roam';
   }
@@ -323,7 +322,7 @@ export function createFlow(world, { audio, fx, teammates }) {
     if (!fix && ((S.stage !== 'intro' && S.stage !== 'roam') || stations.arriving() || roam.gliding)) return;
     if (fix && S.stage !== 'code') return;
     const back = S.stage; S.stage = 'fast'; if (back === 'intro') roam.resetBoom(); roam.stop(); stations.close(); ticket.hide(); hud.hideHint(); hud.hideToast(); audio.unlock();
-    const init = { ...S.values, attending: S.side === 'away' ? 'no' : S.values.attending };
+    const init = withAttending(S.side, S.values);
     const fl = fastLaneForm({ onSend: fastSend, init, errors });
     hud.showCard([h('p', { class: 'kicker', text: EVENT.title }), hud.heading('x-h', fix ? 'Check your answers' : 'Just reply'), fl.form,
       h('div', { class: 'row' }, h('button', { class: 'linkbtn', type: 'button', onclick: () => { if (S.stage !== 'fast') return; hud.hideCard(); if (fix) showCode(); else if (back === 'intro') { stageGates(true); showIntro(); } else S.stage = 'roam'; }, text: fix ? 'Back to my code' : 'Back to the game' }))],
@@ -342,7 +341,7 @@ export function createFlow(world, { audio, fx, teammates }) {
     if (S.staged || S.stage === 'done') return;   // a staged view (capture, dev) has no real answers: it never asks for a code
     const shut = closedText(); if (shut) { showClosed(); return; }
     code?.dispose(); S.stage = 'code'; hud.hideWalk(); stations.close();
-    const mine = S, side = S.side, answers = () => ({ ...S.values, attending: side === 'away' ? 'no' : S.values.attending });
+    const mine = S, side = S.side, answers = () => withAttending(side, S.values);
     code = codeCard({ side, getValues: answers, setEmail: (e) => { S.values.email = e; },
       onSaved: (r) => { if (S === mine) showConfirmation(r); }, onFix: (errs) => { if (S === mine) showFast({ fix: true, errors: serverErrors(errs) }); }, onClosed: () => { if (S === mine) showClosed(); } });
     hud.showCard(code.nodes, { labelledBy: 'cc-k', head: true, kind: 'code' });
@@ -447,6 +446,7 @@ export function createFlow(world, { audio, fx, teammates }) {
   const api = {
     step, goto, reset, VIEWS,
     skipNow: () => skipNow(false),
+    answers: () => ({ side: S.side, values: { ...S.values } }),   // the answers so far, for the fast-lane page if the scene is abandoned (teardown.js salvage)
     state: () => ({
       stage: S.stage, side: S.side, score: S.score, values: { ...S.values }, ...stations.state(),
       card: hud.cardOpen() ? hud.card.dataset.kind || 'card' : null, heading: hud.cardOpen() ? (hud.card.querySelector('h2, label, .label')?.textContent ?? '') : null,

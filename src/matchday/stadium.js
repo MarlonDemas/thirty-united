@@ -104,7 +104,7 @@ export function buildStadium() {
       const c = [b.x - b.nx * (d - off), b.z - b.nz * (d - off)];
       g.quad([c[0] - tx * w, y0, c[1] - tz * w], [c[0] + tx * w, y0, c[1] + tz * w], [c[0] + tx * w, y1, c[1] + tz * w], [c[0] - tx * w, y1, c[1] - tz * w], [b.nx, 0, b.nz]);
       // lintel frame
-      const f = 0.08; const c2 = [b.x - b.nx * (d - off - 0.02), b.z - b.nz * (d - off - 0.02)];
+      const c2 = [b.x - b.nx * (d - off - 0.02), b.z - b.nz * (d - off - 0.02)];
       frame.quad([c2[0] - tx * (w + .3), y1, c2[1] - tz * (w + .3)], [c2[0] + tx * (w + .3), y1, c2[1] + tz * (w + .3)], [c2[0] + tx * (w + .3), y1 + 0.35, c2[1] + tz * (w + .3)], [c2[0] - tx * (w + .3), y1 + 0.35, c2[1] - tz * (w + .3)], [b.nx, 0, b.nz]);
     };
     for (let k = 0; k < NA; k += 3) { add(aisleS(k), D.upperD0, lowerY(D.lowerRows - 1) + 0.04, 13.0); add(aisleS(k), D.backD, upperY(D.upperRows - 1) + 0.05, upperY(D.upperRows - 1) + 2.5); }
@@ -280,7 +280,7 @@ export function buildStadium() {
   // ---- floodlight masts (4) ---------------------------------------------------------------------------------------
   const masts = [];
   {
-    const mb = new Beams(); const lensB = new Beams(); const frameB = new Beams();
+    const mb = new Beams();
     const lensMat = new THREE.MeshStandardMaterial({ color: 0x222222, emissive: 0xfff3dd, emissiveIntensity: 9, roughness: 0.3 });
     const cx = a + 58 * Math.SQRT1_2, cz = (hz - R) + 58 * Math.SQRT1_2;
     for (const [sx, sz] of [[1, 1], [-1, 1], [1, -1], [-1, -1]]) {
@@ -344,7 +344,7 @@ export function buildStadium() {
               ctx.save(); ctx.beginPath(); ctx.rect(x - 4, top ? cy - size : mid, ws[i] + 8, top ? mid - (cy - size) : size); ctx.clip();
               ctx.translate(0, mid); ctx.scale(1, sy); ctx.translate(0, -mid); ctx.textAlign = 'center'; ctx.fillText(str, cx, cy); ctx.restore();
             };
-            if (p === undefined || p >= 1 || from === to) half(String(to), true, 1), half(String(to), false, 1);
+            if (p === undefined || p >= 1 || from === to) { half(String(to), true, 1); half(String(to), false, 1); }
             else if (p < 0.5) { half(String(to), true, 1); half(String(from), false, 1); half(String(from), true, Math.max(0.001, 1 - p * 2)); }
             else { half(String(to), true, 1); half(String(from), false, 1); half(String(to), false, Math.max(0.001, p * 2 - 1)); }
             if (p !== undefined && p < 1 && from !== to) { ctx.fillStyle = LED_BG; ctx.fillRect(x - 4, mid - 2, ws[i] + 8, 4); ctx.fillStyle = l.color || THEME.color.scoreboardText; }   // the flap hinge
@@ -365,7 +365,7 @@ export function buildStadium() {
     const bezel = new THREE.Mesh(new THREE.BoxGeometry(w + 0.8, h + 0.8, 0.6), steel); bezel.castShadow = true; g.add(bezel);
     const mat = new THREE.MeshStandardMaterial({ color: 0x050505, map: tex, emissiveMap: tex, emissive: 0xffffff, emissiveIntensity: 1.5, roughness: 0.4 });
     const screen = new THREE.Mesh(new THREE.PlaneGeometry(w, h), mat); screen.position.z = 0.32; g.add(screen);
-    const rb = new Beams(); for (const sx of [-1, 1]) for (const sy of [-1, 1]) rb.add(V(sx * (w / 2 - 1), yc + h / 2 + 0.4, zc), V(sx * (w / 2 - 1.5 + sx * 0.5), roofDeckY(D.roofIn) - 0.7, zc - 0.3), 0.16, 0.16);
+    const rb = new Beams(); for (const sx of [-1, 1]) for (const _sy of [-1, 1]) rb.add(V(sx * (w / 2 - 1), yc + h / 2 + 0.4, zc), V(sx * (w / 2 - 1.5 + sx * 0.5), roofDeckY(D.roofIn) - 0.7, zc - 0.3), 0.16, 0.16);
     group.add(g, rb.build(steel));   // no bloom: the LED digits stay crisp
     api.mesh = screen; api.group = g; api.position = V(0, yc, zc);
     return api;

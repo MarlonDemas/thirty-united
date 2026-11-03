@@ -1,7 +1,7 @@
 // Model loader: plain GLTFLoader (no meshopt decoder: the only model, street_lamp_01.gltf, has no EXT_meshopt_compression, and the decoder would need 'wasm-unsafe-eval') and shadows on every mesh.
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
-export function createGLTFLoader() {
+function createGLTFLoader() {
   return new GLTFLoader();
 }
 

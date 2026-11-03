@@ -24,6 +24,7 @@ The codes come from `[mail:mock] code for <email>: <code>` lines in `npx convex 
 | `world-code-card.spec.ts` | wrong code then right code; resend cooldown (client countdown and server "A code went out a moment ago") |
 | `world-validation.spec.ts` | YES without team / surname: inline message, zero Convex calls |
 | `world-fallback.spec.ts` | WebGL blocked: fallback page completes a YES |
+| `world-asset-failure.spec.ts` | one texture request aborted: the fast-lane page appears (no hang on the loading screen) |
 | `world-walk.spec.ts` | HOME END walk: kiosk, stations 2-4 via their skip buttons, full time, code card, sign |
 
 ## Notes

@@ -14,10 +14,12 @@ export const LITE = URL_Q.has('lite') || (typeof navigator !== 'undefined' && (n
 // ---- textures -------------------------------------------------------------------------------------------------
 const pending = [];
 const tl = new THREE.TextureLoader();
-export const texturesReady = () => Promise.all(pending);
+export const texturesReady = () => Promise.all(pending);   // rejects if any texture failed to load (main.js then shows the fast-lane page)
 export function loadTex(url, { srgb = false, rx = 1, ry = 1, aniso = 8 } = {}) {
-  const t = tl.load(url);
-  pending.push(new Promise((res) => { const check = () => (t.image ? res() : setTimeout(check, 20)); check(); }));
+  let t;
+  const p = new Promise((res, rej) => { t = tl.load(url, () => res(), undefined, () => rej(new Error('texture failed to load: ' + url))); });
+  p.catch(() => {});   // texturesReady() reports it; this only keeps an early failure from logging as unhandled
+  pending.push(p);
   t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(rx, ry); t.anisotropy = aniso;
   if (srgb) t.colorSpace = THREE.SRGBColorSpace;
   return t;
@@ -101,7 +103,7 @@ export function polyline(path, { lineStep = 2, arcSteps = 24, extra } = {}) {
       if (extra) ts.push(...extra(p));
       ts = [...new Set(ts.map((t) => +t.toFixed(5)))].sort((u, v) => u - v);
     } else for (let i = 0; i <= arcSteps; i++) ts.push(i / arcSteps);
-    for (const t of ts) { if (pts.length && p.type === 'line' && t === 0 && false) continue; const q = path.pt(p, t); pts.push({ ...q, s: p.s0 + p.len * t, piece: p.id, t }); }
+    for (const t of ts) { const q = path.pt(p, t); pts.push({ ...q, s: p.s0 + p.len * t, piece: p.id, t }); }
   }
   // drop duplicate join points
   const out = [pts[0]];

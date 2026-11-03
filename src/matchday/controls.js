@@ -3,7 +3,7 @@ import * as THREE from 'three';
 
 export function createLookControls(camera, dom, { pitchLimit = 80 * Math.PI / 180, sensitivity = 0.0035 } = {}) {
   const c = { yaw: 0, pitch: 0, sway: { yaw: 0, pitch: 0, roll: 0 }, enabled: true, dragging: false, onChange: null, filter: null };   // filter(ev) -> false lets another handler (ticket / ball drag) own this pointerdown
-  const q = new THREE.Quaternion(), e = new THREE.Euler(0, 0, 0, 'YXZ');
+  const e = new THREE.Euler(0, 0, 0, 'YXZ');
   let lx = 0, ly = 0;
   // sway: the handheld micro-sway while walking (roam.js), small offsets on top of the look; yaw/pitch stay the clean look
   c.apply = () => { e.set(c.pitch + c.sway.pitch, c.yaw + c.sway.yaw, c.sway.roll, 'YXZ'); camera.quaternion.setFromEuler(e); };

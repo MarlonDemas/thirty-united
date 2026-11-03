@@ -4,11 +4,12 @@
 import { EVENT, DATE_LINE } from './config.js';
 import { h, fastLaneForm, confirmCard } from './ui.js';
 import { codeCard } from './codecard.js';
-import { mapServerErrors } from './fields.js';
+import { mapServerErrors, withAttending } from './fields.js';
 import { getSent, closedText } from './submit.js';
 import { runTeardown } from './teardown.js';
 
-export function showFallback(reason) {
+// initial = { side, values } the game already collected (a lost context), or null: the form then opens pre-filled.
+export function showFallback(reason, initial = null) {
   if (window.__fallback) return;
   window.__fallback = true;
   runTeardown();   // the game (if it got that far) stops its loop, listeners and timers, so Space/Enter/arrows belong to this page again
@@ -16,7 +17,7 @@ export function showFallback(reason) {
   const ui = document.getElementById('ui'); ui.replaceChildren();
 
   const card = h('section', { id: 'card', class: 'glass fb', role: 'group', 'aria-labelledby': 'fb-h', tabindex: '-1' });
-  let code = null, answers = null;   // answers: { side, values } once the form has been filled
+  let code = null, answers = initial && Object.keys(initial.values ?? {}).length ? { side: initial.side ?? 'home', values: { ...initial.values } } : null;   // answers: { side, values } once the form has been filled (or handed over)
   const focusHead = () => card.querySelector('h2')?.focus({ preventScroll: true });
   const showConfirm = (r) => { code?.dispose(); card.replaceChildren(...confirmCard(r, { id: 'fb-h' })); focusHead(); };
   const showClosed = () => { code?.dispose(); card.replaceChildren(h('p', { class: 'kicker', text: DATE_LINE }), h('h2', { id: 'fb-h', class: 'display', tabindex: '-1', text: "You've been called up" }), h('p', { class: 'closed', role: 'status', text: closedText() ?? '' })); focusHead(); };
@@ -24,12 +25,12 @@ export function showFallback(reason) {
     if (closedText()) { showClosed(); return; }
     code?.dispose();
     const { side, values } = answers;
-    code = codeCard({ side, getValues: () => ({ ...values, attending: side === 'away' ? 'no' : values.attending }), setEmail: (e) => { values.email = e; }, id: 'fb-cc',
+    code = codeCard({ side, getValues: () => withAttending(side, values), setEmail: (e) => { values.email = e; }, id: 'fb-cc',
       onSaved: showConfirm, onClosed: showClosed, onFix: (errs) => showForm(mapServerErrors(errs, true)) });
     card.replaceChildren(...code.nodes); card.querySelector('h2').id = 'fb-h'; focusHead(); code.start();
   };
   const showForm = (errors = null) => {
-    const { form } = fastLaneForm({ capped: false, init: answers ? { ...answers.values, attending: answers.side === 'away' ? 'no' : answers.values.attending } : {}, errors, onSend: ({ side, values }) => { answers = { side, values: { ...values } }; showCode(); } });
+    const { form } = fastLaneForm({ capped: false, init: answers ? withAttending(answers.side, answers.values) : {}, errors, onSend: ({ side, values }) => { answers = { side, values: { ...values } }; showCode(); } });
     const details = h('dl', {}, h('dt', { text: 'When' }), h('dd', { text: EVENT.date }), h('dt', { text: 'Where' }), h('dd', { text: EVENT.venue }), h('dt', { text: 'Host' }), h('dd', { text: EVENT.host }));
     card.replaceChildren(h('p', { class: 'kicker', text: "You've been called up" }), h('h2', { id: 'fb-h', class: 'display', tabindex: '-1', text: EVENT.title }), h('p', { text: EVENT.tagline }), details, h('p', { class: 'kicker', text: 'Your reply' }), form);
   };

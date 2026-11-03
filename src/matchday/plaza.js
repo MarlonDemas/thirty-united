@@ -90,7 +90,6 @@ export async function buildPlaza() {
   const brickMesh = new THREE.Mesh(g.build(), brick); brickMesh.castShadow = true; brickMesh.receiveShadow = true; group.add(brickMesh);
   // passage ceiling (concrete) is the header's underside above; add a dark concrete ceiling light strip row
   const steel = new THREE.MeshStandardMaterial({ color: 0x3d444c, metalness: 0.85, roughness: 0.4 });
-  const steelBright = new THREE.MeshStandardMaterial({ color: 0xb8bfc7, metalness: 0.9, roughness: 0.3 });
   const sb = new Beams();
   for (const x of [-xo, -gh, gh, xo, -18, 18]) sb.box(V(x, 4.5, z1 + 0.18), 0.5, 9.0, 0.35);                     // columns in front of the brick
   sb.box(V(0, 4.95, z1 + 0.2), 2 * xo + 0.6, 0.35, 0.45);                                                          // lintel band
@@ -132,7 +131,7 @@ export async function buildPlaza() {
   const stain = new THREE.MeshStandardMaterial({ color: 0xc7ccd2, metalness: 0.95, roughness: 0.28 });
   const dark = new THREE.MeshStandardMaterial({ color: 0x15181c, roughness: 0.5, metalness: 0.4 });
   const xs = [-3.75, -2.25, -0.75, 0.75, 2.25, 3.75];
-  xs.forEach((x, i) => {
+  xs.forEach((x) => {
     const hsg = new THREE.Mesh(new THREE.BoxGeometry(0.3, 1.05, 1.15), stain); hsg.position.set(x, 0.525, zt); hsg.castShadow = true; hsg.receiveShadow = true; turn.add(hsg);
     const cap = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.05, 1.2), dark); cap.position.set(x, 1.075, zt); turn.add(cap);
   });
@@ -225,8 +224,8 @@ export async function buildPlaza() {
   for (const [x, z, yaw] of lampSpots) {
     const l = lamp.clone(true); l.position.set(x, 0, z); l.rotation.y = yaw; l.scale.setScalar(1.35); group.add(l);
     // lamp head sits at the top of the arm; the Poly Haven lamp's arm points to +x in model space
-    const c = Math.cos(yaw), s = Math.sin(yaw); const hxm = 0.0 * 1.35, hy = 3.78 * 1.35;
-    glowBeams.box(V(x + (c * hxm), hy, z - s * hxm), 0.5, 0.08, 0.3);
+    const hy = 3.78 * 1.35;
+    glowBeams.box(V(x, hy, z), 0.5, 0.08, 0.3);
   }
   const gb = glowBeams.build(glow, { cast: false }); group.add(gb); bloom.push(gb);
 

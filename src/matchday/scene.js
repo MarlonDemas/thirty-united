@@ -4,7 +4,7 @@
  * world.THREE                                three namespace
  * world.scene, world.camera, world.renderer, world.composer, world.controls   (controls: look-around, see controls.js: { yaw, pitch, enabled, lookAt(v3), apply() })
  * world.sim                                  { t, scale, step(dt) } deterministic sim clock (scale: the slow-mo factor, game.js multiplies dt by it); step() advances crowd, keeper/taker idle, net ripples, flags.
- *                                             main.js calls world.sim.step(realDt) every frame and __dbg.simStep(dt) calls it without rendering.
+ *                                             game.js calls world.sim.step(realDt) every frame and __dbg.simStep(dt) calls it without rendering.
  * world.crowd                                { cheer(at=0)  3 s jump-and-cheer burst, scarves up
  *                                              wave(seconds=32 | false)  Mexican wave (one lap = 16 s)
  *                                              applaud(seconds=4)  polite clapping,  step(dt), count, triangles, uniforms }
@@ -25,7 +25,7 @@
  * world.sign, world.seats, world.masts       misc handles
  * world.setLights(k = 1)                     floodlight level: the four mast spots and their lens emissive scale by k (1 = full, 0.6 = the AWAY ending's dim)
  * world.render()                             renders one frame through the composer;  world.measure() -> { triangles, calls } of one scene pass
- * world.resize()
+ * world.resize()                            camera aspect now, renderer and composer buffers after 150 ms of quiet
  */
 import * as THREE from 'three';
 import { HDRLoader } from 'three/addons/loaders/HDRLoader.js';
@@ -41,7 +41,7 @@ import { buildCrowd } from './crowd.js';
 import { buildKeeper, buildTaker, buildBall } from './people.js';
 import { createLookControls } from './controls.js';
 
-// Measured with `npm run sun assets/hdri/qwantani_dusk_2_puresky_2k.hdr`
+// Measured from public/world/hdri/qwantani_dusk_2_puresky_2k.hdr: the brightness-weighted centroid of its brightest pixels
 export const SUN = { dir: [0.784, 0.228, 0.577], elevationDeg: 13.21, horizonHex: '#ffdef0' };
 
 async function create() {
@@ -134,6 +134,7 @@ async function create() {
     },
   };
 
+  let resizeTimer = 0;
   const lensMats = new Set(); for (const m of stadium.masts) m.rig.traverse((o) => { if (o.isInstancedMesh) lensMats.add(o.material); });   // the floodlight lenses (setLights)
   await texturesReady();
   const world = {
@@ -152,7 +153,11 @@ async function create() {
     },
     render() { renderer.info.reset(); composer.render(); world.lastFrame = { triangles: renderer.info.render.triangles, calls: renderer.info.render.calls }; },
     measure() { renderer.info.reset(); renderer.render(scene, camera); return { triangles: renderer.info.render.triangles, calls: renderer.info.render.calls, geometries: renderer.info.memory.geometries, textures: renderer.info.memory.textures }; },
-    resize() { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); composer.setSize(innerWidth, innerHeight); },
+    // The aspect follows at once; the buffers (N8AO and the half-float targets are reallocated by composer.setSize) wait for the resizing to settle, so a phone's collapsing URL bar does not churn them.
+    resize() {
+      camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
+      clearTimeout(resizeTimer); resizeTimer = setTimeout(() => { renderer.setSize(innerWidth, innerHeight); composer.setSize(innerWidth, innerHeight); }, 150);
+    },
     lastFrame: null, lite: LITE,
   };
   return world;

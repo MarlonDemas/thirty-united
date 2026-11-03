@@ -1,6 +1,6 @@
 // matchday-rsvp: the RSVP questions, the one place that knows the payload. Three-free (imports config.js and the repo's pure rsvp helpers only).
 // Mirrors convex/lib/validation.ts (limits, conditionals, "no" keeps names only); the server stays authoritative. Values are kept flat by key:
-//   firstName, surname, preferredName, attending ('yes'|'maybe'), email, sport, otherSport, team, inviteChannel, whatsapp, plusOne ('yes'|'no'), plusOneName.
+//   firstName, surname, preferredName, attending ('yes'|'maybe'|'no', the last only from the fast lane), email, sport, otherSport, team, inviteChannel, whatsapp, plusOne ('yes'|'no'), plusOneName.
 // A field is asked at one station (GROUPS) and again, all together, in the fast lane. choice fields are radiogroups; options are { value, label }.
 import { clean, NOTICE_VERSION } from './config.js';
 import { LIMITS, isValidEmail, normalizeEmail, normalizeWhatsapp } from '../lib/schemas/rsvp.ts';
@@ -59,11 +59,13 @@ export function keysFor(keys, values) {
     return FIELD[k].showIf?.(values) ?? true;
   });
 }
+// The reply's attending value: an AWAY guest is always 'no', whatever the form last held.
+export const withAttending = (side, values) => ({ ...values, attending: side === 'away' ? 'no' : values.attending });
 const valueKey = (k) => (k === 'attendingFast' ? 'attending' : k);
 export const valueOf = (values, k) => values[valueKey(k)];
 
 // Validates `keys` against flat `values`: { ok, values (cleaned, by value key), errors (by field key) }.
-export function validateKeys(keys, values) {
+function validateKeys(keys, values) {
   const out = {}, errors = {};
   for (const k of keysFor(keys, values)) {
     const f = FIELD[k], r = f.validate(valueOf(values, k) ?? '');

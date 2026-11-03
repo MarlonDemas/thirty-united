@@ -48,7 +48,7 @@ function spectatorGeometry(detail) {
 
 const SKIN = [0xf1c7a5, 0xe0a87c, 0xc68a62, 0xa8714d, 0x8a5a3c, 0x6b4430, 0x4a2f22];
 
-export function buildCrowd(seats, uniformsTarget = {}) {
+export function buildCrowd(seats) {
   const rng = mulberry32(424242);
   const uniforms = { uTime: { value: 0 }, uCheerT: { value: -1 }, uWaveT: { value: 0 }, uWaveOn: { value: 0 }, uClap: { value: 0 }, uCalm: { value: 0 } };
   const group = new THREE.Group(); group.name = 'crowd';

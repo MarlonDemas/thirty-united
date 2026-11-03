@@ -26,7 +26,7 @@ const R = 0.35;                                   // the guest's footprint radiu
 export const BOOM = { len: 4.2, height: 1.3, shoulder: 0.35 };
 const CAM = { minY: 0.3, pad: 0.4, minLen: 0.9, ceiling: 2.5, lag: 6 };   // pad <= 0.4: the tunnel walls are 0.45 m outside its zone (stadium.js: x = +/-2.0)
 export const SPEED = { walk: 4.2, run: 8.5, auto: 7.0, turn: 1.9 };   // m/s (a brisk walk / a jog), turn rad/s
-export const ROAM_FOV = 58;                       // the roaming lens; after a challenge or an arrival's push-in the FOV settles back to it
+const ROAM_FOV = 58;                       // the roaming lens; after a challenge or an arrival's push-in the FOV settles back to it
 // handheld micro-sway while walking: per axis two slow sines with seeded rates and phases (rad), on the sim clock, scaled by how fast the guest moves
 const SWAY = (() => { const r = mulberry32(5150); const ax = (amp) => [amp, 0.55 + r() * 0.35, r() * 6.283, 1.1 + r() * 0.5, r() * 6.283]; return { yaw: ax(0.0042), pitch: ax(0.0032), roll: ax(0.0055) }; })();
 const SWAY_K = 0.5;                               // third person: half the first-person handheld sway (the avatar's gait carries the motion)
