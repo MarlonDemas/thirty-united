@@ -5,24 +5,27 @@
 # Previews (PR deploy previews and branch deploys) build the frontend only, without `convex deploy`,
 # and use the separate "previews" dev Convex deployment (modest-marten-55, mock mail, its own INVITE_KEY),
 # so RSVPs on a preview never reach production. CONVEX_DEPLOY_KEY stays Production-scoped in the Netlify UI.
-# VITE_DEBUG_PROBE enables the ?debug=1 device probe on preview builds only; production builds drop the probe.
 [context.deploy-preview]
   command = "pnpm build"
 
 [context.deploy-preview.environment]
   VITE_CONVEX_URL = "https://modest-marten-55.convex.cloud"
-  VITE_DEBUG_PROBE = "1"
 
 [context.branch-deploy]
   command = "pnpm build"
 
 [context.branch-deploy.environment]
   VITE_CONVEX_URL = "https://modest-marten-55.convex.cloud"
-  VITE_DEBUG_PROBE = "1"
 
 # Missing /assets/* files (stale chunks after a deploy) must 404, not fall through to index.html with a 200 under an immutable cache header.
 [[redirects]]
   from = "/assets/*"
+  to = "/index.html"
+  status = 404
+
+# Same for /world/* (HDR, textures, model, font): a missing file must not come back as index.html.
+[[redirects]]
+  from = "/world/*"
   to = "/index.html"
   status = 404
 

@@ -60,7 +60,7 @@ export function resetForDev() { if (import.meta.env.DEV) { state = linkBad ? 'cl
 
 // The client and the generated api are loaded on the first call, so the intro never pays for them and never constructs a client it does not use.
 function client() {
-  clientP ??= Promise.all([import('convex/browser'), import('../../convex/_generated/api.js')]).then(([{ ConvexHttpClient }, { api }]) => ({ http: new ConvexHttpClient(convexUrl(), { skipConvexDeploymentUrlCheck: !!import.meta.env.DEV }), api }), (e) => { clientP = null; throw e; });
+  clientP ??= Promise.all([import('convex/browser'), import('../../convex/_generated/api.js')]).then(([{ ConvexHttpClient }, { api }]) => ({ http: new ConvexHttpClient(convexUrl(), { skipConvexDeploymentUrlCheck: !!import.meta.env.DEV, logger: false }), api }), (e) => { clientP = null; throw e; });
   return clientP;
 }
 function timed(p) {
@@ -95,7 +95,7 @@ export function verifyAndSave(side, values, code) {
       const r = await timed(client().then(({ http, api }) => http.action(api.rsvp.verifyAndSave, { email: built.email, code: String(code || '').trim(), payload: built.payload, inviteKey: INVITE_KEY })));
       inflight = null;
       if (r.status === 'saved' || r.status === 'updated') {
-        // `answers` is what the guest typed that the shirts and the poster use (never rendered as the confirmation; the server's fields above are). In memory only.
+        // `answers` is what the guest typed that the shirts and the poster use (the confirmation heading uses preferredName; every other confirmation field comes from the server). In memory only.
         sent = Object.freeze({ status: r.status, firstName: String(r.firstName ?? built.payload.firstName), attending: r.attending, ticketNo: Number(r.ticketNo),
           answers: Object.freeze({ surname: built.payload.surname, preferredName: built.payload.preferredName, plusOne: !!built.payload.plusOne, plusOneName: built.payload.plusOneName }) });
         setState('sent'); return { ...sent };

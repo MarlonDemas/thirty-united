@@ -116,12 +116,13 @@ export function privacyNotice({ capped = true, side = 'home' } = {}) {
 export const seatNo = formatSeat;   // lib/seat.ts: three digits, 007
 export function confirmCard(r, { id = 'd-h' } = {}) {
   const back = r.status === 'updated', no = r.attending === 'no', maybe = r.attending === 'maybe';
+  const who = r.answers?.preferredName?.trim() || r.firstName;   // the name the shirt and poster carry: preferred, else first
   const kicker = no ? 'Reply saved' : maybe ? 'Pencilled in' : 'Signed';
-  const heading = no ? `${back ? 'Updated' : 'Noted'}, ${r.firstName}` : back ? `Welcome back, ${r.firstName}` : maybe ? `Pencilled in, ${r.firstName}` : `You're in, ${r.firstName}`;
+  const heading = no ? `${back ? 'Updated' : 'Noted'}, ${who}` : back ? `Welcome back, ${who}` : maybe ? `Pencilled in, ${who}` : `You're in, ${who}`;
   const body = no ? 'You are down as not coming. Use the same email to change your answer.'
     : back ? `Your answer is updated and seat ${seatNo(r.ticketNo)} is kept. I'll send the venue and details closer to the day.`
     : maybe ? `Seat ${seatNo(r.ticketNo)} is held while you decide. Use the same email to change your answer. I'll send the venue and details closer to the day.`
-    : `Seat ${seatNo(r.ticketNo)}. I'll send the venue and details closer to the day.`;
+    : `I'll send the venue and details closer to the day.`;
   return [h('p', { class: 'kicker', text: kicker }), h('h2', { id, class: 'display', tabindex: '-1', text: heading }), h('p', { text: body }),
     no ? null : h('p', { class: 'seat', text: `Seat ${seatNo(r.ticketNo)} · Shirt ${r.ticketNo}` }), no ? null : keepsakeRow(r), h('p', { class: 'sign', text: 'Makes' })].filter(Boolean);
 }
@@ -129,7 +130,10 @@ export function confirmCard(r, { id = 'd-h' } = {}) {
 // Yes and Maybe only: add the day to a calendar (event fields only, no guest data) and open the keepsake poster. The .ics is a plain download; the poster is composed only when its button is pressed.
 function keepsakeRow(r) {
   const file = new File([buildIcs()], ICS_FILE_NAME, { type: 'text/calendar' });
-  const ics = h('a', { class: 'btn ghost', href: URL.createObjectURL(file), download: ICS_FILE_NAME, text: 'Add to calendar' });
+  const icsUrl = URL.createObjectURL(file);
+  const ics = h('a', { class: 'btn ghost', href: icsUrl, download: ICS_FILE_NAME, text: 'Add to calendar' });
+  // Swap in a fresh URL a moment after each download starts, so the old one is freed and a second tap still works.
+  ics.addEventListener('click', () => { const used = ics.href; setTimeout(() => { URL.revokeObjectURL(used); ics.href = URL.createObjectURL(file); }, 1000); });
   const google = h('a', { class: 'btn ghost', href: googleCalendarUrl(), target: '_blank', rel: 'noopener noreferrer', text: 'Google Calendar' });
   const poster = h('button', { class: 'btn', type: 'button', text: 'View your poster' });
   const err = h('p', { class: 'err', role: 'alert' });
