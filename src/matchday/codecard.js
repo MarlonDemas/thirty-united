@@ -4,6 +4,7 @@
 // Returns { nodes, start(), dispose() }. The owner places `nodes` in a card and reacts to onSaved / onFix / onClosed. Guest text is only ever written with textContent.
 import { h, statusLine, SEND_FAILED } from './ui.js';
 import { FIELD } from './fields.js';
+import { haptic, HAPTICS } from '../lib/haptics.ts';
 import { requestCode, verifyAndSave, hasCodeFor, getSent, getState, onState } from './submit.js';
 
 const CODE_LEN = 6;
@@ -53,7 +54,7 @@ export function codeCard({ side, getValues, setEmail, onSaved, onFix, onClosed, 
     else if (r.status === 'rate_limited') { dailyCap = true; say('warn', "You've reached today's limit of codes for this email. Use the latest code from your inbox, or try again tomorrow."); }
     else if (r.status === 'invalid_email') { say('err', "That email address doesn't look right."); openEmail(); }
     else if (r.status === 'service_unavailable') say('err', "Codes aren't going out right now. Try again in a minute.");
-    else say('err', "We couldn't send the code. Check your connection and try again.");
+    else say('err', "I couldn't send the code. Check your connection and try again.");
     sync();
   }
   function openEmail() { emailForm.hidden = false; emailIn.value = email(); emailIn.focus({ preventScroll: true }); }
@@ -68,7 +69,7 @@ export function codeCard({ side, getValues, setEmail, onSaved, onFix, onClosed, 
     if (disposed) return;
     busy = false;
     switch (r.status) {
-      case 'saved': case 'updated': onSaved(getSent() ?? r); return;
+      case 'saved': case 'updated': haptic(HAPTICS.number); onSaved(getSent() ?? r); return;   // the code was right and the reply is saved: the number lands
       case 'closed': onClosed(); return;
       case 'invalid_code': if (r.attemptsLeft > 0) say('warn', `That code didn't match. ${tries(r.attemptsLeft)}`); else { needNew = true; say('err', 'Too many wrong tries. Send a new code.'); } input.value = ''; input.setAttribute('aria-invalid', 'true'); break;
       case 'code_expired': needNew = true; say('err', 'That code has expired. Send a new one.'); break;

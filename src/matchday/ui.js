@@ -3,8 +3,10 @@
 import { EVENT } from './config.js';
 import { FIELD, FAST_KEYS, keysFor, valueOf } from './fields.js';
 import { getState, onState, closedText } from './submit.js';
+import { formatSeat } from '../lib/seat.ts';
+import { buildIcs, googleCalendarUrl, ICS_FILE_NAME } from '../lib/calendar.ts';
 
-export const SEND_FAILED = "We couldn't send your reply. Try again.";
+export const SEND_FAILED = "I couldn't send your reply. Try again.";
 
 // DOM helper: strings become text nodes, never markup.
 export function h(tag, attrs = {}, ...kids) {
@@ -103,7 +105,7 @@ export function privacyNotice({ capped = true, side = 'home' } = {}) {
   // The wording follows the side: a decline only gives a name and email, so it never claims the rest. setSide() swaps it when the fast-lane guest changes their answer.
   // lead + ' ' + rest is the one notice sentence (NOTICE_VERSION covers it), split so the lead can be the summary; only the lead depends on the side.
   const lead = (s) => `${val('responsibleParty')} uses ${s === 'away' ? 'your name and email only' : 'your name, email, WhatsApp number (if you give one), team and plus-one name only'} to manage RSVPs for this event${s === 'away' ? '' : ' and send you event details'}.`;
-  const rest = () => `Replying is optional. We delete your details ${val('retention')}. You can ask to see, correct or delete them at ${val('contact')}.`;
+  const rest = () => `Replying is optional. I delete your details ${val('retention')}. You can ask to see, correct or delete them at ${val('contact')}.`;
   const t1 = document.createTextNode(lead(side)), t2 = document.createTextNode(rest()), setSide = (s) => { t1.data = lead(s); t2.data = rest(); };
   if (!capped) return Object.assign(h('p', { class: 'notice' }, t1, ' ', t2, link), { setSide });
   return Object.assign(h('details', { class: 'notice', open: !matchMedia('(max-width: 560px)').matches }, h('summary', {}, t1), h('p', {}, t2, link)), { setSide });
@@ -111,7 +113,7 @@ export function privacyNotice({ capped = true, side = 'home' } = {}) {
 
 // Closing card for a saved RSVP, built ONLY from the server's saved/updated reply { status, firstName, attending, ticketNo } (never from what the guest typed).
 // "updated" is a returning guest: the same seat, kept. No exclamation marks; a No gets no warm closing line and no poster.
-export const seatNo = (n) => String(n).padStart(3, '0');
+export const seatNo = formatSeat;   // lib/seat.ts: three digits, 007
 export function confirmCard(r, { id = 'd-h' } = {}) {
   const back = r.status === 'updated', no = r.attending === 'no', maybe = r.attending === 'maybe';
   const kicker = no ? 'Reply saved' : maybe ? 'Pencilled in' : 'Signed';
@@ -121,7 +123,23 @@ export function confirmCard(r, { id = 'd-h' } = {}) {
     : maybe ? `Seat ${seatNo(r.ticketNo)} is held while you decide. Use the same email to change your answer. I'll send the venue and details closer to the day.`
     : `Seat ${seatNo(r.ticketNo)}. I'll send the venue and details closer to the day.`;
   return [h('p', { class: 'kicker', text: kicker }), h('h2', { id, class: 'display', tabindex: '-1', text: heading }), h('p', { text: body }),
-    no ? null : h('p', { class: 'seat', text: `Seat ${seatNo(r.ticketNo)} · Shirt ${r.ticketNo}` }), h('p', { class: 'sign', text: 'Makes' })].filter(Boolean);
+    no ? null : h('p', { class: 'seat', text: `Seat ${seatNo(r.ticketNo)} · Shirt ${r.ticketNo}` }), no ? null : keepsakeRow(r), h('p', { class: 'sign', text: 'Makes' })].filter(Boolean);
+}
+
+// Yes and Maybe only: add the day to a calendar (event fields only, no guest data) and open the keepsake poster. The .ics is a plain download; the poster is composed only when its button is pressed.
+function keepsakeRow(r) {
+  const file = new File([buildIcs()], ICS_FILE_NAME, { type: 'text/calendar' });
+  const ics = h('a', { class: 'btn ghost', href: URL.createObjectURL(file), download: ICS_FILE_NAME, text: 'Add to calendar' });
+  const google = h('a', { class: 'btn ghost', href: googleCalendarUrl(), target: '_blank', rel: 'noopener noreferrer', text: 'Google Calendar' });
+  const poster = h('button', { class: 'btn', type: 'button', text: 'View your poster' });
+  const err = h('p', { class: 'err', role: 'alert' });
+  poster.addEventListener('click', async () => {
+    if (poster.disabled) return;
+    poster.disabled = true; err.textContent = ''; poster.textContent = 'Making your poster…';
+    try { await (await import('./posterview.js')).openPoster(r, poster); } catch { err.textContent = "The poster couldn't be made. Try again."; }
+    poster.disabled = false; poster.textContent = 'View your poster';
+  });
+  return h('div', { class: 'keep' }, h('div', { class: 'row' }, poster), h('div', { class: 'row' }, ics, google), err);
 }
 
 // ---- fast lane: the whole RSVP as one <form> (can you make it, then the fields that answer asks for, one Send) --------------------------------------

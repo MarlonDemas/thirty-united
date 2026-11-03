@@ -27,7 +27,7 @@
 //   cut()                            the next step re-plants the feet where the figure now stands without dropping the stride speed (a cinematic cut)
 //   setPose('huddle' | 'applaud' | 'siuuu' | null)   an upper-body hold that eases in while the guest stands (null = back to idle / gait); one hold
 //                                    cross-fades into the next
-//   setName(name)                    the shirt back: the name over #30 (canvas fillText only); '' hides it
+//   setName(name, number = '30')     the shirt back: the name over the seat number (the placeholder 30 until the reply is saved) (canvas fillText only); '' hides it
 //   reset(), state(), object (the root group), joints
 import * as THREE from 'three';
 import { buildFootballer, kickPose, idlePose, KICK_CONTACT } from './people.js';
@@ -77,16 +77,18 @@ export function createAvatar(world, { tl }) {
   decal.scale.set(0.19, 1, 0.122); decal.position.y = 0.35; decal.visible = false; decal.name = 'avatarShirtBack';
   J.spine.add(decal);
   let shown = null;
-  function setName(name = '') {
-    const n = String(name).toUpperCase();
-    if (n === shown) return; shown = n;
+  let shownNo = '30';
+  function setName(name = '', number = '30') {
+    const n = String(name).toUpperCase(), no = n ? String(number) : '30';
+    if (n === shown && no === shownNo) return; shown = n; shownNo = no;
     c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, CW, CH);
     if (!n) { decal.visible = false; tex.needsUpdate = true; return; }
     c.fillStyle = '#ffffff'; c.textAlign = 'center'; c.textBaseline = 'alphabetic';
     let px = NAME.maxPx; c.font = fontCss(800, px);
     while (c.measureText(n).width * NAME.squeeze > NAME.width && px > NAME.minPx) { px -= 2; c.font = fontCss(800, px); }
     c.setTransform(NAME.squeeze, 0, 0, 1, CW / 2, 0); c.fillText(n, 0, NAME.capTop + Math.round(px * 0.73), NAME.width / NAME.squeeze);   // cap height ~0.73 em
-    c.setTransform(1, 0, 0, 1, 0, 0); c.font = fontCss(800, 400); c.fillText('30', CW / 2, 720);
+    c.setTransform(1, 0, 0, 1, 0, 0); let npx = 400; c.font = fontCss(800, npx); while (c.measureText(no).width > 440 && npx > 160) { npx -= 20; c.font = fontCss(800, npx); }
+    c.fillText(no, CW / 2, 720);
     tex.needsUpdate = true; decal.visible = true;
   }
 

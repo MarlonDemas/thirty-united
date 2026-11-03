@@ -52,7 +52,7 @@ export const linkProblem = () => !INVITE_KEY || linkBad;
 export const closedText = () => (linkProblem() ? MISSING_KEY_MESSAGE : isClosed() ? CLOSED_TEXT : null);
 const closeLink = () => { linkBad = true; setState('closed'); };
 
-// The saved reply ({ status, firstName, attending, ticketNo }), frozen, or null until a saved/updated response arrived.
+// The saved reply ({ status, firstName, attending, ticketNo, answers: { surname, preferredName, plusOne, plusOneName } }), frozen, or null until a saved/updated response arrived.
 export const getSent = () => sent;
 export const hasCodeFor = (email) => codeFor !== null && codeFor === normalizeEmail(email || '');
 // Dev only: the staged views reset a page between runs. Never reachable in a production build.
@@ -95,7 +95,9 @@ export function verifyAndSave(side, values, code) {
       const r = await timed(client().then(({ http, api }) => http.action(api.rsvp.verifyAndSave, { email: built.email, code: String(code || '').trim(), payload: built.payload, inviteKey: INVITE_KEY })));
       inflight = null;
       if (r.status === 'saved' || r.status === 'updated') {
-        sent = Object.freeze({ status: r.status, firstName: String(r.firstName ?? built.payload.firstName), attending: r.attending, ticketNo: Number(r.ticketNo) });
+        // `answers` is what the guest typed that the shirts and the poster use (never rendered as the confirmation; the server's fields above are). In memory only.
+        sent = Object.freeze({ status: r.status, firstName: String(r.firstName ?? built.payload.firstName), attending: r.attending, ticketNo: Number(r.ticketNo),
+          answers: Object.freeze({ surname: built.payload.surname, preferredName: built.payload.preferredName, plusOne: !!built.payload.plusOne, plusOneName: built.payload.plusOneName }) });
         setState('sent'); return { ...sent };
       }
       if (r.status === 'invalid_link') { closeLink(); return { status: 'closed' }; }

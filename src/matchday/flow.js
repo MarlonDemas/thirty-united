@@ -26,6 +26,8 @@ import { createPenalty, PENALTY_VIEW, PACE as PENALTY_PACE } from './challenges/
 import { createDribble, DRIBBLE_VIEW, PACE as DRIBBLE_PACE } from './challenges/dribble.js';
 import { createCorner, CORNER_VIEW, PACE as CORNER_PACE } from './challenges/corner.js';
 import { createShirt } from './shirt.js';
+import { haptic, HAPTICS } from '../lib/haptics.ts';   // vibrates only where supported, after a first tap, and never under reduced motion
+import { shirtFor } from '../lib/keepsake.ts';
 export { EVENT };   // organisers: edit config.js, not this file
 
 const SEED = 20261212;
@@ -160,6 +162,8 @@ export function createFlow(world, { audio, fx, teammates }) {
   // -- stations: what happens when one is finished (played or skipped: either way it is a point) ------------------------------------------------------
   function stationDone(s, r) {
     const prev = S.score; S.score++;
+    if (!r.skipped && s.id === 1) haptic(HAPTICS.stamp);   // the ticket is handed in
+    else if (!r.skipped && r.outcome === 'goal') haptic(HAPTICS.strike);   // a goal. No buzz for a skip, a save or a miss
     if (s.id === 1) {
       S.side = s.side; S.stage = 'cine'; hud.hideHint();
       roam.setZones({ [s.side === 'home' ? 'laneHome' : 'laneAway']: true, inside: true, pitch: true });
@@ -352,6 +356,9 @@ export function createFlow(world, { audio, fx, teammates }) {
   }
   function showConfirmation(r) {
     code?.dispose(); code = null; S.stage = 'done';
+    // a yes or maybe gets its real number: the dugout shirt and the footballer's back take the preferred-or-first name over the seat (the placeholder 30 until now)
+    const kit = r.attending === 'no' ? null : shirtFor({ ...r.answers, firstName: r.firstName, ticketNo: r.ticketNo });
+    if (kit) { shirt.draw(kit.name, kit.number); avatar.setName(kit.name, kit.number); }
     hud.showCard(confirmCard(r), { labelledBy: 'd-h', head: true, kind: 'confirm' });
   }
   if (import.meta.env.DEV) Object.defineProperty(window, '__rsvp', { get: snapshot, configurable: true });

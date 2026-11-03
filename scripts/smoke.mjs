@@ -31,7 +31,7 @@ page.on('pageerror', (e) => errs.push(String(e)));
 
 const report = { slug, simSeconds: +secs, hook: false, samples: 0, agentsMax: 0, overlaps: [], stuck: [], consoleErrors: errs };
 try {
-  await page.goto(`http://localhost:${port}/`, { waitUntil: 'load' });
+  await page.goto(`http://localhost:${port}/?k=capture-dummy-key`, { waitUntil: 'load' });
   await page.waitForFunction(() => window.__ready === true, null, { timeout: 90000 });
   report.hook = await page.evaluate(() => typeof window.__dbg?.simStep === 'function' && typeof window.__dbg?.agents === 'function');
   if (report.hook) {

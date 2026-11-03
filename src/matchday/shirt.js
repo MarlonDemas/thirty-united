@@ -1,5 +1,5 @@
 // matchday-rsvp: the guest's HOME shirt (director's addition). Hangs on a peg on the back wall of the HOME dugout, back outwards: their name over #30.
-// One canvas texture (the shirt's silhouette, alpha-tested) on a PBR plane, a steel peg and a wire hanger. draw(name) repaints it; draw('') leaves a plain #30.
+// One canvas texture (the shirt's silhouette, alpha-tested) on a PBR plane, a steel peg and a wire hanger. draw(name, number = '30') repaints it (the guest's seat number once their reply is saved, else the placeholder 30); draw('') leaves a plain #30.
 // It sits in the scene, not inside the dugout group, so anything that restyles the dugout group's materials never touches it.
 // The name only ever reaches the canvas through fillText.
 import * as THREE from 'three';
@@ -36,9 +36,10 @@ export function createShirt(dugout) {
   group.quaternion.copy(dugout.getWorldQuaternion(new THREE.Quaternion()));
 
   let shown = null;
-  function draw(name = '') {
-    const n = String(name).toUpperCase();
-    if (n === shown) return; shown = n;
+  let shownNo = '30';
+  function draw(name = '', number = '30') {
+    const n = String(name).toUpperCase(), no = n ? String(number) : '30';
+    if (n === shown && no === shownNo) return; shown = n; shownNo = no;
     c.clearRect(0, 0, W, H);
     c.save(); shirtPath(c); c.clip();
     const g = c.createLinearGradient(0, 0, W, H); g.addColorStop(0, EVENT.kits.homeLight); g.addColorStop(0.55, EVENT.kits.home); g.addColorStop(1, EVENT.kits.homeDark);
@@ -49,10 +50,11 @@ export function createShirt(dugout) {
     for (const [x0, x1] of [[170, 150], [330, 356], [256, 262]]) { c.beginPath(); c.moveTo(x0, 220); c.quadraticCurveTo((x0 + x1) / 2 + 12, 380, x1, 540); c.stroke(); }
     c.globalAlpha = 1; c.fillStyle = '#ffffff'; c.textAlign = 'center'; c.textBaseline = 'alphabetic';
     if (n) { let px = 58; c.font = fontCss(800, px); while (c.measureText(n).width > 250 && px > 24) { px -= 2; c.font = fontCss(800, px); } c.fillText(n, 256, 150); }
-    c.font = fontCss(800, 220); c.fillText('30', 256, 400);
+    let npx = 220; c.font = fontCss(800, npx); while (c.measureText(no).width > 280 && npx > 90) { npx -= 10; c.font = fontCss(800, npx); }   // a 3-digit seat shrinks to fit
+    c.fillText(no, 256, 400);
     c.restore();
     tex.needsUpdate = true;
   }
   draw('');
-  return { group, draw, state: () => ({ name: shown }) };
+  return { group, draw, state: () => ({ name: shown, number: shownNo }) };
 }
