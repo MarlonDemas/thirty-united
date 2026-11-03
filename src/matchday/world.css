@@ -1,10 +1,10 @@
 /* Inter Tight (SIL OFL 1.1), one variable wght file, Latin subset. Licence: public/world/fonts/InterTight-OFL.txt */
 @font-face{font-family:"Inter Tight";src:url(/world/fonts/InterTight-var-latin.woff2) format("woff2");font-weight:100 900;font-style:normal;font-display:swap}
 /* THEME fallbacks: config.js overrides every one of these at startup (kit colours from EVENT.kits, the rest from THEME). Keep in sync. */
-:root{--kit-home:#C8102E;--kit-home-light:#ff5a6e;--kit-away:#1B2A4A;--kit-away-light:#6f94ff;--kit-away-tint:#28468c;
-  --ink-950:#0B0D12;--ink-900:#0E121C;--ink-800:#161B27;--ink-700:#232A3A;--fog-100:#F2F4F8;--fog-300:#A9B2C3;--fog-500:#6B7487;
-  --surface:rgba(14,18,28,.82);--surface-solid:#0E121C;--paper-100:#EFE9DB;--paper-300:#D8CFBA;--paper-ink:#14171F;--paper-muted:#4A4F5C;--paper-rule:#8A8576;--surface-raised:#161B27;--text:#F2F4F8;--text-muted:#A9B2C3;--rule-hairline:rgba(242,244,248,.14);--rule-control:#6B7487;--rule-control-width:1.5px;
-  --accent:#ff5a6e;--accent-away:#6f94ff;--danger-300:#ff9a9a;--focus-outer:#F2F4F8;--focus-inner:#0B0D12;--focus-on-paper:#14171F;
+:root{--kit-home:#9F0B19;--kit-home-dark:#850914;--kit-home-light:#F81E24;--kit-away:#18131F;--kit-away-light:#B7D3FA;--kit-away-tint:#241D2E;--primary:#9F0B19;--primary-hover:#850914;--primary-pressed:#6E0710;
+  --ink-950:#0E0B13;--ink-900:#18131F;--ink-800:#241D2E;--ink-700:#2F2740;--fog-100:#FFFFFF;--fog-300:#B7D3FA;--fog-500:#8A8FB0;
+  --surface:rgba(24,19,31,.94);--surface-solid:#18131F;--paper-100:#EFE9DB;--paper-300:#D8CFBA;--paper-ink:#14171F;--paper-muted:#4A4F5C;--paper-rule:#8A8576;--surface-raised:#241D2E;--text:#FFFFFF;--text-muted:#B7D3FA;--rule-hairline:rgba(242,244,248,.14);--rule-control:#6B7487;--rule-control-width:1.5px;
+  --accent:#F81E24;--accent-away:#B7D3FA;--danger-300:#FF9E8F;--focus-outer:#F2F4F8;--focus-inner:#0B0D12;--focus-on-paper:#14171F;
   --radius-2:8px;--radius-3:12px;--radius-pill:999px;--radius-1:4px;
   --font:"Inter Tight","Segoe UI",system-ui,-apple-system,Arial,sans-serif;
   --fs-caption:11px;--lh-caption:16px;--fw-caption:600;--fs-body-sm:13px;--lh-body-sm:18px;--fw-body-sm:500;--fs-body:15px;--lh-body:22px;--fw-body:450;
@@ -35,22 +35,24 @@ html,body{margin:0;height:100%;overflow:hidden;background:var(--ink-950)}canvas{
 #card .label{margin-bottom:8px;font-weight:700}   /* group labels (side, guests) outrank the 600 field labels */
 #card input{width:100%;box-sizing:border-box;min-height:44px;padding:10px 12px;font:inherit;font-size:var(--fs-input);line-height:var(--lh-input);font-weight:var(--fw-input);color:var(--text);background:rgba(0,0,0,.28);border:var(--rule-control-width) solid var(--rule-control);border-radius:var(--radius-2)}
 #card input:hover{border-color:var(--fog-300)}
-#card input[aria-invalid="true"],#card .seg[aria-invalid="true"] .opt{border-color:var(--accent)}
+#card input[aria-invalid="true"],#card .seg[aria-invalid="true"] .opt{border-color:var(--danger-300)}
 #card .err{min-height:18px;margin:6px 0 8px;font-size:var(--fs-body-sm);line-height:var(--lh-body-sm);font-weight:var(--fw-body-sm);color:var(--danger-300)}
 #card .row{display:flex;gap:10px;flex-wrap:wrap}
 /* guest count: four radio buttons in a row */
 .seg{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-.opt{min-height:44px;padding:8px 0;font-size:var(--fs-input);font-weight:var(--fw-label);color:var(--text);background:rgba(0,0,0,.28);border:var(--rule-control-width) solid var(--rule-control);border-radius:var(--radius-2);font-variant-numeric:tabular-nums}
+.seg.n2{grid-template-columns:1fr 1fr}.seg.n3{grid-template-columns:repeat(3,1fr)}
+@media (max-width:420px){.seg.n3{grid-template-columns:1fr}}
+.opt{min-height:44px;padding:8px 6px;font-size:var(--fs-input);font-weight:var(--fw-label);color:var(--text);background:rgba(0,0,0,.28);border:var(--rule-control-width) solid var(--rule-control);border-radius:var(--radius-2);font-variant-numeric:tabular-nums}
 .opt:hover{border-color:var(--fog-300)}
 .opt[data-side=home]{box-shadow:inset 3px 0 0 var(--accent)}
 .opt[data-side=away]{box-shadow:inset 3px 0 0 var(--accent-away)}
 .opt[aria-checked="true"]{background:var(--ink-700);border-color:var(--text);border-width:2px}
 button{font:inherit;cursor:pointer}
 button:disabled{opacity:.45;cursor:default}
-/* primary = fog fill + ink text. No red fill anywhere: red is only the 3px home rule and the ticket crest. */
-.btn{min-height:44px;padding:10px 16px;border:0;border-radius:var(--radius-2);font-size:var(--fs-label);line-height:var(--lh-label);font-weight:var(--fw-label);color:var(--ink-950);background:var(--fog-100)}
-.btn:hover{background:white}
-.btn:active{background:var(--fog-300)}
+/* primary = shirt red with white text and a moonlight ring (DESIGN.md) */
+.btn{min-height:44px;padding:10px 16px;border:2px solid var(--fog-300);border-radius:var(--radius-2);font-size:var(--fs-label);line-height:var(--lh-label);font-weight:var(--fw-label);color:#fff;background:var(--primary)}
+.btn:hover{background:var(--primary-hover)}
+.btn:active{background:var(--primary-pressed)}
 .btn.ghost{background:transparent;color:var(--text);border:1px solid var(--rule-control)}
 .btn.ghost:hover{background:var(--ink-800)}
 .btn.ghost:active{background:var(--ink-700)}
@@ -118,7 +120,17 @@ button:disabled{opacity:.45;cursor:default}
 #card details.notice summary{cursor:pointer;line-height:16px;padding:4px 0 4px 12px;text-indent:-12px}
 #card details.notice p{margin:4px 0 0;font-size:inherit;line-height:inherit;font-weight:inherit}
 /* fast lane ("just reply") + no-WebGL page. Same tokens and card as the game; the side choice is a two-up radiogroup. */
-.seg.two{grid-template-columns:1fr 1fr}
+#card .help{margin:-2px 0 6px;font-size:var(--fs-body-sm);line-height:var(--lh-body-sm);color:var(--text-muted)}
+#card .status{display:flex;gap:8px;align-items:flex-start;margin:8px 0;font-size:var(--fs-body-sm);line-height:var(--lh-body-sm);font-weight:600;color:var(--text)}
+#card .status .ico{flex:none;width:16px;height:16px;margin-top:1px}
+#card .status.err{color:var(--danger-300)}#card .status.ok .ico{color:var(--fog-300)}
+#card .slot{min-height:20px}
+#card input.code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:24px;letter-spacing:.4em;text-align:center}
+#card .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;word-break:break-all}
+#card .seat{margin:0 0 8px;font-weight:700;letter-spacing:.04em;color:var(--text)}
+#card .sign{margin:8px 0 0;font-weight:700;color:var(--text)}
+#card .ce{margin:10px 0 0}
+.choice.fast{grid-column:1 / -1;min-height:64px;text-align:center}
 #card .row{align-items:center}
 .linkbtn{display:inline-flex;align-items:center;min-height:44px;padding:0 4px;border:0;background:none;color:var(--text-muted);font-size:var(--fs-body-sm);line-height:var(--lh-body-sm);font-weight:var(--fw-label);text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--rule-control)}
 .linkbtn:hover{color:var(--text);text-decoration-color:currentColor}
@@ -130,10 +142,8 @@ button:disabled{opacity:.45;cursor:default}
 #card.fb{position:static;translate:none;width:min(480px,100%);max-height:none;overflow:visible;margin:0 auto;animation:none}
 #card.fb h2.display{margin-bottom:12px}
 #card.fb .kicker:not(:first-child){margin-top:14px}
-#card.fb .crest+.kicker{margin-top:0}
-/* no-WebGL page identity: crest, kit-red left rule, paper strip behind the facts. No red fill (the crest is the kit mark, the rule is 3px). */
-#card.fb{border-left:3px solid var(--accent)}
-#card.fb .crest{display:block;width:32px;height:32px;margin:0 0 10px;color:var(--kit-home)}
+/* no-WebGL page identity: a kit-red left rule (3px) and a paper strip behind the facts. */
+#card.fb{border-left:3px solid var(--kit-home)}
 #card.fb h2.display{font-size:26px;line-height:30px;letter-spacing:-.01em}
 #card.fb dl{margin:10px 0 6px;padding:2px 14px;background:var(--paper-100);border-radius:var(--radius-2)}
 #card.fb dt,#card.fb dd{border-top-color:var(--paper-rule)}

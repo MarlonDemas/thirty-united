@@ -1,19 +1,27 @@
-// matchday-rsvp: the ONE submit path for the game, the quick-reply form and the no-WebGL page. Three-free (imports config.js only).
-// State is page-wide:  idle -> sending -> sent | failed   (failed may go back to sending: a retry reuses the same idempotency key).
-//   - RSVP_ENDPOINT blank: in dev, no network, straight to `sent`. In production the form is CLOSED (isClosed(): "RSVPs open soon", nothing sent) unless RSVP_MODE = 'event-only'.
-//   - Missing, blank, placeholder or malformed privacy values (privacyProblems), or a refused endpoint (closedReasons), also close the production form.      - Set: one POST (https only, or http://localhost in dev), no cookies, no referrer, 10 s timeout.
-//   - `rsvp:submit` fires once, on `sent`, frozen. With an endpoint its detail is only { side, notice } (the server already has the data); with no endpoint (event-only) it carries the full payload.  Confirmation UI must render only on `sent`.
-// The payload is an allowlist (side, name, and for HOME email, mobile, guests, + idempotencyKey, notice), rebuilt from the FIELDS validators on the way out.
-import { EVENT, FIELDS, RSVP_ENDPOINT, RSVP_MODE, NOTICE_VERSION } from './config.js';
-import { endpointProblem } from './endpoint.js';
+// matchday-rsvp: the ONE transport for the game, the fast lane and the no-WebGL page. Three-free. Two Convex actions, called with ConvexHttpClient (fetch only):
+//   api.otp.requestCode { email, inviteKey }                       -> { status: 'sent' | 'rate_limited' | 'invalid_email' | 'invalid_link' | 'service_unavailable' }
+//   api.rsvp.verifyAndSave { email, code, payload, inviteKey }     -> { status: 'saved' | 'updated' | 'invalid_code' | 'code_expired' | 'too_many_attempts' | 'no_code' | 'invalid_payload' | ... }
+// Page-wide state of the save:  idle -> sending -> sent | failed | idle (a refused code goes back to idle)   and   closed (no invite key, or the server said invalid_link).
+//   - The confirmation renders only from a saved/updated response (getSent()); nothing is ever "accepted locally".
+//   - Each call is raced against a 10 s timer (ConvexHttpClient has no AbortSignal). A timed-out or thrown call is { status: 'failed' }; it is never retried for you.
+//     A save that timed out may still have landed: sending the same code again returns the stored row, so a retry is safe.
+//   - A code belongs to the exact normalised email it was requested for (hasCodeFor); a different email needs a new request.
+//   - The invite key is read once from ?k= into memory. No storage. Raw Convex errors and payloads are never logged (they echo guest data).
+//   - Production is also CLOSED while EVENT.privacy has placeholders (privacyProblems) or VITE_CONVEX_URL is missing.
+import { EVENT, MISSING_KEY_MESSAGE } from './config.js';
+import { buildPayload, normalizeEmail } from './fields.js';
 
-let state = 'idle', sent = null, inflight = null, key = null, keyBody = null, last = null, warned = false, closed = null;
+const TIMEOUT_MS = 10000;
+let state = 'idle', sent = null, inflight = null, codeFor = null, linkBad = false, closed = null, clientP = null;
+const INVITE_KEY = (() => { try { return new URLSearchParams(location.search).get('k') || ''; } catch { return ''; } })();
 const subs = new Set();
-const setState = (s) => { state = s; for (const fn of [...subs]) { try { fn(s); } catch (e) { console.warn('[matchday] state listener failed', e); } } };
+const setState = (s) => { state = s; for (const fn of [...subs]) { try { fn(s); } catch { /* a listener must never break the send */ } } };
 
 export const getState = () => state;
+export const onState = (fn) => { subs.add(fn); return () => subs.delete(fn); };
 export const CLOSED_TEXT = 'RSVPs open soon';
-// Allowlist check for EVENT.privacy: returns the keys that are not a real value (missing, non-string, blank, [bracket] placeholder, TBC/TODO, contact not an email or https URL, policyUrl not a real https URL). Pure: no import.meta.env, so node can test it.
+
+// Allowlist check for EVENT.privacy: returns the keys that are not a real value (missing, non-string, blank, [bracket] placeholder, TBC/TODO, contact not an email or https URL, policyUrl not a real https URL). Pure.
 const PRIVACY_KEYS = ['responsibleParty', 'contact', 'retention', 'policyUrl'], NOT_REAL = /^(tbc|tbd|todo|n\/?a|-+)$/i, EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const httpsUrl = (t) => { try { const u = new URL(t); return u.protocol === 'https:' && !!u.hostname; } catch { return false; } };
 export function privacyProblems(P) {
@@ -23,82 +31,79 @@ export function privacyProblems(P) {
     return k === 'policyUrl' ? !httpsUrl(t) : k === 'contact' ? !(EMAIL.test(t) || httpsUrl(t)) : false;
   });
 }
-// Why the form must be closed, as [{ warn, msg }] (empty = open). Pure (dev is passed in, no import.meta.env) so node can test it; dev is never closed. Bad privacy values and a refused endpoint (credentials, query/fragment, not https) are errors; a blank endpoint outside 'event-only' is a warning.
-export function closedReasons({ privacy, endpoint, mode, dev }) {
-  if (dev) return [];
-  const r = [], bad = privacyProblems(privacy), why = endpoint ? endpointProblem(endpoint, false) : null;
+// Why the form must be closed, as [{ msg }] (empty = open). Pure (dev and the URL are passed in) so node can test it. Dev is never closed for privacy; a missing Convex URL closes it everywhere.
+export function closedReasons({ privacy, convexUrl, dev }) {
+  const r = [];
+  if (!convexUrl) r.push({ msg: '[matchday] RSVP form closed: VITE_CONVEX_URL is not set.' });
+  else if (!/^https:\/\/[a-z0-9.-]+$/i.test(convexUrl) && !(dev && /^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/.test(convexUrl))) r.push({ msg: '[matchday] RSVP form closed: VITE_CONVEX_URL must be an https:// origin (http://127.0.0.1 in dev).' });
+  const bad = dev ? [] : privacyProblems(privacy);
   if (bad.length) r.push({ msg: '[matchday] RSVP form closed: EVENT.privacy has missing, placeholder or invalid value(s) in: ' + bad.join(', ') + ' (policyUrl must be a real https:// URL, contact an email or https URL).' });
-  if (why) r.push({ msg: '[matchday] RSVP form closed: ' + why.replace(/; nothing was sent\.$/, '.') });
-  if (!endpoint && mode !== 'event-only') r.push({ warn: true, msg: "[matchday] RSVP form closed: RSVP_ENDPOINT is blank and RSVP_MODE is not 'event-only'." });
   return r;
 }
-// Production only. Computed once and logged once; the answer comes entirely from closedReasons().
+const convexUrl = () => (import.meta.env.VITE_CONVEX_URL || '').replace(/\/+$/, '');
+// Production config problem (placeholders, no backend). Computed once and logged once.
 export function isClosed() {
-  if (closed === null) { const r = closedReasons({ privacy: EVENT.privacy, endpoint: RSVP_ENDPOINT, mode: RSVP_MODE, dev: !!import.meta.env.DEV }); r.forEach((x) => console[x.warn ? 'warn' : 'error'](x.msg)); closed = r.length > 0; }
+  if (closed === null) { const r = closedReasons({ privacy: EVENT.privacy, convexUrl: convexUrl(), dev: !!import.meta.env.DEV }); r.forEach((x) => console.error(x.msg)); closed = r.length > 0; }
   return closed;
 }
-// The last attempted payload while the state is `failed` (so a fallback page can show those answers and resend them under the same key), else null.
-export const getFailed = () => (state === 'failed' ? last : null);
-// The payload that was accepted (frozen), or null until `sent`.
+// The invite link: no ?k=, or a call came back invalid_link. Both show the same message.
+export const linkProblem = () => !INVITE_KEY || linkBad;
+// The text a closed page shows instead of the questions, or null while the form is open.
+export const closedText = () => (linkProblem() ? MISSING_KEY_MESSAGE : isClosed() ? CLOSED_TEXT : null);
+const closeLink = () => { linkBad = true; setState('closed'); };
+
+// The saved reply ({ status, firstName, attending, ticketNo }), frozen, or null until a saved/updated response arrived.
 export const getSent = () => sent;
-// Values only ({ side, name, ... }, no key or notice): what __rsvp shows in dev.
-export const getValues = () => { if (!sent) return null; const { idempotencyKey, notice, ...v } = sent; return v; };
-export const onState = (fn) => { subs.add(fn); return () => subs.delete(fn); };
+export const hasCodeFor = (email) => codeFor !== null && codeFor === normalizeEmail(email || '');
+// Dev only: the staged views reset a page between runs. Never reachable in a production build.
+export function resetForDev() { if (import.meta.env.DEV) { state = linkBad ? 'closed' : 'idle'; sent = null; inflight = null; codeFor = null; for (const fn of [...subs]) fn(state); } }
 
-// Dev only: the game's test hooks reset a page between runs. Never reachable in a production build.
-export function resetForDev() { if (import.meta.env.DEV) { state = 'idle'; sent = null; inflight = null; key = null; keyBody = null; last = null; for (const fn of [...subs]) fn(state); } }
-
-const uuid = () => crypto.randomUUID?.() ?? [...crypto.getRandomValues(new Uint8Array(16))].map((b) => b.toString(16).padStart(2, '0')).join('');
-
-// side 'home' | 'away', values by field key. Throws on anything the validators reject. Unknown keys are dropped.
-export function buildPayload(side, values) {
-  if (side !== 'home' && side !== 'away') throw new Error('side must be home or away');
-  const p = { side };
-  for (const f of FIELDS) {
-    if (side === 'away' && f.key !== 'name') continue;
-    const r = f.validate(values?.[f.key] ?? '');
-    if (!r.ok) throw new Error('invalid ' + f.key);
-    p[f.key] = r.value;
-  }
-  // Backstop for N3: the key belongs to one exact body, so changed answers never go out under an old key (the fast lane locks its fields after the first send, and the fallback resends the stored payload, so this only guards other callers).
-  const body = JSON.stringify(p); if (body !== keyBody) { keyBody = body; key = uuid(); }
-  p.idempotencyKey = key;
-  p.notice = NOTICE_VERSION;
-  return p;
+// The client and the generated api are loaded on the first call, so the intro never pays for them and never constructs a client it does not use.
+function client() {
+  clientP ??= Promise.all([import('convex/browser'), import('../../convex/_generated/api.js')]).then(([{ ConvexHttpClient }, { api }]) => ({ http: new ConvexHttpClient(convexUrl(), { skipConvexDeploymentUrlCheck: !!import.meta.env.DEV }), api }), (e) => { clientP = null; throw e; });
+  return clientP;
+}
+function timed(p) {
+  return new Promise((res, rej) => { const id = setTimeout(() => rej(new Error('timeout')), TIMEOUT_MS); p.then((v) => { clearTimeout(id); res(v); }, (e) => { clearTimeout(id); rej(e); }); });
 }
 
-// Dev only: ?endpoint=https://... overrides the blank constant so a test can exercise the network path. The branch is stripped from production builds.
-const endpoint = () => (import.meta.env.DEV ? new URLSearchParams(location.search).get('endpoint') : null) || RSVP_ENDPOINT;
-// endpointProblem (credentials, query/fragment, host charset, https only) lives in endpoint.js so the build applies the same rule.
-function allowed(url) { const why = endpointProblem(url, !!import.meta.env.DEV); if (why) console.error('[matchday] ' + why); return !why; }
+// Asks for a code for `email`. Resolves to the server's { status, retryAfterMs? } or { status: 'failed' } (timeout, offline, anything thrown) or { status: 'closed' }. Never rejects, never retries.
+export async function requestCode(email) {
+  if (closedText()) return { status: 'closed' };
+  const e = normalizeEmail(email || '');
+  try {
+    const r = await timed(client().then(({ http, api }) => http.action(api.otp.requestCode, { email: e, inviteKey: INVITE_KEY })));
+    if (r.status === 'invalid_link') { closeLink(); return { status: 'closed' }; }
+    if (r.status === 'sent' || r.status === 'rate_limited') codeFor = e;   // a rate-limited email was sent a code a moment ago: the guest may be holding it
+    return r.status === 'rate_limited' && typeof r.retryAfterMs === 'number' ? { status: r.status, retryAfterMs: r.retryAfterMs } : { status: String(r.status) };
+  } catch { return { status: 'failed' }; }
+}
 
-// 10 s abort. AbortSignal.timeout is missing in older browsers, so fall back to AbortController + setTimeout (done() clears the timer once the fetch settles).
-const timeoutSignal = (ms) => { if (AbortSignal.timeout) return { signal: AbortSignal.timeout(ms), done() {} }; const c = new AbortController(), id = setTimeout(() => c.abort(), ms); return { signal: c.signal, done: () => clearTimeout(id) }; };
-// Resolves to the new state ('sent' | 'failed'). Never rejects. A second call while sending shares the first; after `sent` it is a no-op.
-export function submitRsvp(side, values) {
-  if (state === 'sent') return Promise.resolve('sent');
+// Verifies the 6-digit `code` and saves the answers. side 'home'|'away', values = the flat answers (fields.js). Resolves to { status, ... }:
+//   saved | updated (+ firstName, attending, ticketNo) | invalid_code (+ attemptsLeft) | code_expired | too_many_attempts | no_code | invalid_payload (+ errors) | needs_code | invalid_answers | service_unavailable | failed | closed
+// A second call while one is in flight shares it; after a save it returns the saved reply.
+export function verifyAndSave(side, values, code) {
+  if (state === 'sent' && sent) return Promise.resolve({ ...sent });
   if (state === 'sending' && inflight) return inflight;
-  if (isClosed()) return Promise.resolve('failed');   // the UI never offers Send when closed; this is the belt to that braces
-  let payload;
-  last = null;
-  try { payload = buildPayload(side, values); last = payload; } catch (e) { console.warn('[matchday] RSVP rejected before sending:', e.message); setState('failed'); return Promise.resolve('failed'); }
-  const url = endpoint();
-  if (!url) { accept(payload, true); return Promise.resolve('sent'); }
+  if (closedText()) return Promise.resolve({ status: 'closed' });
+  let built;
+  try { built = buildPayload(side, values); } catch { return Promise.resolve({ status: 'invalid_answers' }); }
+  if (!hasCodeFor(built.email)) return Promise.resolve({ status: 'needs_code' });
   setState('sending');
   inflight = (async () => {
-    let t;
     try {
-      if (!allowed(url)) { if (!warned) { warned = true; console.warn('[matchday] RSVP_ENDPOINT is not allowed (see the error above); nothing was sent.'); } throw new Error('endpoint not allowed'); }
-      t = timeoutSignal(10000);
-      const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), credentials: 'omit', redirect: 'error', referrerPolicy: 'no-referrer', signal: t.signal });
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      accept(payload, false); return 'sent';
-    } catch { inflight = null; setState('failed'); return 'failed'; } finally { t?.done(); }
+      const r = await timed(client().then(({ http, api }) => http.action(api.rsvp.verifyAndSave, { email: built.email, code: String(code || '').trim(), payload: built.payload, inviteKey: INVITE_KEY })));
+      inflight = null;
+      if (r.status === 'saved' || r.status === 'updated') {
+        sent = Object.freeze({ status: r.status, firstName: String(r.firstName ?? built.payload.firstName), attending: r.attending, ticketNo: Number(r.ticketNo) });
+        setState('sent'); return { ...sent };
+      }
+      if (r.status === 'invalid_link') { closeLink(); return { status: 'closed' }; }
+      setState('idle');
+      if (r.status === 'invalid_code') return { status: r.status, attemptsLeft: Number(r.attemptsLeft) };
+      if (r.status === 'invalid_payload') return { status: r.status, errors: r.errors && typeof r.errors === 'object' ? { ...r.errors } : {} };
+      return { status: String(r.status) };
+    } catch { inflight = null; setState('failed'); return { status: 'failed' }; }
   })();
   return inflight;
-}
-// toHost = no endpoint (event-only): the event IS the integration point, so it carries the full payload. With an endpoint the server already has the answers, so the event is { side, notice } only (no personal data for page scripts).
-function accept(payload, toHost) {
-  sent = Object.freeze({ ...payload }); inflight = null; setState('sent');
-  window.dispatchEvent(new CustomEvent('rsvp:submit', { detail: Object.freeze(toHost ? { ...payload } : { side: payload.side, notice: payload.notice }) }));
 }

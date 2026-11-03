@@ -1,8 +1,8 @@
-// Entrance plaza (south): asphalt, brick-and-steel gatehouse with a floodlit "KICK-OFF ARENA" sign, street lamps, and the turnstile bank split into
+// Entrance plaza (south): asphalt, brick-and-steel gatehouse with a floodlit event sign, street lamps, and the turnstile bank split into
 // two ENDS: HOME END (home red, x < 0) and AWAY END (away navy, x > 0), each with a floodlit lightbox sign, a kiosk and its own open turnstile.
 import * as THREE from 'three';
 import { D } from './dims.js';
-import { EVENT, VENUE_UC, THEME, KIT_HEX, fontCss } from './config.js';
+import { EVENT, TITLE_UC, DATE_LINE, THEME, KIT_HEX, fontCss } from './config.js';
 import { pbr, canvasTex, normalFromHeight, Geo, Beams, V, mulberry32 } from './util.js';
 import { loadModel } from './loadModel.js';
 
@@ -111,11 +111,9 @@ export async function buildPlaza() {
   const signTex = canvasTex(2048, 420, (c, w, h) => {
     c.fillStyle = THEME.color.ink900; c.fillRect(0, 0, w, h);
     c.strokeStyle = EVENT.kits.home; c.lineWidth = 14; c.strokeRect(14, 14, w - 28, h - 28);
-    c.fillStyle = THEME.color.paper100; c.textAlign = 'center'; c.textBaseline = 'middle'; c.font = fontCss(800, 168);
-    c.fillText(VENUE_UC, w / 2 + 150, h / 2 - 4);
-    // football badge
-    c.fillStyle = EVENT.kits.home; c.beginPath(); c.arc(190, h / 2, 100, 0, Math.PI * 2); c.fill(); c.fillStyle = '#fff'; c.beginPath(); c.arc(190, h / 2, 76, 0, Math.PI * 2); c.fill();
-    c.fillStyle = THEME.color.ink900; c.beginPath(); for (let i = 0; i < 5; i++) { const a = -Math.PI / 2 + i * 2 * Math.PI / 5; c.lineTo(190 + Math.cos(a) * 42, h / 2 + Math.sin(a) * 42); } c.fill();
+    c.fillStyle = THEME.color.paper100; c.textAlign = 'center'; c.textBaseline = 'middle'; c.font = fontCss(800, 190);
+    c.fillText(TITLE_UC, w / 2, h / 2 - 34);
+    c.fillStyle = THEME.color.textMuted; c.font = fontCss(600, 62); c.fillText(DATE_LINE.toUpperCase(), w / 2, h / 2 + 124);
   });
   const signMat = new THREE.MeshStandardMaterial({ color: 0xffffff, map: signTex, emissiveMap: signTex, emissive: 0xffffff, emissiveIntensity: 0.12, roughness: 0.95, metalness: 0 });
   const sw = 26, sh = sw * 420 / 2048, sy = 12.2, sz = z1 - 0.2;

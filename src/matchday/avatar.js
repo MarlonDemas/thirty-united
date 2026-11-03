@@ -27,7 +27,7 @@
 //   cut()                            the next step re-plants the feet where the figure now stands without dropping the stride speed (a cinematic cut)
 //   setPose('huddle' | 'applaud' | 'siuuu' | null)   an upper-body hold that eases in while the guest stands (null = back to idle / gait); one hold
 //                                    cross-fades into the next
-//   setName(name)                    the shirt back: the name over #12 (canvas fillText only); '' hides it
+//   setName(name)                    the shirt back: the name over #30 (canvas fillText only); '' hides it
 //   reset(), state(), object (the root group), joints
 import * as THREE from 'three';
 import { buildFootballer, kickPose, idlePose, KICK_CONTACT } from './people.js';
@@ -86,7 +86,7 @@ export function createAvatar(world, { tl }) {
     let px = NAME.maxPx; c.font = fontCss(800, px);
     while (c.measureText(n).width * NAME.squeeze > NAME.width && px > NAME.minPx) { px -= 2; c.font = fontCss(800, px); }
     c.setTransform(NAME.squeeze, 0, 0, 1, CW / 2, 0); c.fillText(n, 0, NAME.capTop + Math.round(px * 0.73), NAME.width / NAME.squeeze);   // cap height ~0.73 em
-    c.setTransform(1, 0, 0, 1, 0, 0); c.font = fontCss(800, 400); c.fillText('12', CW / 2, 720);
+    c.setTransform(1, 0, 0, 1, 0, 0); c.font = fontCss(800, 400); c.fillText('30', CW / 2, 720);
     tex.needsUpdate = true; decal.visible = true;
   }
 

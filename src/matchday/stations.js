@@ -1,37 +1,38 @@
-// matchday-rsvp: the station registry (open-roam). Four stations, one question each:
-//   1 name    the kiosk in the chosen END (HOME or AWAY lane)    challenge: hand in the ticket (challenges/ticket.js)
-//   2 email   the HOME dugout                                     challenge: dribble and shoot (challenges/dribble.js)
-//   3 mobile  the north-east corner flag                          challenge: the corner and a teammate's header (challenges/corner.js)
-//   4 guests  the north penalty spot                              challenge: the penalty (challenges/penalty.js)
+// matchday-rsvp: the station registry (open-roam). Four stations, a short group of questions each (fields.js GROUPS):
+//   1 names   the kiosk in the chosen END (HOME or AWAY lane)    first name, surname, name on the shirt, "Not sure yet" (AWAY: names + email)   challenge: hand in the ticket (challenges/ticket.js)
+//   2 email   the HOME dugout                                     email + who you support (the shirt hangs here)                                    challenge: dribble and shoot (challenges/dribble.js)
+//   3 reach   the north-east corner flag                          email or WhatsApp, and the number                                                 challenge: the corner and a teammate's header (challenges/corner.js)
+//   4 plus    the north penalty spot                              plus one, and their name                                                          challenge: the penalty (challenges/penalty.js)
 // HOME stations 2-4 can be done in any order. Each station has an in-world question board (canvas fillText) and a lit beacon while it is next.
 // Walking within 3 m opens its card (a short skippable camera move first); walking 4 m away closes it, Escape or "Not now" closes it until the guest has left.
 // Never blocking: confirming saves the answer at once; "Skip ..." completes the station without the challenge; challenges allow at most one failure.
 import * as THREE from 'three';
-import { FIELDS, THEME, KIT_HEX, fontCss } from './config.js';
-import { h, fieldInput, privacyNotice } from './ui.js';
+import { THEME, KIT_HEX, fontCss } from './config.js';
+import { FIELD, GROUPS } from './fields.js';
+import { h, fieldsForm, closedNote, privacyNotice } from './ui.js';
+import { closedText } from './submit.js';
 import { canvasTex, anglesFor, reducedMotion } from './util.js';
 
-const field = (key) => FIELDS.find((f) => f.key === key);
 // stand = where the guest stands [x, z]; feature = what the station is about (world point); board = the question board [x, z]. The arrival look sits between the two.
 export const STATIONS = [
-  { id: 1, key: 'name', side: 'home', k: '1:home', where: 'HOME END kiosk', challenge: 'ticket', skipLabel: 'Skip the ticket' },
-  { id: 1, key: 'name', side: 'away', k: '1:away', where: 'AWAY END kiosk', challenge: 'ticket', skipLabel: 'Skip the ticket' },
-  { id: 2, key: 'email', side: 'home', k: '2', where: 'HOME dugout', stand: [-32.6, 8], feature: [-37.4, 1.1, 8], board: [-35.0, 5.4], challenge: 'dribble', skipLabel: 'Skip the dribble', question: 'Your email?' },
-  { id: 3, key: 'mobile', side: 'home', k: '3', where: 'Corner flag', stand: [30.4, -48.6], feature: [34, 1.0, -52.5], board: [33.6, -49.0], challenge: 'corner', skipLabel: 'Skip the header', question: 'Your mobile?' },
-  { id: 4, key: 'guests', side: 'home', k: '4', where: 'Penalty spot', stand: [0, -38.6], feature: [0, 0, -52.5], board: [-6.6, -37.0], challenge: 'penalty', skipLabel: 'Skip the kick', question: 'Bringing guests?' },
+  { id: 1, short: 'Your name', side: 'home', k: '1:home', where: 'HOME END kiosk', challenge: 'ticket', skipLabel: 'Skip the ticket' },
+  { id: 1, short: 'Your name', side: 'away', k: '1:away', where: 'AWAY END kiosk', challenge: 'ticket', skipLabel: 'Skip the ticket' },
+  { id: 2, short: 'Email and team', side: 'home', k: '2', where: 'HOME dugout', stand: [-32.6, 8], feature: [-37.4, 1.1, 8], board: [-35.0, 5.4], challenge: 'dribble', skipLabel: 'Skip the dribble', question: 'Email & team?' },
+  { id: 3, short: 'How to reach you', side: 'home', k: '3', where: 'Corner flag', stand: [30.4, -48.6], feature: [34, 1.0, -52.5], board: [33.6, -49.0], challenge: 'corner', skipLabel: 'Skip the header', question: 'Best contact?' },
+  { id: 4, short: 'Plus one', side: 'home', k: '4', where: 'Penalty spot', stand: [0, -38.6], feature: [0, 0, -52.5], board: [-6.6, -37.0], challenge: 'penalty', skipLabel: 'Skip the kick', question: 'Plus one?' },
 ];
 const BLURB = {
-  '1:home': "Yes, you'll be there. Your name first, then hand in your ticket.",
-  '1:away': "Sorry you can't make it. Leave your name, then hand in your ticket.",
-  2: 'Answer, then take the pass, dribble through the cones and shoot.',
-  3: 'Answer, then whip in a corner for the striker to head in.',
-  4: 'Answer, then score from the spot.',
+  '1:home': 'Your name goes on the back. A few lines so I can seat you properly. Then hand in your ticket.',
+  '1:away': "Can't make it? Leave your name and email, then hand in your ticket.",
+  2: 'Your email, and who you support (Neutral is fine). Then take the pass, dribble through the cones and shoot.',
+  3: 'How should I send you the details? Then whip in a corner for the striker to head in.',
+  4: 'Bringing someone? Then score from the spot.',
 };
 const NEAR = 3, FAR = 4;
 
-export function createStations(world, { tl, hud, roam, challenges, getSide, getValue, onSave, onComplete, onChallenge, canOpen, signal }) {
+export function createStations(world, { tl, hud, roam, challenges, getSide, getValues, onSave, onComplete, onChallenge, canOpen, signal }) {
   const { scene, bloom, plaza } = world;
-  const list = STATIONS.map((s) => ({ ...s, f: field(s.key) }));
+  const list = STATIONS.map((s) => ({ ...s, keys: GROUPS[s.k] }));
   for (const s of list) if (s.id === 1) {   // station 1 lives at the kiosk of its END (plaza.js)
     const P = plaza.sides[s.side]; s.stand = P.stand; s.feature = P.kioskPos.toArray(); s.lane = P.lane; s.handIn = P.handIn; s.kiosk = P.kiosk; s.kiosk.userData.station = s.k;
   }
@@ -107,7 +108,9 @@ export function createStations(world, { tl, hud, roam, challenges, getSide, getV
   function cardFor(s) {
     const id = 'st-' + s.k.replace(':', '-');
     const kicker = s.id === 1 ? (s.side === 'home' ? 'HOME END · Station 1 of 4' : 'AWAY END · Your reply') : `Station ${s.id} of 4 · ${s.where}`;
-    const { form, closed } = fieldInput(s.f, id, (value) => submit(s, value), getValue(s.key));
+    const closed = !!closedText();
+    const ff = closed ? null : fieldsForm({ keys: s.keys, id, init: getValues(), onValid: (value) => submit(s, value) });
+    const form = ff ? ff.form : h('form', { novalidate: true, onsubmit: (ev) => ev.preventDefault() }, closedNote());
     const row = h('div', { class: 'row' });
     if (s.challenge && challenges[s.challenge]) row.append(h('button', { class: 'btn', type: 'submit', disabled: closed, onclick: () => { mode = 'play'; }, text: 'Take the challenge' }));
     row.append(h('button', { class: s.challenge && challenges[s.challenge] ? 'btn ghost' : 'btn', type: 'submit', disabled: closed, onclick: () => { mode = 'skip'; }, text: s.skipLabel }));

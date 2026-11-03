@@ -1,7 +1,8 @@
 // matchday-rsvp: DOM builders shared by the game (flow.js) and the no-WebGL page (fallback.js). NO three.js import here, so the fallback path never depends on it.
 // User text is only ever written with textContent / text nodes (see h()). Validation is f.validate() from config.js, the same for every path.
-import { EVENT, FIELDS } from './config.js';
-import { getState, onState, isClosed, CLOSED_TEXT } from './submit.js';
+import { EVENT } from './config.js';
+import { FIELD, FAST_KEYS, keysFor, valueOf } from './fields.js';
+import { getState, onState, closedText } from './submit.js';
 
 export const SEND_FAILED = "We couldn't send your reply. Try again.";
 
@@ -23,7 +24,7 @@ export function fieldControl(f, id, errEl, { init, submit, onPick } = {}) {
   let control, read, invalid, focusFirst;
   if (f.type === 'choice') {
     let val = init != null ? String(init) : '';
-    const group = h('div', { class: 'seg' + (f.options.length === 2 ? ' two' : ''), role: 'radiogroup', 'aria-labelledby': id + '-l', 'aria-describedby': id + '-err' });
+    const group = h('div', { class: 'seg n' + f.options.length, role: 'radiogroup', 'aria-labelledby': id + '-l', 'aria-describedby': id + '-err' });
     const opts = f.options.map((o) => { const v = typeof o === 'object' ? o.value : o, label = typeof o === 'object' ? o.label : String(o);
       return h('button', { class: 'opt', type: 'button', role: 'radio', 'aria-checked': 'false', tabindex: '-1', 'data-value': String(v), 'data-side': typeof o === 'object' ? o.side : null, text: label }); });
     const sync = () => opts.forEach((b, i) => { const on = b.dataset.value === val; b.setAttribute('aria-checked', String(on)); b.tabIndex = (val ? on : i === 0) ? 0 : -1; });
@@ -39,9 +40,9 @@ export function fieldControl(f, id, errEl, { init, submit, onPick } = {}) {
     control = group; read = () => val; invalid = (on) => (on ? group.setAttribute('aria-invalid', 'true') : group.removeAttribute('aria-invalid')); focusFirst = () => (opts.find((b) => b.tabIndex === 0) || opts[0]).focus();
     return { nodes: [h('div', { class: 'label', id: id + '-l', text: f.label }), group], control, read, invalid, focusFirst };
   }
-  control = h('input', { id, name: f.key, type: f.type, inputmode: f.inputmode, autocomplete: f.autocomplete, placeholder: f.placeholder, maxlength: String(f.maxlength ?? 200), 'aria-describedby': id + '-err', value: init ?? '' });
+  control = h('input', { id, name: f.key, type: f.type, inputmode: f.inputmode, autocomplete: f.autocomplete, placeholder: f.placeholder, maxlength: String(f.maxlength ?? 200), 'aria-describedby': (f.help ? id + '-help ' : '') + id + '-err', value: init ?? '' });
   read = () => control.value; invalid = (on) => (on ? control.setAttribute('aria-invalid', 'true') : control.removeAttribute('aria-invalid')); focusFirst = () => control.focus();
-  return { nodes: [h('label', { for: id, text: f.label }), control], control, read, invalid, focusFirst };
+  return { nodes: [h('label', { for: id, text: f.label }), control, f.help ? h('p', { class: 'help', id: id + '-help', text: f.help }) : null].filter(Boolean), control, read, invalid, focusFirst };
 }
 
 // Validates one control through its field's validator, shows or clears the error, and returns { ok, value | error }. Every submit path uses this.
@@ -51,20 +52,45 @@ export function checkField(f, control, err) {
   return r;
 }
 
-// A one-field <form> (the game's field cards): label + control + its own error line. onValid gets the validated value. Returns { form, input, err }.
-// Production form that must not collect anything (submit.js isClosed()): the state replaces the questions and Send stays disabled.
-export const closedNote = () => h('p', { class: 'closed', role: 'status', text: CLOSED_TEXT });
-export function fieldInput(f, id, onValid, init) {
-  if (isClosed()) { const form = h('form', { novalidate: true, onsubmit: (ev) => ev.preventDefault() }, closedNote()); return { form, input: null, err: null, closed: true }; }
-  const err = h('p', { class: 'err', id: id + '-err', role: 'alert' });
-  let c;
-  const form = h('form', { novalidate: true, onsubmit: (ev) => {
-    ev.preventDefault(); const r = checkField(f, c, err);
-    if (r.ok) onValid(r.value); else c.focusFirst();
+// A closed page (no invite key, bad link, production config not ready): this text replaces the questions and nothing is sent.
+export const closedNote = () => h('p', { class: 'closed', role: 'status', text: closedText() ?? '' });
+
+// A <form> of several fields (a station's card, or the whole fast lane): label + control + its own error line per field, conditional fields shown only when their answer asks for them.
+// keys = FIELD keys; init = flat values; onValid(values) gets cleaned values by value key (attendingFast comes back as `attending`); hidden fields are left out.
+// Returns { form, items, read(), focusFirst(), setErrors({ key: msg }), onChange(fn) }. Validation is fields.js (the server's rules); the server stays authoritative.
+export function fieldsForm({ keys, id, init = {}, onValid, onChange }) {
+  let form;
+  const items = keys.map((k) => {
+    const f = FIELD[k], fid = `${id}-${k}`, err = h('p', { class: 'err', id: fid + '-err', role: 'alert' });
+    const c = fieldControl(f, fid, err, { init: valueOf(init, k) ?? f.init, submit: () => form.requestSubmit(), onPick: () => { refresh(); onChange?.(read()); } });
+    return { k, f, c, err, w: h('div', { class: 'fl-field' }, ...c.nodes, err) };
+  });
+  const read = () => Object.fromEntries(items.map((it) => [it.k === 'attendingFast' ? 'attending' : it.k, it.c.read()]));
+  const refresh = () => { const shown = keysFor(keys, read()); for (const it of items) it.w.hidden = !shown.includes(it.k); };
+  form = h('form', { novalidate: true, autocomplete: 'on', onsubmit: (ev) => {
+    ev.preventDefault();
+    const shown = keysFor(keys, read()), out = {}; let first = null;
+    for (const it of items) {
+      if (!shown.includes(it.k)) continue;
+      const r = it.f.validate(it.c.read());
+      it.err.textContent = r.ok ? '' : r.error; it.c.invalid(!r.ok);
+      if (r.ok) out[it.k === 'attendingFast' ? 'attending' : it.k] = r.value; else first ??= it;
+    }
+    if (first) { first.c.focusFirst(); return; }
+    onValid(out);
   } });
-  c = fieldControl(f, id, err, { init, submit: () => form.requestSubmit() });
-  form.append(...c.nodes, err);
-  return { form, input: c.control, err };
+  form.append(...items.map((it) => it.w)); refresh();
+  return {
+    form, items, read, onChange: (fn) => { onChange = fn; },
+    focusFirst: () => (items.find((it) => !it.w.hidden) ?? items[0]).c.focusFirst(),
+    setErrors(errs) { let first = null; for (const it of items) { const m = errs[it.k]; it.err.textContent = m ?? ''; it.c.invalid(!!m); if (m && !it.w.hidden) first ??= it; } first?.c.focusFirst(); },
+  };
+}
+
+// A status line: an icon and words, never colour alone (DESIGN.md section 4). tone: ok | warn | err | info.
+const GLYPH = { ok: '✓', warn: '⏱', err: '!', info: 'i' };
+export function statusLine(tone, text, attrs = {}) {
+  return h('p', { class: 'status ' + tone, role: tone === 'err' ? 'alert' : 'status', ...attrs }, h('span', { class: 'ico', 'aria-hidden': 'true', text: GLYPH[tone] }), h('span', { text }));
 }
 
 // POPIA short notice (config.js EVENT.privacy), shown before the first personal field everywhere. In the capped overlay cards (`capped`, the default) it is a <details>
@@ -74,75 +100,49 @@ export function privacyNotice({ capped = true, side = 'home' } = {}) {
   if (!EVENT.privacy) return Object.assign(h('p', { class: 'notice' }), { setSide() {} });   // missing config: the form is closed in production anyway, so render nothing rather than throw
   const P = EVENT.privacy, link = /^https:\/\//.test(P.policyUrl) ? h('a', { href: P.policyUrl, target: '_blank', rel: 'noopener noreferrer', text: ' Full notice' }) : null;
   const val = (k) => (typeof P[k] === 'string' && P[k].trim() ? P[k] : `[${k} missing]`);   // a missing/blank key shows as "[contact missing]", never "undefined"; any non-blank string (placeholders too) shows as written
-  // The wording follows the side: AWAY only gives a name, so it never claims email, mobile or event details. setSide() swaps it when the quick-reply guest picks a side.
+  // The wording follows the side: a decline only gives a name and email, so it never claims the rest. setSide() swaps it when the fast-lane guest changes their answer.
   // lead + ' ' + rest is the one notice sentence (NOTICE_VERSION covers it), split so the lead can be the summary; only the lead depends on the side.
-  const lead = (s) => `${val('responsibleParty')} uses ${s === 'away' ? 'your name only' : 'your name, email and mobile only'} to manage RSVPs for this event${s === 'away' ? '' : ' and send you event details'}.`;
+  const lead = (s) => `${val('responsibleParty')} uses ${s === 'away' ? 'your name and email only' : 'your name, email, WhatsApp number (if you give one), team and plus-one name only'} to manage RSVPs for this event${s === 'away' ? '' : ' and send you event details'}.`;
   const rest = () => `Replying is optional. We delete your details ${val('retention')}. You can ask to see, correct or delete them at ${val('contact')}.`;
   const t1 = document.createTextNode(lead(side)), t2 = document.createTextNode(rest()), setSide = (s) => { t1.data = lead(s); t2.data = rest(); };
   if (!capped) return Object.assign(h('p', { class: 'notice' }, t1, ' ', t2, link), { setSide });
   return Object.assign(h('details', { class: 'notice', open: !matchMedia('(max-width: 560px)').matches }, h('summary', {}, t1), h('p', {}, t2, link)), { setSide });
 }
 
-// Closing card for a sent RSVP (game, quick reply and no-WebGL page alike). Returns the card's children. values = the sent payload.
-export function confirmCard(side, values, { id = 'd-h', kicker, display = side === 'home' } = {}) {
-  const away = side === 'away';
-  return [h('p', { class: 'kicker', text: kicker ?? (away ? 'AWAY' : 'HOME') }),
-    h('h2', { id, class: display ? 'display' : false, tabindex: '-1', text: away ? 'Thanks for letting us know.' : 'Your RSVP is confirmed' }),
-    h('p', { text: away ? `We'll miss you, ${values.name}.` : 'Await your invitation with further details.' }),
-    away ? null : h('dl', {}, summaryRows(values))].filter(Boolean);   // no null child: replaceChildren(null) would print the text "null"
+// Closing card for a saved RSVP, built ONLY from the server's saved/updated reply { status, firstName, attending, ticketNo } (never from what the guest typed).
+// "updated" is a returning guest: the same seat, kept. No exclamation marks; a No gets no warm closing line and no poster.
+export const seatNo = (n) => String(n).padStart(3, '0');
+export function confirmCard(r, { id = 'd-h' } = {}) {
+  const back = r.status === 'updated', no = r.attending === 'no', maybe = r.attending === 'maybe';
+  const kicker = no ? 'Reply saved' : maybe ? 'Pencilled in' : 'Signed';
+  const heading = no ? `${back ? 'Updated' : 'Noted'}, ${r.firstName}` : back ? `Welcome back, ${r.firstName}` : maybe ? `Pencilled in, ${r.firstName}` : `You're in, ${r.firstName}`;
+  const body = no ? 'You are down as not coming. Use the same email to change your answer.'
+    : back ? `Your answer is updated and seat ${seatNo(r.ticketNo)} is kept. I'll send the venue and details closer to the day.`
+    : maybe ? `Seat ${seatNo(r.ticketNo)} is held while you decide. Use the same email to change your answer. I'll send the venue and details closer to the day.`
+    : `Seat ${seatNo(r.ticketNo)}. I'll send the venue and details closer to the day.`;
+  return [h('p', { class: 'kicker', text: kicker }), h('h2', { id, class: 'display', tabindex: '-1', text: heading }), h('p', { text: body }),
+    no ? null : h('p', { class: 'seat', text: `Seat ${seatNo(r.ticketNo)} · Shirt ${r.ticketNo}` }), h('p', { class: 'sign', text: 'Makes' })].filter(Boolean);
 }
 
-// ---- fast lane: the whole RSVP as one <form> (side, then the fields for that side, one Send) -------------------------------------------
-// HOME = every FIELDS entry; AWAY = the name only (same set as the game's AWAY card). Browser autofill sees one form with name/autocomplete on every input.
-export const AWAY_FIELD = FIELDS.find((f) => f.key === 'name');
-const SIDE_FIELD = { key: 'side', label: 'Can you make it?', type: 'choice', options: [{ value: 'home', side: 'home', label: 'Attending' }, { value: 'away', side: 'away', label: "Can't make it" }],
-  validate(v) { return v === 'home' || v === 'away' ? { ok: true, value: v } : { ok: false, error: "Please choose Attending or Can't make it." }; } };
-
-// onSend({ side: 'home'|'away', values: { name, ... } }) runs with validated values only, and never while a send is in flight or after one succeeded (shared state, submit.js).
-// The form mirrors that state: Send is disabled while sending or sent, and a failed send shows SEND_FAILED with Send enabled again.
-export function fastLaneForm({ onSend, capped = true }) {
-  if (isClosed()) {
-    const form = h('form', { id: 'fast-form', name: 'rsvp', novalidate: true, onsubmit: (ev) => ev.preventDefault() }, closedNote(), h('div', { class: 'row' }, h('button', { class: 'btn', type: 'submit', disabled: true, text: 'Send' })));
+// ---- fast lane: the whole RSVP as one <form> (can you make it, then the fields that answer asks for, one Send) --------------------------------------
+// Every field is here, so a guest who never plays the game can still give the host everything. Yes and Not sure yet ask for everything; Can't make it asks for name and email.
+// onSend({ side: 'home'|'away', values }) runs with validated flat values only (fields.js), and never while a save is in flight or after one succeeded (shared state, submit.js).
+// init = earlier answers (values by key); errors = server errors by field key, shown inline when the form is reopened to fix them.
+export function fastLaneForm({ onSend, capped = true, init = {}, errors = null }) {
+  if (closedText()) {
+    const form = h('form', { id: 'fast-form', name: 'rsvp', novalidate: true, onsubmit: (ev) => ev.preventDefault() }, closedNote());
     return { form };
   }
-  let side = '', locked = false;
-  const notice = privacyNotice({ capped });
-  const form = h('form', { id: 'fast-form', name: 'rsvp', autocomplete: 'on', novalidate: true });
-  const items = [SIDE_FIELD, ...FIELDS].map((f) => {
-    const id = 'fl-' + f.key, err = h('p', { class: 'err', id: id + '-err', role: 'alert' });
-    const c = fieldControl(f, id, err, { submit: () => form.requestSubmit(), onPick: f === SIDE_FIELD ? (v) => { side = v; notice.setSide(v); for (const it of items) it.w.hidden = side === 'away' && it.f !== SIDE_FIELD && it.f !== AWAY_FIELD; } : undefined });
-    return { f, c, err, w: h('div', { class: 'fl-field' }, ...c.nodes, err) };
-  });
-  const btn = h('button', { class: 'btn', type: 'submit', text: 'Send' }), failed = h('p', { class: 'err', role: 'alert' });
-  // N3: after the first send attempt the answers are frozen (inputs readonly, radios disabled), so "Send again" can only resend exactly what was sent, under the same idempotency key.
-  const lock = () => { locked = true; for (const it of items) { if (it.f.type === 'choice') it.c.control.querySelectorAll('button').forEach((b) => { b.disabled = true; }); else it.c.control.readOnly = true; } };
-  const sync = (st) => { btn.textContent = locked && st === 'failed' ? 'Send again' : 'Send'; btn.disabled = st === 'sending' || st === 'sent'; failed.textContent = st === 'failed' ? SEND_FAILED : ''; failed.hidden = st !== 'failed'; };
+  const notice = privacyNotice({ capped, side: init.attending === 'no' ? 'away' : 'home' });
+  const f = fieldsForm({ keys: FAST_KEYS, id: 'fl', init, onValid: (values) => { if (getState() === 'sending' || getState() === 'sent') return; onSend({ side: values.attending === 'no' ? 'away' : 'home', values }); },
+    onChange: (v) => notice.setSide(v.attending === 'no' ? 'away' : 'home') });
+  const form = f.form; form.id = 'fast-form'; form.name = 'rsvp';
+  const btn = h('button', { class: 'btn', type: 'submit', text: 'Continue' });
+  const sync = (st) => { btn.disabled = st === 'sending' || st === 'sent'; };
   onState(sync); sync(getState());
-  form.append(notice, ...items.map((it) => it.w), failed, h('div', { class: 'row' }, btn));
-  form.addEventListener('submit', (ev) => {
-    ev.preventDefault(); if (getState() === 'sending' || getState() === 'sent') return;
-    const values = {}; let first = null;
-    for (const it of items) {
-      if (it.w.hidden) continue;
-      const r = checkField(it.f, it.c, it.err);
-      if (r.ok) values[it.f.key] = r.value; else first ??= it;
-    }
-    if (first) { first.c.focusFirst(); return; }
-    const { side: s, ...rest } = values; lock(); onSend({ side: s, values: rest });
-  });
-  return { form };
-}
-
-// Rows for a confirmation card (dt/dd), from validated values.
-export const summaryRows = (values) => FIELDS.filter((f) => values[f.key] != null).flatMap((f) => [h('dt', { text: f.short }), h('dd', { text: String(values[f.key]) })]);
-
-// The kit crest as a 32 px mark (shield + star), filled with --kit-home via currentColor. Decorative: aria-hidden.
-export function crestMark() {
-  const NS = 'http://www.w3.org/2000/svg', s = document.createElementNS(NS, 'svg'); s.setAttribute('viewBox', '0 0 24 24'); s.setAttribute('class', 'crest'); s.setAttribute('aria-hidden', 'true');
-  const p = (d, fill) => { const e = document.createElementNS(NS, 'path'); e.setAttribute('d', d); e.setAttribute('fill', fill); s.append(e); };
-  p('M4 3h16v10c0 4-3.4 6.6-8 8-4.6-1.4-8-4-8-8V3z', 'currentColor');
-  p('M12 7l1.2 3.4H17l-3 2.2 1.1 3.5L12 14l-3.1 2.1L10 12.6 7 10.4h3.8z', 'var(--paper-100)');
-  return s;
+  form.prepend(notice); form.append(h('div', { class: 'row' }, btn));
+  if (errors) f.setErrors(errors);
+  return { form, focusFirst: f.focusFirst };
 }
 
 // Mute button icon (speaker, with waves or a cross). Decorative: aria-hidden; the button carries the label.

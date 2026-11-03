@@ -1,7 +1,7 @@
 // Pitch (grass + painted-in markings), goals with ripple-able nets, LED ad boards, dugouts, corner flags.
 import * as THREE from 'three';
 import { D } from './dims.js';
-import { EVENT, KIT_HEX, VENUE_UC, THEME, fontCss } from './config.js';
+import { EVENT, KIT_HEX, TITLE_UC, THEME, fontCss } from './config.js';
 import { loadTex, canvasTex, makePath, polyline, Geo, Beams, V } from './util.js';
 
 const PW = 82.6, PL = 119.6;               // grass plane (pitch 68 x 105 plus run-off out to the stand wall)
@@ -173,8 +173,8 @@ export function buildPitch() {
     const ledTex = canvasTex(1536, 230, (c, w, h) => {
       c.fillStyle = EVENT.kits.home; c.fillRect(0, 0, w, h);
       c.fillStyle = '#fff'; c.font = fontCss(800, 118); c.textBaseline = 'middle'; c.textAlign = 'center';
-      c.fillText(VENUE_UC, w * 0.3, h / 2 + 4);
-      c.font = fontCss(700, 70); c.fillText('MATCHDAY', w * 0.78, h / 2 - 28); c.fillStyle = THEME.color.scoreboardAccent; c.fillText(`RSVP • ${EVENT.shortDate}`, w * 0.78, h / 2 + 52);
+      c.fillText(TITLE_UC, w * 0.3, h / 2 + 4);
+      c.font = fontCss(700, 70); c.fillText(EVENT.led, w * 0.78, h / 2 - 28); c.fillStyle = THEME.color.scoreboardAccent; c.fillText(EVENT.shortDate, w * 0.78, h / 2 + 52);
       c.fillStyle = 'rgba(0,0,0,0.25)'; for (let x = 0; x < w; x += 6) c.fillRect(x, 0, 2, h); for (let y = 0; y < h; y += 6) c.fillRect(0, y, w, 2);
       c.fillStyle = '#fff'; c.fillRect(w - 6, 0, 6, h);
     });

@@ -1,5 +1,5 @@
-// matchday-rsvp: the guest's HOME shirt (director's addition). Hangs on a peg on the back wall of the HOME dugout, back outwards: their name over #12.
-// One canvas texture (the shirt's silhouette, alpha-tested) on a PBR plane, a steel peg and a wire hanger. draw(name) repaints it; draw('') leaves a plain #12.
+// matchday-rsvp: the guest's HOME shirt (director's addition). Hangs on a peg on the back wall of the HOME dugout, back outwards: their name over #30.
+// One canvas texture (the shirt's silhouette, alpha-tested) on a PBR plane, a steel peg and a wire hanger. draw(name) repaints it; draw('') leaves a plain #30.
 // It sits in the scene, not inside the dugout group, so anything that restyles the dugout group's materials never touches it.
 // The name only ever reaches the canvas through fillText.
 import * as THREE from 'three';
@@ -41,7 +41,7 @@ export function createShirt(dugout) {
     if (n === shown) return; shown = n;
     c.clearRect(0, 0, W, H);
     c.save(); shirtPath(c); c.clip();
-    const g = c.createLinearGradient(0, 0, W, H); g.addColorStop(0, '#d8173a'); g.addColorStop(0.55, EVENT.kits.home); g.addColorStop(1, '#a50d27');
+    const g = c.createLinearGradient(0, 0, W, H); g.addColorStop(0, EVENT.kits.homeLight); g.addColorStop(0.55, EVENT.kits.home); g.addColorStop(1, EVENT.kits.homeDark);
     c.fillStyle = g; c.fillRect(0, 0, W, H);
     c.fillStyle = 'rgba(255,255,255,0.85)'; c.fillRect(0, 0, W, 34);                       // white collar band
     c.fillStyle = 'rgba(255,255,255,0.9)'; c.fillRect(12, 150, 70, 14); c.fillRect(430, 150, 70, 14);   // sleeve cuffs
@@ -49,7 +49,7 @@ export function createShirt(dugout) {
     for (const [x0, x1] of [[170, 150], [330, 356], [256, 262]]) { c.beginPath(); c.moveTo(x0, 220); c.quadraticCurveTo((x0 + x1) / 2 + 12, 380, x1, 540); c.stroke(); }
     c.globalAlpha = 1; c.fillStyle = '#ffffff'; c.textAlign = 'center'; c.textBaseline = 'alphabetic';
     if (n) { let px = 58; c.font = fontCss(800, px); while (c.measureText(n).width > 250 && px > 24) { px -= 2; c.font = fontCss(800, px); } c.fillText(n, 256, 150); }
-    c.font = fontCss(800, 220); c.fillText('12', 256, 400);
+    c.font = fontCss(800, 220); c.fillText('30', 256, 400);
     c.restore();
     tex.needsUpdate = true;
   }

@@ -1,17 +1,20 @@
-// matchday-rsvp: the RSVP journey (open-roam). ORGANISERS: edit EVENT, FIELDS, RSVP_ENDPOINT (and kit colours) in config.js; this file only orchestrates:
-//   intro: the invitation ticket floats over the plaza; walk (or tap a choice) to the HOME END or AWAY END kiosk (stations.js, station 1: name + ticket hand-in)
+// matchday-rsvp: the RSVP journey (open-roam). ORGANISERS: edit EVENT and the kit colours in config.js, the questions in fields.js; this file only orchestrates:
+//   intro: the invitation ticket floats over the plaza; walk (or tap a choice) to the HOME END or AWAY END kiosk (stations.js, station 1: names + ticket hand-in), or "Just reply" (the fast lane)
 //   -> the gate opens and a cinematic walk-out through the tunnel
-//   -> HOME: stations 2-4 on the pitch in any order (email at the HOME dugout, mobile at the corner flag, guests at the penalty spot) -> full time -> send
-//   -> AWAY: on to the AWAY dugout touchline, the floodlights dim, the crowd applauds, "We'll miss you" -> send
+//   -> HOME: stations 2-4 on the pitch in any order (email + team at the HOME dugout, how to reach you at the corner flag, plus one at the penalty spot) -> full time -> the code card
+//   -> AWAY: the kiosk takes name + email; on to the AWAY dugout touchline, the floodlights dim, the crowd applauds -> the code card
+//   -> the code card (codecard.js) asks for the emailed 6-digit code and saves; the confirmation shows only from the server's saved/updated reply
 // Modules: timeline.js (sim clock), hud.js (overlay), roam.js (third-person rig + camera moves), avatar.js (the guest's footballer), stations.js (registry, boards, beacons, cards),
 // challenges/*.js (ticket, dribble, corner, penalty), teammates.js (the squad: passes, waves, celebrations, the full-time huddle), shirt.js (the guest's shirt).
 // Everything animated runs on the sim clock, so window.__dbg.simStep(dt) is deterministic.
-// User text is only ever written with textContent / text nodes or canvas fillText. No storage; the only network call is submit.js, and only when RSVP_ENDPOINT is set.
+// User text is only ever written with textContent / text nodes or canvas fillText. No storage; the only network calls are in submit.js.
 import * as THREE from 'three';
 import { mulberry32, reducedMotion, lerp, smoother, bezier, anglesFor } from './util.js';
-import { EVENT, FIELDS, VENUE_UC, THEME, applyMotion, clean } from './config.js';
-import { h, fastLaneForm, confirmCard, SEND_FAILED } from './ui.js';   // three-free builders shared with fallback.js
-import { submitRsvp, getSent, getState, resetForDev } from './submit.js';
+import { EVENT, TITLE_UC, DATE_LINE, THEME, applyMotion, clean } from './config.js';
+import { h, fastLaneForm, confirmCard } from './ui.js';   // three-free builders shared with fallback.js
+import { codeCard } from './codecard.js';
+import { mapServerErrors } from './fields.js';
+import { closedText, resetForDev } from './submit.js';
 import { createTimeline } from './timeline.js';
 import { createHud } from './hud.js';
 import { createRoam } from './roam.js';
@@ -23,7 +26,7 @@ import { createPenalty, PENALTY_VIEW, PACE as PENALTY_PACE } from './challenges/
 import { createDribble, DRIBBLE_VIEW, PACE as DRIBBLE_PACE } from './challenges/dribble.js';
 import { createCorner, CORNER_VIEW, PACE as CORNER_PACE } from './challenges/corner.js';
 import { createShirt } from './shirt.js';
-export { EVENT, FIELDS };   // organisers: edit config.js, not this file
+export { EVENT };   // organisers: edit config.js, not this file
 
 const SEED = 20261212;
 // Forced waits (sim seconds) on top of the challenges' own PACE and stations.PACE.arrive (2.2 s per arrival). An unskipped HOME run spends about 29.7 s
@@ -60,6 +63,7 @@ export function createFlow(world, { audio, fx, teammates }) {
 
   const fresh = () => ({ stage: 'intro', side: null, values: {}, score: 0, rng: mulberry32(SEED), hinted: false, walked: 0, staged: false, siuuu: null });
   let S = fresh();
+  const shirtName = (n = 16) => clip(S.values.preferredName || S.values.firstName || '', n);   // the name on the back: what they asked to be called, else the first name
   const tl = createTimeline(sim);
   const hud = createHud({ audio, tl });
   const cine = createCine(world, { tl, audio });
@@ -86,13 +90,13 @@ export function createFlow(world, { audio, fx, teammates }) {
   const ticket = challenges.ticket;
   const stations = createStations(world, {
     tl, hud, roam, challenges, signal,
-    getSide: () => S.side, getValue: (k) => S.values[k],
-    onSave: (s, v) => { S.values[s.key] = v; },
+    getSide: () => S.side, getValues: () => S.values,
+    onSave: (s, v) => { Object.assign(S.values, v); },
     onComplete: stationDone,
     onChallenge: (s, on) => { if (on) S.stage = 'challenge'; else if (S.stage === 'challenge') S.stage = 'roam'; },
     canOpen: () => S.stage === 'roam',
   });
-  // director's addition: the guest's HOME shirt on a peg in the HOME dugout (their name over #12), painted when the HOME kiosk is done
+  // director's addition: the guest's HOME shirt on a peg in the HOME dugout (their name over #30), painted when the HOME kiosk is done
   const shirt = createShirt(world.dugouts.home); world.scene.add(shirt.group);
   roam.setObstacles([...stations.obstacles(), ...Object.values(plaza.sides).map((p) => p.obstacle)]);
   ctl.filter = (ev) => { for (const c of Object.values(challenges)) if (c.active() && c.filter(ev) === false) return false; return true; };
@@ -140,15 +144,15 @@ export function createFlow(world, { audio, fx, teammates }) {
   // director's addition: as the HOME gate opens, the board announces the guest (the walk-out faces it), then hands back to the guide a few seconds after
   function squadBoard() {
     tl.cancel(squadTimer); squadTimer = null; tl.cancel(flipTween); flipTween = null;
-    scoreboard.draw([{ text: VENUE_UC, size: 64, color: THEME.color.scoreboardDim }, { text: 'NOW JOINING THE SQUAD', size: 104, color: THEME.color.scoreboardText, weight: 800 },
-      { text: `#12 ${clip(S.values.name, 20).toUpperCase()}`, size: 170, color: THEME.color.scoreboardAccentGoal, weight: 800 }]);
-    hud.say(`Now joining the squad, number 12, ${clip(S.values.name, 20)}`);
+    scoreboard.draw([{ text: TITLE_UC, size: 64, color: THEME.color.scoreboardDim }, { text: 'THE NEW SIGNING', size: 104, color: THEME.color.scoreboardText, weight: 800 },
+      { text: `#30 ${shirtName(20).toUpperCase()}`, size: 170, color: THEME.color.scoreboardAccentGoal, weight: 800 }]);
+    hud.say(`The new signing, number 30, ${shirtName(20)}`);
   }
   function guideBoard(from) {
     tl.cancel(squadTimer); squadTimer = null;
     const nx = stations.next();
-    const lines = [{ text: VENUE_UC, size: 70, color: THEME.color.scoreboardDim }, { parts: ['HOME ', { flip: [from ?? S.score, S.score] }, '–0 AWAY'], size: 200, color: THEME.color.scoreboardText, weight: 800 },
-      { text: nx ? `Next: ${nx.f.short} · ${nx.where}` : 'All stations done', size: 92, color: THEME.color.scoreboardAccentGoal, weight: 800 }];
+    const lines = [{ text: TITLE_UC, size: 70, color: THEME.color.scoreboardDim }, { parts: ['HOME ', { flip: [from ?? S.score, S.score] }, '–0 AWAY'], size: 200, color: THEME.color.scoreboardText, weight: 800 },
+      { text: nx ? `Next: ${nx.short} · ${nx.where}` : 'All stations done', size: 92, color: THEME.color.scoreboardAccentGoal, weight: 800 }];
     tl.cancel(flipTween); flipTween = null;
     if (from == null || from === S.score || reducedMotion()) scoreboard.draw(lines); else flipTween = tl.tween(FLIP, (u) => scoreboard.draw(lines, { p: easeFlip(u) }));
   }
@@ -159,7 +163,7 @@ export function createFlow(world, { audio, fx, teammates }) {
     if (s.id === 1) {
       S.side = s.side; S.stage = 'cine'; hud.hideHint();
       roam.setZones({ [s.side === 'home' ? 'laneHome' : 'laneAway']: true, inside: true, pitch: true });
-      openGate(s.side); if (s.side === 'home') { squadBoard(); shirt.draw(clip(S.values.name, 16)); avatar.setName(clip(S.values.name, 16)); }
+      openGate(s.side); if (s.side === 'home') { squadBoard(); shirt.draw(shirtName()); avatar.setName(shirtName()); }
       tl.after(PACE.gate, () => walkOut(s.side), { skip: true });
       return;
     }
@@ -226,7 +230,7 @@ export function createFlow(world, { audio, fx, teammates }) {
   // and then up across the Mexican wave to the scoreboard (the final card sits over that shot). Off the pitch (the fast lane from the plaza): a turn to the board.
   function fullTime(from) {   // from: [x, z] where the camera stands now, so the crane orbits up through that side (the Siuuu's low corner shot)
     S.stage = 'fulltime'; hud.hideHint(); audio.whistle(); crowd.wave(32); tl.cancel(flipTween); flipTween = null;   // a running guide flip must not redraw over full time
-    scoreboard.draw([{ text: VENUE_UC, size: 64, color: THEME.color.scoreboardDim }, { text: `FULL TIME · HOME ${S.score}–0 · YOU WIN`, size: 118, color: THEME.color.scoreboardText, weight: 800 }, { parts: ['HOME ', { flip: [S.score, S.score] }, '–0 AWAY'], size: 150, color: THEME.color.scoreboardAccent, weight: 800 }]);
+    scoreboard.draw([{ text: TITLE_UC, size: 64, color: THEME.color.scoreboardDim }, { text: `FULL TIME · HOME ${S.score}–0`, size: 118, color: THEME.color.scoreboardText, weight: 800 }, { parts: ['HOME ', { flip: [S.score, S.score] }, '–0 AWAY'], size: 150, color: THEME.color.scoreboardAccent, weight: 800 }]);
     const p = guestAt(), say = 'Full time. You win, and the crowd celebrates.';
     if (onPitch(p.x, p.z)) {
       const d = awayFromBoard(p.x, p.z), f = from && [from[0] - p.x, from[1] - p.z], phi0 = f && Math.atan2(d[0] * f[1] - d[1] * f[0], d[0] * f[0] + d[1] * f[1]);
@@ -239,7 +243,7 @@ export function createFlow(world, { audio, fx, teammates }) {
         yaw: toBoard.yaw, pitch: (toBoard.pitch + toSquad.pitch) / 2 + 0.05, fov: 66, dur: PACE.fullTime, cine: true, free: true, say, done: () => roam.detach() });   // camera only; hold the high shot (the rig would pull it back onto the boom)
     } else { const a = anglesFor(p.toArray(), SCOREBOARD); roam.glide({ yaw: a.yaw, pitch: a.pitch, fov: 66, dur: PACE.fullTime, cine: true, say }); }
     tl.after(PACE.fireworks, () => fx.startFireworks()); tl.after(PACE.confetti, () => fx.startConfetti());
-    tl.after(PACE.fullTime, sendRsvp, { skip: true });
+    tl.after(PACE.fullTime, showCode, { skip: true });
   }
   // AWAY: the floodlights dim to 60%, the crowd applauds, the scoreboard says goodbye by name, then the send. On the pitch the camera pulls slowly back
   // from the touchline and rises a little while the lights go down, turning from the dugout to the bowl and the board.
@@ -249,8 +253,8 @@ export function createFlow(world, { audio, fx, teammates }) {
     const from = world.lightLevel ?? 1, dim = tl.tween(pull ? PACE.awayPull : PACE.dim, (u) => world.setLights(lerp(from, 0.6, smoother(u))), null, { skip: true });
     if (reducedMotion()) tl.finish(dim);
     crowd.applaud(6); audio.applause(5); avatar.setPose('applaud');   // the guest applauds the stands back
-    scoreboard.draw([{ text: VENUE_UC, size: 64, color: THEME.color.scoreboardDim }, { text: 'AWAY FAN', size: 190, color: THEME.color.accentAway, weight: 800 }, { text: `We'll miss you, ${clip(S.values.name, 26)}`, size: 100, color: THEME.color.scoreboardText, weight: 700 }]);
-    const say = 'The crowd applauds you.', send = (wait = PACE.awayEnd) => tl.after(wait, sendRsvp, { skip: true });
+    scoreboard.draw([{ text: TITLE_UC, size: 64, color: THEME.color.scoreboardDim }, { text: 'AWAY', size: 190, color: THEME.color.accentAway, weight: 800 }, { text: shirtName(26).toUpperCase(), size: 100, color: THEME.color.scoreboardText, weight: 700 }]);
+    const say = 'The crowd applauds you.', send = (wait = PACE.awayEnd) => tl.after(wait, showCode, { skip: true });
     if (pull) {
       const d = awayFromBoard(p.x, p.z), E = V3(p.x + d[0] * 10, 3.0, p.z + d[1] * 10), mid = V3(p.x + d[0] * 4.5, 2.1, p.z + d[1] * 4.5), board = V3(SCOREBOARD[0], 14, SCOREBOARD[2]);
       const a = anglesFor(E.toArray(), board.toArray());
@@ -261,10 +265,16 @@ export function createFlow(world, { audio, fx, teammates }) {
   // -- intro: the invitation (the ticket floats high in the frame, the card sits under it) ------------------------------------------------------------
   function showIntro({ instant = false } = {}) {
     S.stage = 'intro'; stations.close(); roam.stop(); ticket.float();
+    const shut = closedText();
+    if (shut) {   // no invite key (or the server refused it), or production not configured: nothing is asked and nothing is sent
+      hud.showCard([h('p', { class: 'kicker', text: DATE_LINE }), hud.heading('i-h', "You've been called up"), h('p', { class: 'closed', role: 'status', text: shut })], { wide: true, cls: 'under', labelledBy: 'i-h', kind: 'intro-closed', instant });
+      return;
+    }
     const mk = (side, title, text) => h('button', { class: 'choice ' + side, type: 'button', onclick: () => pickSide(side) }, h('b', { text: title }), h('span', { text }));
-    hud.showCard([h('p', { class: 'kicker', text: EVENT.venue }), hud.heading('i-h', 'Your invitation'),
-      h('p', { text: 'Walk to your END of the ground. Each one has a kiosk.' }),
-      h('div', { class: 'choices' }, mk('home', 'HOME END', "Yes, I'll be there"), mk('away', 'AWAY END', "I'll be away on the date"))], { wide: true, cls: 'under', labelledBy: 'i-h', kind: 'intro', instant });
+    hud.showCard([h('p', { class: 'kicker', text: DATE_LINE }), hud.heading('i-h', "You've been called up"), h('p', { text: EVENT.tagline }),
+      h('p', { class: 'help', text: 'Walk to your end of the ground, or skip the walk.' }),
+      h('div', { class: 'choices' }, mk('home', 'HOME END', "I'll be there"), mk('away', 'AWAY END', "I can't make it"),
+        h('button', { class: 'choice fast', type: 'button', onclick: () => showFast() }, h('b', { text: 'JUST REPLY' }), h('span', { text: 'A short form, under a minute' })))], { wide: true, cls: 'under', labelledBy: 'i-h', kind: 'intro', instant });
   }
   function leaveIntro() { if (S.stage !== 'intro') return; ticket.hide(); hud.hideCard(); S.stage = 'roam'; roam.resetBoom(); showHint(); }
   // the invitation's staging: a low camera far back on the plaza's centre line looks at the two END signs (under the floating ticket); the guest stands off
@@ -290,56 +300,65 @@ export function createFlow(world, { audio, fx, teammates }) {
     audio.unlock(); hud.hideHint(); hud.say(`Walking to station ${nx.id}, ${nx.where}`); stations.walkTo(nx);
   }
 
-  // -- guide: the centred "Walk to next station" button and the corner "Just reply" link, synced each step (DOM writes only on change) ---------------------
+  // -- guide: the centred "Walk to next station" button and the corner "Just reply" link (secondary, only while roaming: the intro card carries it), synced each step (DOM writes only on change) ---
   let guideKey = '', fastShown = null;
   function syncGuide() {
     let key = 'none', title = '', sub = '', fn = null;
     if (S.stage === 'roam' && !hud.cardOpen() && !roam.gliding && !stations.busy() && !stations.arriving()) {
       if (!S.side) { key = 'choose'; title = 'Choose your end'; sub = 'HOME or AWAY kiosk'; fn = () => showIntro(); }
-      else { const nx = stations.next(); if (nx) { key = 'next:' + nx.k; title = 'Walk to next station'; sub = `${nx.f.short} · ${nx.where}`; fn = walkToNext; } }
+      else { const nx = stations.next(); if (nx) { key = 'next:' + nx.k; title = 'Walk to next station'; sub = `${nx.short} · ${nx.where}`; fn = walkToNext; } }
     }
     if (key !== guideKey) { guideKey = key; if (key === 'none') hud.hideWalk(); else hud.walk(title, sub, fn); }
-    const fl = (S.stage === 'intro' || S.stage === 'roam') && !stations.busy() && !stations.arriving() && !roam.gliding;   // never mid-arrival: the card would replace the form
+    const fl = S.stage === 'roam' && !closedText() && !stations.busy() && !stations.arriving() && !roam.gliding;   // never mid-arrival: the card would replace the form
     if (fl !== fastShown) { fastShown = fl; hud.fastLink(fl, showFast); }
   }
 
-  // -- fast lane: "Just reply" without playing. One card, one <form> (ui.js), then the SAME sendRsvp() path (HOME via fullTime, AWAY via awayEnd). ------------
-  function showFast() {
-    if ((S.stage !== 'intro' && S.stage !== 'roam') || stations.arriving() || roam.gliding) return;
+  // -- fast lane: "Just reply" without playing. One card, one <form> (ui.js) carrying every question, then straight to the code card. ----------------------
+  // fix = reopened from the code card with the server's field errors (or the guest's wish to check) over the answers so far.
+  function showFast({ fix = false, errors = null } = {}) {
+    if (!fix && ((S.stage !== 'intro' && S.stage !== 'roam') || stations.arriving() || roam.gliding)) return;
+    if (fix && S.stage !== 'code') return;
     const back = S.stage; S.stage = 'fast'; if (back === 'intro') roam.resetBoom(); roam.stop(); stations.close(); ticket.hide(); hud.hideHint(); hud.hideToast(); audio.unlock();
-    hud.showCard([h('p', { class: 'kicker', text: EVENT.title }), hud.heading('x-h', 'Just reply'), fastLaneForm({ onSend: fastSend }).form,
-      h('div', { class: 'row' }, h('button', { class: 'linkbtn', type: 'button', onclick: () => { if (S.stage !== 'fast') return; hud.hideCard(); if (back === 'intro') { stageGates(true); showIntro(); } else S.stage = 'roam'; }, text: 'Back to the game' }))],
+    const init = { ...S.values, attending: S.side === 'away' ? 'no' : S.values.attending };
+    const fl = fastLaneForm({ onSend: fastSend, init, errors });
+    hud.showCard([h('p', { class: 'kicker', text: EVENT.title }), hud.heading('x-h', fix ? 'Check your answers' : 'Just reply'), fl.form,
+      h('div', { class: 'row' }, h('button', { class: 'linkbtn', type: 'button', onclick: () => { if (S.stage !== 'fast') return; hud.hideCard(); if (fix) showCode(); else if (back === 'intro') { stageGates(true); showIntro(); } else S.stage = 'roam'; }, text: fix ? 'Back to my code' : 'Back to the game' }))],
     { labelledBy: 'x-h', cls: 'fast', kind: 'fast' });
   }
   function fastSend({ side, values }) {
-    if (S.stage !== 'fast') return;   // a second Send never gets here (the form ignores it), and a stale form cannot send twice
-    S.side = side; S.values = { ...values }; hud.hideCard();
-    if (side === 'away') awayEnd(); else { S.score = FIELDS.length; fullTime(); }
+    if (S.stage !== 'fast') return;   // a stale form cannot send twice
+    S.side = side; S.values = { ...values }; S.score = 4; hud.hideCard();
+    showCode();
   }
 
-  // -- data: one send path (submit.js). The confirmation card renders only once the send has succeeded; a failure offers Send again (same idempotency key). ---
+  // -- data: submit.js is the one transport. The code card (codecard.js) requests the emailed code when it opens and saves on a good code; the confirmation renders ONLY from the
+  // server's saved/updated reply (a returning guest gets "welcome back", their seat kept). A refused code or a failed call stays on the card. -------------------------------
+  let code = null;
+  function showCode() {
+    if (S.staged || S.stage === 'done') return;   // a staged view (capture, dev) has no real answers: it never asks for a code
+    const shut = closedText(); if (shut) { showClosed(); return; }
+    code?.dispose(); S.stage = 'code'; hud.hideWalk(); stations.close();
+    const mine = S, side = S.side, answers = () => ({ ...S.values, attending: side === 'away' ? 'no' : S.values.attending });
+    code = codeCard({ side, getValues: answers, setEmail: (e) => { S.values.email = e; },
+      onSaved: (r) => { if (S === mine) showConfirmation(r); }, onFix: (errs) => { if (S === mine) showFast({ fix: true, errors: serverErrors(errs) }); }, onClosed: () => { if (S === mine) showClosed(); } });
+    hud.showCard(code.nodes, { labelledBy: 'cc-k', head: true, kind: 'code' });
+    code.start();
+  }
+  const serverErrors = (errs) => mapServerErrors(errs, true);
   const snapshot = () => ({ side: S.side, ...S.values });
-  function sendRsvp() {
-    if (S.staged || S.stage === 'sending' || S.stage === 'done') return;   // a staged view (capture, dev) has no real answers: it never sends
-    const mine = S; S.stage = 'sending'; hud.hideWalk();
-    const pending = submitRsvp(S.side, S.values);
-    if (getState() === 'sending') hud.showCard([h('p', { class: 'kicker', text: 'Sending' }), hud.heading('s-h', 'Sending your reply…')], { labelledBy: 's-h', head: true, kind: 'sending' });   // only while a network round trip is really pending
-    pending.then((st) => { if (disposed || S !== mine) return; if (st === 'sent') showConfirmation(); else showSendFailed(); });
+  function showClosed() {
+    code?.dispose(); code = null; S.stage = 'closed';
+    hud.showCard([h('p', { class: 'kicker', text: DATE_LINE }), hud.heading('i-h', "You've been called up"), h('p', { class: 'closed', role: 'status', text: closedText() ?? '' })], { labelledBy: 'i-h', head: true, kind: 'closed' });
   }
-  function showConfirmation() {
-    const p = getSent(); S.stage = 'done';
-    hud.showCard(confirmCard(p.side, p, { kicker: p.side === 'home' ? `Full time · HOME ${S.score}–0` : 'AWAY' }), { labelledBy: 'd-h', head: true, kind: 'confirm' });
-  }
-  function showSendFailed() {
-    S.stage = 'sendFailed';
-    hud.showCard([h('p', { class: 'kicker', text: S.side === 'away' ? 'AWAY' : 'HOME' }), hud.heading('s-h', 'Reply not sent'), h('p', { class: 'err', role: 'alert', text: SEND_FAILED }),
-      h('div', { class: 'row' }, h('button', { class: 'btn', type: 'button', onclick: () => { S.stage = 'retry'; sendRsvp(); }, text: 'Send' }))], { labelledBy: 's-h', head: true, kind: 'sendFailed' });
+  function showConfirmation(r) {
+    code?.dispose(); code = null; S.stage = 'done';
+    hud.showCard(confirmCard(r), { labelledBy: 'd-h', head: true, kind: 'confirm' });
   }
   if (import.meta.env.DEV) Object.defineProperty(window, '__rsvp', { get: snapshot, configurable: true });
 
   // -- reset + staged views ------------------------------------------------------------------------------------------------------------------------------
   function reset() {
-    tl.clear(); cine.reset(); for (const c of Object.values(challenges)) { c.stop(); c.reset?.(); } ticket.reset();
+    code?.dispose(); code = null; tl.clear(); cine.reset(); for (const c of Object.values(challenges)) { c.stop(); c.reset?.(); } ticket.reset();
     stations.reset(); roam.reset(); resetGates(); world.setLights(1);
     scoreboard.draw(); fx.stop(); crowd.wave(false); crowd.applaud(0); teammates.reset();
     hud.reset(); guideKey = ''; fastShown = null; S = fresh(); resetForDev(); shirt.draw(''); avatar.reset(); waving = null; chipTop = null; hud.setChipTop(null); squadTimer = null;
@@ -366,7 +385,7 @@ export function createFlow(world, { audio, fx, teammates }) {
     else if (name === 'roam') { stageHome(['1:home']); roam.teleport(HOME_END[0], HOME_END[1], { look: [-32.6, 1.2, 8] }); S.stage = 'roam'; S.hinted = true; }
     else if (name === 'dribble') { stageHome(['1:home']); playStage('2'); challenges.dribble.stageAt(...DRIBBLE_VIEW.at); }
     else if (name === 'corner') { stageHome(['1:home', '2']); playStage('3'); }
-    else if (name === 'penalty') { stageHome(['1:home', '2', '3']); place(PENALTY_VIEW); S.stage = 'roam'; S.hinted = true; stations.run(stations.byK('4'), S.values.guests); }
+    else if (name === 'penalty') { stageHome(['1:home', '2', '3']); place(PENALTY_VIEW); S.stage = 'roam'; S.hinted = true; stations.run(stations.byK('4'), undefined); }
     else if (name === 'aerial') { roam.detach(); const v = VIEWS.aerial, a = anglesFor(v.pos, v.target); camera.position.set(...v.pos); camera.fov = v.fov; camera.updateProjectionMatrix(); ctl.yaw = a.yaw; ctl.pitch = a.pitch; ctl.apply(); S.stage = 'preview'; }
     else throw new Error('goto: gates|roam|dribble|corner|penalty|aerial');
     if (import.meta.env.DEV) window.__stage = name;
@@ -455,7 +474,7 @@ export function createFlow(world, { audio, fx, teammates }) {
     skip(seconds, dt = 1 / 30) { for (let t = 0; t < seconds; t += dt) sim.step(dt); return sim.t; },
     ticket: ticket.group, pace: { ...PACE, arrive: stations.PACE.arrive, ticket: TICKET_PACE, penalty: PENALTY_PACE, dribble: DRIBBLE_PACE, corner: CORNER_PACE },
     // Called by the fallback page when the scene is abandoned: release every listener and timer so the keyboard belongs to the form again.
-    dispose() { disposed = true; ac.abort(); tl.clear(); for (const c of Object.values(challenges)) c.stop(); ctl.enabled = false; },
+    dispose() { disposed = true; code?.dispose(); ac.abort(); tl.clear(); for (const c of Object.values(challenges)) c.stop(); ctl.enabled = false; },
   };
   return api;
 }

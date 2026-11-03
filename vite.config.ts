@@ -2,7 +2,7 @@ import path from 'node:path'
 import { defineConfig } from 'vite'
 
 const NOT_PROD =
-  'Refusing to build: NODE_ENV=%s makes import.meta.env.DEV true, so every dev gate (the ?endpoint= override, closedReasons dev, window.__rsvp) would ship. Unset NODE_ENV or use `pnpm build`.'
+  'Refusing to build: NODE_ENV=%s makes import.meta.env.DEV true, so every dev gate (closedReasons dev, window.__rsvp) would ship. Unset NODE_ENV or use `pnpm build`.'
 
 // https://vite.dev/config/
 export default defineConfig(({ command }) => {

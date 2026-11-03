@@ -1,9 +1,13 @@
-// matchday-rsvp CONFIG: the one place an organiser edits. EVENT = every event fact + kit colour; FIELDS = the RSVP questions.
+// matchday-rsvp CONFIG: the one place an organiser edits. EVENT = every event fact + kit colour; FIELDS = the RSVP questions (fields.js).
 // No imports, so every module (scene, flow, CSS) can read it without circular-import trouble.
 // Kit colours are CSS hex strings; KIT_HEX holds the same values as 0xRRGGBB numbers for three.js.
+// Makes's 30th (DESIGN.md sections 2 and 3). No kick-off time until there is one; no club, crest or stadium names anywhere.
 export const EVENT = {
-  title: 'Save the Date: Matchday', date: 'Saturday 12 December 2026', kickoff: '18:00', venue: 'Kick-Off Arena', host: 'The Organising Committee',
-  shortDate: '12.12',   // the LED board's "RSVP • 12.12"
+  title: 'Makes turns 30', date: 'Monday 21 December 2026', venue: 'Venue TBA', host: 'Makes',
+  tagline: 'Thirty feels like half time. Come for the oranges.',
+  shortDate: '21 DEC 2026',   // the stub, the LED boards and the scoreboard
+  brand: 'THIRTY',            // the one word on the signage
+  led: 'MAKES \u00b7 30',
   // ✎ REQUIRED before go-live: the POPIA short notice shown before any personal field. Placeholders in [brackets] are NOT real values; replace every one.
   privacy: {
     responsibleParty: '[Organiser legal name]',                              // ✎ REQUIRED before go-live: who is the "responsible party" under POPIA
@@ -11,33 +15,32 @@ export const EVENT = {
     retention: '[retention period, e.g. 30 days after the event]',           // ✎ REQUIRED before go-live: when the details are deleted
     policyUrl: '[https://privacy policy URL]',                               // ✎ REQUIRED before go-live: full notice; shown as a link only once it starts with https://
   },
-  kits: { home: '#C8102E', homeDark: '#7a0a1c', homeLight: '#ff5a6e', away: '#1B2A4A', awayLight: '#6f94ff', awayTint: '#28468c' },
+  // Brand kits (DESIGN.md section 4): HOME = shirt-red with white; AWAY = a dark neutral (void / panel) with moonlight trim. No club cues.
+  // homeLight is the scene's poster-red (decoration and signage only, never on the UI layer); awayLight is moonlight.
+  kits: { home: '#9F0B19', homeDark: '#850914', homeLight: '#F81E24', away: '#18131F', awayLight: '#B7D3FA', awayTint: '#241D2E' },
 };
-// ✎ Organiser: where the RSVP is POSTed as JSON. A PUBLIC https:// URL only, never a key, token or secret, and nothing in a VITE_* variable (those are baked into the page for everyone).
-// Blank = no network at all: the reply is accepted on the page and only the `rsvp:submit` event fires.
-export const RSVP_ENDPOINT = '';   // this URL is public and unauthenticated: anyone can read it and POST to it, so the server must validate and rate-limit.
-// ✎ Organiser: leave '' (the default) for a production page that must collect RSVPs: with a blank RSVP_ENDPOINT it then shows "RSVPs open soon" and sends nothing.
-// 'event-only' = the page accepts the reply and only fires `rsvp:submit`; use it only if the host page listens for rsvp:submit and stores it.
-export const RSVP_MODE = '';
-// Version string sent with every RSVP so the server can tell which privacy notice the guest saw. Bump it whenever EVENT.privacy or the notice wording changes.
-export const NOTICE_VERSION = 'popia-short-2026-10';
+// The invite key travels in the link (?k=). Same text for a missing key and for the server's invalid_link.
+export const MISSING_KEY_MESSAGE = 'This link is missing its invite key. Ask Makes to send you the full link.';
+// Version string sent with every RSVP so the server can tell which privacy notice the guest saw. Bump it whenever EVENT.privacy or the notice wording changes. Must match /^[a-z0-9.-]{1,32}$/.
+export const NOTICE_VERSION = 'popia-short-2026-11';
 const num = (hex) => parseInt(hex.slice(1), 16);
 export const KIT_HEX = Object.fromEntries(Object.entries(EVENT.kits).map(([k, v]) => [k, num(v)]));
-export const VENUE_UC = EVENT.venue.toUpperCase();
+export const TITLE_UC = EVENT.brand;
+export const DATE_LINE = `${EVENT.date} \u00b7 ${EVENT.venue}`;
 
 // ---- THEME (design contract: .specno-design/tokens.md). Tier-1/2 tokens; the CSS side gets them as --* custom properties below, canvases read the JS constants.
 // accent / accentAway / scoreboardAccentGoal derive from EVENT.kits so the kit stays the one colour source.
 export const THEME = {
+  // DESIGN.md section 4: void #0E0B13, panel #18131F, panel-raised #241D2E, moonlight #B7D3FA, line #8A8FB0, text #FFFFFF, error #FF9E8F. Paper tokens are the invitation ticket's stock only.
   color: {
-    ink950: '#0B0D12', ink900: '#0E121C', ink800: '#161B27', ink700: '#232A3A',
-    fog100: '#F2F4F8', fog300: '#A9B2C3', fog500: '#6B7487',
+    ink950: '#0E0B13', ink900: '#18131F', ink800: '#241D2E', ink700: '#2F2740', fog100: '#FFFFFF', fog300: '#B7D3FA', fog500: '#8A8FB0',
     paper100: '#EFE9DB', paper300: '#D8CFBA', paperInk: '#14171F', paperMuted: '#4A4F5C', paperRule: '#8A8576',
-    danger300: '#ff9a9a',
-    surface: 'rgba(14,18,28,.82)', surfaceSolid: '#0E121C', surfaceRaised: '#161B27',
-    text: '#F2F4F8', textMuted: '#A9B2C3',
-    ruleHairline: 'rgba(242,244,248,.14)', ruleControl: '#6B7487',
-    focusOuter: '#F2F4F8', focusInner: '#0B0D12', focusOnPaper: '#14171F',
-    scoreboardText: '#F2F4F8', scoreboardDim: '#9fb4c9', scoreboardAccent: '#F2F4F8',
+    danger300: '#FF9E8F', success300: '#8EDDA9', warning300: '#FFC978', primary: '#9F0B19', primaryHover: '#B3101F', primaryPressed: '#850914',
+    surface: 'rgba(24,19,31,.94)', surfaceSolid: '#18131F', surfaceRaised: '#241D2E',
+    text: '#FFFFFF', textMuted: '#B7D3FA',
+    ruleHairline: 'rgba(183,211,250,.22)', ruleControl: '#8A8FB0',
+    focusOuter: '#FFFFFF', focusInner: '#0E0B13', focusOnPaper: '#14171F',
+    scoreboardText: '#FFFFFF', scoreboardDim: '#B7D3FA', scoreboardAccent: '#FFFFFF',
     accent: EVENT.kits.homeLight, accentAway: EVENT.kits.awayLight, scoreboardAccentGoal: EVENT.kits.homeLight,
   },
   radius: { 0: 0, 1: 4, 2: 8, 3: 12, pill: 999 },
@@ -89,15 +92,3 @@ const LETTER_MARK = /[\p{L}\p{M}]/u, JOINER = /[\u200C\u200D]/g, LAST_CP = /[\s\
 export const clean = (s, { joiners = false } = {}) => String(s ?? '').replace(STRIP, '')
   .replace(JOINER, (m, i, t) => (joiners && LETTER_MARK.test(t.slice(0, i).match(LAST_CP)?.[0] ?? '') && LETTER_MARK.test(t.slice(i + 1).match(FIRST_CP)?.[0] ?? '') ? m : ''))
   .normalize('NFC').trim();
-const ok = (value) => ({ ok: true, value });
-const bad = (error) => ({ ok: false, error });
-export const FIELDS = [
-  { key: 'name', label: 'Full name', short: 'Name', type: 'text', inputmode: 'text', autocomplete: 'name', maxlength: 80, placeholder: 'e.g. Alex Morgan',
-    validate(v) { v = clean(v, { joiners: true }); if (!v || !/\p{L}/u.test(v)) return bad('Please enter your full name.'); if (v.length > 80) return bad('That is a little long: 80 characters or fewer, please.'); return ok(v); } },
-  { key: 'email', label: 'Email', short: 'Email', type: 'email', inputmode: 'email', autocomplete: 'email', maxlength: 254, placeholder: 'you@example.com',
-    validate(v) { v = clean(v); if (!v) return bad('Please enter your email address.'); if (v.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)) return bad('That email does not look right. Try name@example.com.'); return ok(v); } },
-  { key: 'mobile', label: 'Mobile number', short: 'Mobile', type: 'tel', inputmode: 'tel', autocomplete: 'tel', maxlength: 20, placeholder: '+27 82 123 4567',
-    validate(v) { v = clean(v); const digits = v.replace(/\D/g, '').length; if (v.length > 20 || !/^\+?[\d\s-]+$/.test(v) || digits < 7 || digits > 15) return bad('Use 7 to 15 digits; spaces, dashes and a leading + are fine.'); return ok(v); } },
-  { key: 'guests', label: 'Guests joining you (0-3)', short: 'Guests', type: 'choice', options: [0, 1, 2, 3], inputmode: 'numeric', autocomplete: 'off',
-    validate(v) { v = clean(v); if (!/^\d+$/.test(v) || Number(v) > 3) return bad('Please choose a number from 0 to 3.'); return ok(Number(v)); } },
-];

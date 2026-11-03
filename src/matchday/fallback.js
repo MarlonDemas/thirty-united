@@ -1,9 +1,11 @@
-// matchday-rsvp: the no-WebGL / load-failure / lost-context page. A plain HTML page: event details, then the fast-lane form. No three.js (imports config.js, ui.js, submit.js, teardown.js only).
+// matchday-rsvp: the no-WebGL / load-failure / lost-context page. A plain HTML page: event details, then the fast-lane form, then the code card. No three.js (imports config.js, ui.js, codecard.js, submit.js, teardown.js only).
 // Sets window.__fallback and window.__ready so capture/tests do not hang, and keeps the contract stubs (__views, __setView, __dbg) callable.
-// It sends through the same submit.js as the game (one page-wide state, one `rsvp:submit` on success), so an RSVP the game already sent shows its confirmation here, never a fresh form.
-import { EVENT } from './config.js';
-import { h, fastLaneForm, confirmCard, crestMark, summaryRows, SEND_FAILED } from './ui.js';
-import { getState, getSent, getFailed, getValues, onState, submitRsvp } from './submit.js';
+// It saves through the same submit.js as the game (one page-wide state), so a reply the game already saved shows its confirmation here, never a fresh form.
+import { EVENT, DATE_LINE } from './config.js';
+import { h, fastLaneForm, confirmCard } from './ui.js';
+import { codeCard } from './codecard.js';
+import { mapServerErrors } from './fields.js';
+import { getSent, closedText } from './submit.js';
 import { runTeardown } from './teardown.js';
 
 export function showFallback(reason) {
@@ -14,35 +16,27 @@ export function showFallback(reason) {
   const ui = document.getElementById('ui'); ui.replaceChildren();
 
   const card = h('section', { id: 'card', class: 'glass fb', role: 'group', 'aria-labelledby': 'fb-h', tabindex: '-1' });
-  const showConfirm = () => {
-    const p = getSent(); if (!p) return;
-    card.replaceChildren(...confirmCard(p.side, p, { id: 'fb-h', display: true }));
-    card.querySelector('h2').focus({ preventScroll: true });
+  let code = null, answers = null;   // answers: { side, values } once the form has been filled
+  const focusHead = () => card.querySelector('h2')?.focus({ preventScroll: true });
+  const showConfirm = (r) => { code?.dispose(); card.replaceChildren(...confirmCard(r, { id: 'fb-h' })); focusHead(); };
+  const showClosed = () => { code?.dispose(); card.replaceChildren(h('p', { class: 'kicker', text: DATE_LINE }), h('h2', { id: 'fb-h', class: 'display', tabindex: '-1', text: "You've been called up" }), h('p', { class: 'closed', role: 'status', text: closedText() ?? '' })); focusHead(); };
+  const showCode = () => {
+    if (closedText()) { showClosed(); return; }
+    code?.dispose();
+    const { side, values } = answers;
+    code = codeCard({ side, getValues: () => ({ ...values, attending: side === 'away' ? 'no' : values.attending }), setEmail: (e) => { values.email = e; }, id: 'fb-cc',
+      onSaved: showConfirm, onClosed: showClosed, onFix: (errs) => showForm(mapServerErrors(errs, true)) });
+    card.replaceChildren(...code.nodes); card.querySelector('h2').id = 'fb-h'; focusHead(); code.start();
   };
-  // A send that failed before the switch (e.g. in the game): show those answers read-only with Send again, which resends the exact payload under the same key. A fresh form would let changed answers go out under a new key.
-  const showRetry = (p) => {
-    const btn = h('button', { class: 'btn', type: 'button', text: 'Send again', onclick: () => { submitRsvp(p.side, p); } }), err = h('p', { class: 'err', role: 'alert', text: SEND_FAILED });
-    card.replaceChildren(h('p', { class: 'kicker', text: p.side === 'away' ? 'AWAY' : 'HOME' }), h('h2', { id: 'fb-h', class: 'display', tabindex: '-1', text: 'Reply not sent' }), err, h('dl', {}, summaryRows(p)), h('div', { class: 'row' }, btn));
-    onState((st) => { btn.disabled = st === 'sending' || st === 'sent'; err.hidden = st !== 'failed'; });
-    card.querySelector('h2').focus({ preventScroll: true });
+  const showForm = (errors = null) => {
+    const { form } = fastLaneForm({ capped: false, init: answers ? { ...answers.values, attending: answers.side === 'away' ? 'no' : answers.values.attending } : {}, errors, onSend: ({ side, values }) => { answers = { side, values: { ...values } }; showCode(); } });
+    const details = h('dl', {}, h('dt', { text: 'When' }), h('dd', { text: EVENT.date }), h('dt', { text: 'Where' }), h('dd', { text: EVENT.venue }), h('dt', { text: 'Host' }), h('dd', { text: EVENT.host }));
+    card.replaceChildren(h('p', { class: 'kicker', text: "You've been called up" }), h('h2', { id: 'fb-h', class: 'display', tabindex: '-1', text: EVENT.title }), h('p', { text: EVENT.tagline }), details, h('p', { class: 'kicker', text: 'Your reply' }), form);
   };
-  if (getState() === 'sent') showConfirm();
-  else if (getFailed()) { showRetry(getFailed()); onState((st) => { if (st === 'sent') showConfirm(); }); }
-  // A send still in flight (started in the game before the switch): no editable form, or a failure would let changed answers go out under a new key. Settle into the confirmation or the read-only retry; the first subscription removes itself.
-  else if (getState() === 'sending') {
-    card.replaceChildren(h('h2', { id: 'fb-h', class: 'display', tabindex: '-1', text: 'Sending your reply…' }), h('p', { class: 'kicker', role: 'status', 'aria-live': 'polite', text: 'Please wait a moment.' }));
-    const off = onState((st) => { if (st === 'sent') { off(); showConfirm(); } else if (st === 'failed' && getFailed()) { off(); showRetry(getFailed()); onState((s) => { if (s === 'sent') showConfirm(); }); } });
-  }
-  else {
-    const title = h('h2', { id: 'fb-h', class: 'display', tabindex: '-1', text: EVENT.title });
-    const details = h('dl', {}, h('dt', { text: 'When' }), h('dd', { text: `${EVENT.date}, ${EVENT.kickoff}` }), h('dt', { text: 'Where' }), h('dd', { text: EVENT.venue }), h('dt', { text: 'Host' }), h('dd', { text: EVENT.host }));
-    const { form } = fastLaneForm({ capped: false, onSend: ({ side, values }) => { submitRsvp(side, values); } });
-    card.append(h('div', { class: 'fb-head' }, crestMark(), h('p', { class: 'kicker', text: 'You are invited' })), title, details, h('p', { class: 'kicker', text: 'Your reply' }), form);
-    onState((st) => { if (st === 'sent') showConfirm(); });   // also covers a send the game started just before the context was lost
-  }
+  if (getSent()) showConfirm(getSent());
+  else if (closedText()) showClosed();
+  else showForm();
   ui.append(h('main', { id: 'fb' }, card));
-
-  if (import.meta.env.DEV) Object.defineProperty(window, '__rsvp', { get: getValues, configurable: true });
 
   window.__views ??= []; window.__setView ??= () => {}; window.__dbg ??= { simStep() {}, agents: () => [] };
   window.__ready = true;

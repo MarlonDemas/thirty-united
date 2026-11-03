@@ -1,7 +1,7 @@
 // Stadium shell: two-tier rounded-rectangle bowl (stepped concrete, instanced seats, aisles, vomitories, railings),
 // facade, cantilever roof with visible steel trusses + LED lip, floodlight masts, scoreboard, players' tunnel + concourse.
 import * as THREE from 'three';
-import { EVENT, VENUE_UC, THEME, fontCss } from './config.js';
+import { EVENT, TITLE_UC, THEME, fontCss } from './config.js';
 import { D, lowerY, upperY, roofDeckY } from './dims.js';
 import { pbr, canvasTex, makePath, polyline, Geo, Beams, V, mulberry32 } from './util.js';
 
@@ -324,7 +324,7 @@ export function buildStadium() {
       // parts: array of strings and {flip:[from,to]} digits. Digits sit in fixed-width slots (tabular) and flip like a split-flap when opts.p (0..1) is set:
       // p<.5 the old digit's top half folds down, p>=.5 the new digit's bottom half folds out. p undefined / 1 draws the new digit.
       draw(lines, opts = {}) {
-        lines = lines || [{ text: VENUE_UC, size: 74, color: THEME.color.scoreboardDim }, { parts: ['HOME ', { flip: [0, 0] }, '–0 AWAY'], size: 210, color: THEME.color.scoreboardText, weight: 800 }, { text: `MATCHDAY · KICK-OFF ${EVENT.kickoff}`, size: 78, color: THEME.color.scoreboardAccent }];
+        lines = lines || [{ text: TITLE_UC, size: 74, color: THEME.color.scoreboardDim }, { parts: ['HOME ', { flip: [0, 0] }, '–0 AWAY'], size: 210, color: THEME.color.scoreboardText, weight: 800 }, { text: EVENT.shortDate, size: 78, color: THEME.color.scoreboardAccent }];
         ctx.fillStyle = LED_BG; ctx.fillRect(0, 0, W, H);
         const items = lines.map((l) => (typeof l === 'string' ? { text: l, size: 120, color: THEME.color.scoreboardText } : l));
         const total = items.reduce((s, l) => s + l.size * 1.2, 0); let y = (H - total) / 2;
