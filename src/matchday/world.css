@@ -1,0 +1,155 @@
+/* Inter Tight (SIL OFL 1.1), one variable wght file, Latin subset. Licence: public/world/fonts/InterTight-OFL.txt */
+@font-face{font-family:"Inter Tight";src:url(/world/fonts/InterTight-var-latin.woff2) format("woff2");font-weight:100 900;font-style:normal;font-display:swap}
+/* THEME fallbacks: config.js overrides every one of these at startup (kit colours from EVENT.kits, the rest from THEME). Keep in sync. */
+:root{--kit-home:#C8102E;--kit-home-light:#ff5a6e;--kit-away:#1B2A4A;--kit-away-light:#6f94ff;--kit-away-tint:#28468c;
+  --ink-950:#0B0D12;--ink-900:#0E121C;--ink-800:#161B27;--ink-700:#232A3A;--fog-100:#F2F4F8;--fog-300:#A9B2C3;--fog-500:#6B7487;
+  --surface:rgba(14,18,28,.82);--surface-solid:#0E121C;--paper-100:#EFE9DB;--paper-300:#D8CFBA;--paper-ink:#14171F;--paper-muted:#4A4F5C;--paper-rule:#8A8576;--surface-raised:#161B27;--text:#F2F4F8;--text-muted:#A9B2C3;--rule-hairline:rgba(242,244,248,.14);--rule-control:#6B7487;--rule-control-width:1.5px;
+  --accent:#ff5a6e;--accent-away:#6f94ff;--danger-300:#ff9a9a;--focus-outer:#F2F4F8;--focus-inner:#0B0D12;--focus-on-paper:#14171F;
+  --radius-2:8px;--radius-3:12px;--radius-pill:999px;--radius-1:4px;
+  --font:"Inter Tight","Segoe UI",system-ui,-apple-system,Arial,sans-serif;
+  --fs-caption:11px;--lh-caption:16px;--fw-caption:600;--fs-body-sm:13px;--lh-body-sm:18px;--fw-body-sm:500;--fs-body:15px;--lh-body:22px;--fw-body:450;
+  --fs-label:15px;--lh-label:20px;--fw-label:600;--fs-input:16px;--lh-input:22px;--fw-input:500;--fs-title:20px;--lh-title:26px;--fw-title:700;--fs-display:28px;--lh-display:32px;--fw-display:800;
+  --dur-fast:120ms;--dur-base:200ms;--dur-settle:240ms;--ease-out:cubic-bezier(.2,0,0,1);--focus-ring-width:2px;--focus-ring-offset:2px}
+@media (prefers-reduced-motion:reduce){:root{--dur-fast:0ms;--dur-base:0ms;--dur-settle:0ms}}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--ink-950)}canvas{display:block}
+#ui{position:fixed;inset:0;pointer-events:none;font-family:var(--font);font-optical-sizing:auto;font-size:var(--fs-body);line-height:var(--lh-body);font-weight:var(--fw-body);color:var(--text)}
+#ui>*{pointer-events:auto}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+/* surface: nearly opaque ink, 1px hairline, small blur at most; no glow, no heavy shadow */
+.glass{background:var(--surface);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid var(--rule-hairline);border-radius:var(--radius-3);box-shadow:0 8px 24px rgba(0,0,0,.28)}
+/* the primary card is centred (CLAUDE.md UI placement): `translate` centres it, so the `rise` keyframes keep `transform` to themselves; it scrolls inside itself when taller than the viewport */
+#card{position:fixed;left:50%;top:50%;translate:-50% -50%;width:min(440px,calc(100vw - 32px));max-height:calc(100svh - 32px);overflow:auto;box-sizing:border-box;padding:16px 18px 18px;animation:rise var(--dur-base) var(--ease-out) both}
+/* intro: the card sits centred under the floating 3D invitation ticket */
+#card.under{top:auto;bottom:max(16px,8svh);translate:-50% 0;max-height:calc(56svh - 16px)}
+#card.wide{width:min(560px,calc(100vw - 32px))}
+#card.instant{animation:none}
+#card[hidden]{display:none}
+#card:focus{outline:none}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+#card h2{margin:0 0 4px;font-size:var(--fs-title);line-height:var(--lh-title);font-weight:var(--fw-title);letter-spacing:-.01em}
+#card h2.display{font-size:var(--fs-display);line-height:var(--lh-display);font-weight:var(--fw-display);letter-spacing:-.02em}
+#card h2:focus{outline:none}
+#card .kicker{margin:0 0 6px;font-size:var(--fs-caption);line-height:var(--lh-caption);font-weight:var(--fw-caption);letter-spacing:.14em;text-transform:uppercase;color:var(--text-muted)}
+#card p{margin:0 0 10px;font-size:var(--fs-body);line-height:var(--lh-body);font-weight:var(--fw-body);color:var(--text-muted)}
+#card label,#card .label{display:block;margin:0 0 6px;font-size:var(--fs-label);line-height:var(--lh-label);font-weight:var(--fw-label)}
+#card .label{margin-bottom:8px;font-weight:700}   /* group labels (side, guests) outrank the 600 field labels */
+#card input{width:100%;box-sizing:border-box;min-height:44px;padding:10px 12px;font:inherit;font-size:var(--fs-input);line-height:var(--lh-input);font-weight:var(--fw-input);color:var(--text);background:rgba(0,0,0,.28);border:var(--rule-control-width) solid var(--rule-control);border-radius:var(--radius-2)}
+#card input:hover{border-color:var(--fog-300)}
+#card input[aria-invalid="true"],#card .seg[aria-invalid="true"] .opt{border-color:var(--accent)}
+#card .err{min-height:18px;margin:6px 0 8px;font-size:var(--fs-body-sm);line-height:var(--lh-body-sm);font-weight:var(--fw-body-sm);color:var(--danger-300)}
+#card .row{display:flex;gap:10px;flex-wrap:wrap}
+/* guest count: four radio buttons in a row */
+.seg{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.opt{min-height:44px;padding:8px 0;font-size:var(--fs-input);font-weight:var(--fw-label);color:var(--text);background:rgba(0,0,0,.28);border:var(--rule-control-width) solid var(--rule-control);border-radius:var(--radius-2);font-variant-numeric:tabular-nums}
+.opt:hover{border-color:var(--fog-300)}
+.opt[data-side=home]{box-shadow:inset 3px 0 0 var(--accent)}
+.opt[data-side=away]{box-shadow:inset 3px 0 0 var(--accent-away)}
+.opt[aria-checked="true"]{background:var(--ink-700);border-color:var(--text);border-width:2px}
+button{font:inherit;cursor:pointer}
+button:disabled{opacity:.45;cursor:default}
+/* primary = fog fill + ink text. No red fill anywhere: red is only the 3px home rule and the ticket crest. */
+.btn{min-height:44px;padding:10px 16px;border:0;border-radius:var(--radius-2);font-size:var(--fs-label);line-height:var(--lh-label);font-weight:var(--fw-label);color:var(--ink-950);background:var(--fog-100)}
+.btn:hover{background:white}
+.btn:active{background:var(--fog-300)}
+.btn.ghost{background:transparent;color:var(--text);border:1px solid var(--rule-control)}
+.btn.ghost:hover{background:var(--ink-800)}
+.btn.ghost:active{background:var(--ink-700)}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.choice{display:block;text-align:left;min-height:84px;padding:12px 14px;color:var(--text);border-radius:var(--radius-2);border:var(--rule-control-width) solid var(--rule-control);background:var(--surface-raised)}
+.choice b{display:block;margin-bottom:4px;font-size:var(--fs-caption);line-height:var(--lh-caption);font-weight:var(--fw-caption);letter-spacing:.14em;color:var(--text-muted)}
+.choice span{display:block;font-size:var(--fs-label);line-height:var(--lh-label);font-weight:var(--fw-label)}
+.choice.home{box-shadow:inset 3px 0 0 var(--accent)}
+.choice.away{box-shadow:inset 3px 0 0 var(--accent-away)}
+.choice:hover,.choice:focus-visible{background:var(--ink-700)}
+/* two-tone focus ring: passes on the scene, on kit red and on glass. Paper (ticket) gets the single dark ring. */
+:focus-visible{outline:var(--focus-ring-width) solid var(--focus-outer);outline-offset:var(--focus-ring-offset);box-shadow:0 0 0 var(--focus-ring-width) var(--focus-inner)}
+[data-surface=paper] :focus-visible{outline-color:var(--focus-on-paper);box-shadow:none}
+#card dl{display:grid;grid-template-columns:auto 1fr;gap:0 16px;margin:6px 0 4px}
+#card dt,#card dd{padding:6px 0;border-top:1px solid var(--rule-hairline)}
+#card dt{font-size:var(--fs-body-sm);line-height:var(--lh-body-sm);font-weight:var(--fw-body-sm);color:var(--text-muted)}
+#card dd{margin:0;font-size:var(--fs-body);line-height:var(--lh-body);font-weight:700;overflow-wrap:anywhere}
+.chip{position:fixed;left:50%;top:16px;transform:translateX(-50%);padding:8px 16px;font-size:var(--fs-body-sm);line-height:var(--lh-body-sm);font-weight:var(--fw-label);border-radius:var(--radius-pill);max-width:calc(100vw - 136px);text-align:center;box-sizing:border-box}
+.chip[hidden]{display:none}
+#skip{top:auto;bottom:24px;min-height:44px;display:grid;place-items:center;font-size:var(--fs-label);line-height:var(--lh-label);pointer-events:none;animation:fade var(--dur-fast) var(--ease-out) both}
+#skip[hidden]{display:none}
+#hint{animation:fade var(--dur-fast) var(--ease-out) both}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+/* cinematic letterbox (cine.js): two thin bars, 7% of the height, scaled in by --lb (0..1, driven on the sim clock); first in #ui, so every overlay sits above */
+#lb,#dip{position:fixed;inset:0;pointer-events:none!important}
+#lb[hidden],#dip[hidden]{display:none}
+#lb>div{position:absolute;left:0;right:0;height:7svh;background:#000;transform:scaleY(var(--lb,0))}
+#lb-top{top:0;transform-origin:top}#lb-bot{bottom:0;transform-origin:bottom}
+/* the walk-out's dip to black between the turnstile and the players' tunnel */
+#dip{background:#000;opacity:0}
+/* quiet toast: tracked uppercase caption, never blocks */
+#toast{position:fixed;left:50%;top:22%;transform:translateX(-50%);padding:8px 16px;font-size:var(--fs-caption);line-height:var(--lh-caption);font-weight:var(--fw-caption);letter-spacing:.14em;text-transform:uppercase;background:var(--surface-raised);border-radius:var(--radius-2);opacity:0;transition:opacity var(--dur-base) var(--ease-out);pointer-events:none;text-align:center;max-width:calc(100vw - 32px);box-shadow:none}
+#toast.show{opacity:1}
+#mute{position:fixed;top:16px;right:16px;width:44px;height:44px;padding:0;display:grid;place-items:center;color:var(--text);border-radius:var(--radius-pill)}
+#mute:hover{background:var(--ink-800)}#mute:active{background:var(--ink-700)}
+#mute svg{width:22px;height:22px}
+/* phones: the card spans the width less the 16px gutters; toast and hint never stack over an open card (the toast is still announced) */
+@media (max-width:560px){
+  #card,#card.wide{width:calc(100vw - 32px)}
+  .choices{grid-template-columns:1fr}
+  .choice{min-height:70px;padding:8px 14px}
+  #card dt,#card dd{padding:3px 0}
+  #card:not([hidden])~#toast,#card:not([hidden])~#hint{display:none}
+  #hint{top:68px}
+}
+/* challenge chip: slim, top-centre, the instruction plus a real Skip button; the ball and the goal mouth stay clear below it */
+#chal{display:flex;align-items:center;gap:10px;padding:4px 4px 4px 16px;max-width:calc(100vw - 136px)}
+#chal[hidden]{display:none}
+#chal span{flex:1 1 auto;text-align:left}
+#chal .btn{flex:none;white-space:nowrap;min-height:36px;padding:6px 14px;font-size:var(--fs-body-sm);border-radius:var(--radius-pill)}
+/* guide: the centred "Walk to next station" button; secondary corner control: the fast lane ("Just reply") top-left */
+#walk{position:fixed;left:50%;bottom:24px;translate:-50% 0;display:flex;flex-direction:column;align-items:center;gap:0;min-height:48px;padding:8px 20px;border-radius:var(--radius-pill);color:var(--text);max-width:calc(100vw - 32px);box-sizing:border-box;animation:fade var(--dur-fast) var(--ease-out) both}
+#walk[hidden]{display:none}
+#walk b{font-size:var(--fs-label);line-height:var(--lh-label);font-weight:var(--fw-label)}
+#walk small{font-size:var(--fs-caption);line-height:var(--lh-caption);color:var(--text-muted);letter-spacing:.02em}
+#walk:hover{background:var(--ink-800)}
+#fastlink{position:fixed;top:16px;left:16px;min-height:44px;padding:0 14px;border-radius:var(--radius-pill);color:var(--text);font-size:var(--fs-body-sm);font-weight:var(--fw-label)}
+#fastlink[hidden]{display:none}
+#fastlink:hover{background:var(--ink-800)}
+/* POPIA short notice: caption size, sentence case (tracked caps would run to 6 lines) */
+#card .notice{margin:0 0 8px;font-size:var(--fs-caption);line-height:var(--lh-caption);font-weight:500;color:var(--text-muted)}
+#card .closed{margin:0 0 10px;font-size:var(--fs-body);line-height:var(--lh-body);font-weight:600}
+#card .notice a{color:var(--text);text-underline-offset:2px}
+/* the summary is the notice's first sentence (2-3 lines on phones): hanging indent so wrapped lines clear the ▸ marker (~11.6 px at 11 px) */
+#card details.notice summary{cursor:pointer;line-height:16px;padding:4px 0 4px 12px;text-indent:-12px}
+#card details.notice p{margin:4px 0 0;font-size:inherit;line-height:inherit;font-weight:inherit}
+/* fast lane ("just reply") + no-WebGL page. Same tokens and card as the game; the side choice is a two-up radiogroup. */
+.seg.two{grid-template-columns:1fr 1fr}
+#card .row{align-items:center}
+.linkbtn{display:inline-flex;align-items:center;min-height:44px;padding:0 4px;border:0;background:none;color:var(--text-muted);font-size:var(--fs-body-sm);line-height:var(--lh-body-sm);font-weight:var(--fw-label);text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--rule-control)}
+.linkbtn:hover{color:var(--text);text-decoration-color:currentColor}
+#card .fl-field{margin:0 0 6px}
+    #card.fast .err,#card.fb .err{min-height:0;margin:4px 0 6px}
+#card.fast .kicker{margin-bottom:2px}
+#card.fast h2{margin-bottom:10px}
+#fb{position:fixed;inset:0;overflow:auto;box-sizing:border-box;padding:24px 16px 32px;background:var(--ink-950)}
+#card.fb{position:static;translate:none;width:min(480px,100%);max-height:none;overflow:visible;margin:0 auto;animation:none}
+#card.fb h2.display{margin-bottom:12px}
+#card.fb .kicker:not(:first-child){margin-top:14px}
+#card.fb .crest+.kicker{margin-top:0}
+/* no-WebGL page identity: crest, kit-red left rule, paper strip behind the facts. No red fill (the crest is the kit mark, the rule is 3px). */
+#card.fb{border-left:3px solid var(--accent)}
+#card.fb .crest{display:block;width:32px;height:32px;margin:0 0 10px;color:var(--kit-home)}
+#card.fb h2.display{font-size:26px;line-height:30px;letter-spacing:-.01em}
+#card.fb dl{margin:10px 0 6px;padding:2px 14px;background:var(--paper-100);border-radius:var(--radius-2)}
+#card.fb dt,#card.fb dd{border-top-color:var(--paper-rule)}
+#card.fb dt{color:var(--paper-muted)}
+#card.fb dd{color:var(--paper-ink)}
+#card.fb dl>:nth-child(-n+2){border-top:0}
+/* static loading screen: visible before any module runs, removed when __ready is true */
+#boot{position:fixed;inset:0;z-index:20;display:grid;place-content:center;gap:6px;padding:24px;box-sizing:border-box;text-align:center;background:var(--ink-950);color:var(--text);font-family:var(--font);font-size:var(--fs-body);line-height:var(--lh-body)}
+#boot p{margin:0;color:var(--text-muted)}
+#boot .k{font-size:var(--fs-caption);line-height:var(--lh-caption);font-weight:var(--fw-caption);letter-spacing:.14em;text-transform:uppercase}
+#boot h1{margin:0;font-size:var(--fs-display);line-height:var(--lh-display);font-weight:var(--fw-display);letter-spacing:-.02em}
+/* phones: the fast-lane card is a compact form; it scrolls inside itself if the OS text size is larger */
+@media (max-width:560px){#card.fast h2{margin-bottom:4px}#card.fast .fl-field{margin-bottom:3px}#card.fast .fl-field .err:empty{margin:0}#card.fast details.notice{margin-bottom:4px}.choice{min-height:52px;padding:6px 14px}.choice b{margin-bottom:2px}}
+/* quick reply: Send stays on screen when the card scrolls (solid footer, bleeds over the card padding); phone Send is full width */
+#card{scroll-padding-bottom:64px}
+#card.fast form>.row:last-child{position:sticky;bottom:-18px;z-index:1;margin:0 -18px -18px;padding:0 18px 18px;background:var(--surface-solid)}
+@media (max-width:560px){#card.fast .btn,#card.fb .btn{width:100%}}
+@media (prefers-reduced-motion:reduce){#card,#skip,#hint,#walk{animation:none}#toast{transition:none}}
+[data-motion=reduce] #card,[data-motion=reduce] #skip,[data-motion=reduce] #hint,[data-motion=reduce] #walk{animation:none}[data-motion=reduce] #toast{transition:none}
