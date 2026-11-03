@@ -25,6 +25,7 @@ export const guestFields = {
     otherSport: v.optional(v.string()),
     funFact: v.optional(v.string()),
     howKnowMakes: v.optional(v.string()),
+    noticeVersion: v.optional(v.string()), // privacy notice version the guest saw
     inviteChannel: v.optional(inviteChannelValidator),
     whatsapp: v.optional(v.string()),
     ticketNo: v.number(),

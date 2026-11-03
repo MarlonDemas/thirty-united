@@ -18,6 +18,7 @@ export const rsvpPayloadValidator = v.object({
   otherSport: v.optional(v.string()),
   funFact: v.optional(v.string()),
   howKnowMakes: v.optional(v.string()),
+  noticeVersion: v.optional(v.string()),
   inviteChannel: v.optional(inviteChannelValidator),
   whatsapp: v.optional(v.string()),
 });
@@ -37,6 +38,8 @@ const LIMITS = {
   longText: 500,
   whatsapp: 30,
 } as const;
+
+const NOTICE_VERSION_RE = /^[a-z0-9.-]{1,32}$/;
 
 // Newlines/tabs become spaces; other control chars, bidi overrides/isolates and
 // zero-width characters are removed (they enable spoofing and CSV/log trickery).
@@ -90,6 +93,13 @@ export function validateRsvp(input: RsvpPayload): ValidationResult {
   }
 
   const value: CleanRsvp = { firstName, surname, attending };
+
+  // Privacy notice version the guest saw. Checked before the "no" early return so declines
+  // store it too. Strict allow-list; the raw value is not trimmed or cleaned.
+  if (input.noticeVersion !== undefined) {
+    if (NOTICE_VERSION_RE.test(input.noticeVersion)) value.noticeVersion = input.noticeVersion;
+    else errors.noticeVersion = "Invalid notice version";
+  }
 
   if (attending === "no") {
     return Object.keys(errors).length ? { ok: false, errors } : { ok: true, value };

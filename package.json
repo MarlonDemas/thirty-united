@@ -16,6 +16,8 @@
     "og": "node scripts/render-og.mjs public/og.jpg",
     "rsvps:reset-limits": "convex run admin:resetCodeLimits",
     "rsvps:summary": "convex run admin:summary",
+    "rsvps:get": "convex run admin:getGuest",
+    "rsvps:delete": "convex run admin:deleteGuest",
     "rsvps:csv": "convex run admin:listRsvps | node scripts/export-rsvps.mjs"
   },
   "dependencies": {
