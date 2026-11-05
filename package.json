@@ -24,6 +24,7 @@
     "rsvps:declines-csv": "convex run admin:listDeclines | node scripts/export-declines.mjs",
     "rsvps:get-decline": "convex run admin:getDecline",
     "rsvps:delete-decline": "convex run admin:deleteDecline",
+    "rsvps:delete-decline-id": "convex run admin:deleteDeclineById",
     "rsvps:reset-decline-limits": "convex run admin:resetDeclineLimits"
   },
   "dependencies": {

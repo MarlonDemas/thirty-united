@@ -63,12 +63,13 @@ Host-only, run through the Convex CLI. Check which deployment your CLI points at
 | `pnpm rsvps:declines-csv` | Exports name-only declines as CSV. Every row is marked "self-reported, unverified" |
 | `pnpm rsvps:get-decline '{"firstName":"Ada","surname":"Lovelace"}'` | Shows one decline by name |
 | `pnpm rsvps:delete-decline '{"firstName":"Ada","surname":"Lovelace"}'` | Erases one decline on request: the row and that name's rate-limit bucket |
+| `pnpm rsvps:delete-decline-id '{"id":"<_id>"}'` | Erases one decline by row id (same effect as `delete-decline`); use when the typed name misses |
 | `pnpm rsvps:reset-decline-limits` | Resets the global decline limit |
 
 Name-only declines (a guest who picked away and has not replied before) live in their own table, apart from guests. Anyone with the link can decline under any name, so treat them as unverified. They show in `rsvps:summary` as `declinesUnverified`, never in the headcount.
 
 - Declines only work on a deployment where `DECLINES_OPEN` is `"true"`. The owner sets it. Without it the decline action answers `service_unavailable`.
-- An erasure request must check both `rsvps:get` (by email) and `rsvps:get-decline` (by name), and delete from whichever holds a row.
+- An erasure request must check both `rsvps:get` (by email) and `rsvps:get-decline` (by name), and delete from whichever holds a row. If `rsvps:get-decline` returns null, search the `rsvps:declines-csv` output for the name and delete by id with `rsvps:delete-decline-id`.
 
 ### Purge all guests
 

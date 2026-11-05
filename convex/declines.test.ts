@@ -200,7 +200,7 @@ describe("declines.record", () => {
     expect(status.ok).toBe(true);
   });
 
-  it("MAX_DECLINES cap: rate_limited for a new name, an existing name still upserts", async () => {
+  it("MAX_DECLINES cap: rate_limited for every name, new or existing, with no write", async () => {
     const t = newTest();
     await t.run(async (ctx) => {
       for (let i = 0; i < MAX_DECLINES; i++) {
@@ -219,11 +219,11 @@ describe("declines.record", () => {
     });
     expect(await rows(t)).toHaveLength(MAX_DECLINES);
     expect(await rec(t, { nameKey: "n|s7", rateKey: "rk-s7", reason: "updated" })).toEqual({
-      status: "saved",
+      status: "rate_limited",
     });
     const all = await rows(t);
     expect(all).toHaveLength(MAX_DECLINES);
-    expect(all.find((r) => r.nameKey === "n|s7")?.reason).toBe("updated");
+    expect(all.find((r) => r.nameKey === "n|s7")?.reason).toBeUndefined();
   });
 
   it("upsert preserves createdAt and updates updatedAt (and drops a removed reason)", async () => {
@@ -291,6 +291,40 @@ describe("admin declines", () => {
     expect((await rows(t)).map((r) => r.nameKey)).toEqual(["grace|hopper"]);
     expect((await t.run((ctx) => rateLimiter.check(ctx, "declinePerName", { key: keyA }))).ok).toBe(true);
     expect((await t.run((ctx) => rateLimiter.check(ctx, "declinePerName", { key: keyG }))).ok).toBe(false);
+  });
+
+  it("a smart-quote name and a straight-quote name upsert to the same row", async () => {
+    const t = newTest();
+    expect(await submit(t, { surname: "O\u2019Brien", reason: "a" })).toEqual({ status: "saved" });
+    expect(await submit(t, { surname: "O'Brien", reason: "b" })).toEqual({ status: "saved" });
+    const all = await rows(t);
+    expect(all).toHaveLength(1);
+    expect(all[0].reason).toBe("b");
+    const hit = await t.query(internal.admin.getDecline, { firstName: "Ada", surname: "O\u2019Brien" });
+    expect(hit?._id).toBe(all[0]._id);
+  });
+
+  it("deleteDeclineById deletes the row and resets the limiter, leaving others alone", async () => {
+    const t = newTest();
+    const keyA = await declineLimiterKey("ada|lovelace", PEPPER);
+    await t.run(async (ctx) => {
+      await rateLimiter.limit(ctx, "declinePerName", { key: keyA });
+      await rateLimiter.limit(ctx, "declinePerName", { key: keyA });
+    });
+    await seedDecline(t, "Ada", "Lovelace");
+    await seedDecline(t, "Grace", "Hopper");
+    const [ada] = (await rows(t)).filter((r) => r.nameKey === "ada|lovelace");
+    expect(await t.mutation(internal.admin.deleteDeclineById, { id: ada._id })).toEqual({
+      declines: 1,
+      limitersReset: true,
+    });
+    expect((await rows(t)).map((r) => r.nameKey)).toEqual(["grace|hopper"]);
+    expect((await t.run((ctx) => rateLimiter.check(ctx, "declinePerName", { key: keyA }))).ok).toBe(true);
+    // Already gone: no-op.
+    expect(await t.mutation(internal.admin.deleteDeclineById, { id: ada._id })).toEqual({
+      declines: 0,
+      limitersReset: false,
+    });
   });
 
   it("deleteDecline throws without OTP_PEPPER and deletes nothing", async () => {

@@ -148,6 +148,13 @@ export const getDecline = internalQuery({
   },
 });
 
+/** Resets one name's decline limiter bucket (keyed by HMAC of the nameKey). Throws without OTP_PEPPER. */
+async function resetDeclineLimiter(ctx: MutationCtx, nameKey: string): Promise<void> {
+  const pepper = process.env.OTP_PEPPER;
+  if (!pepper) throw new Error("OTP_PEPPER is not set; cannot derive the per-name key");
+  await rateLimiter.reset(ctx, "declinePerName", { key: await declineLimiterKey(nameKey, pepper) });
+}
+
 /**
  * Host-only erasure of one decline (POPIA request): the matching rows and the name's limiter
  * bucket. Returns counts only. `npx convex run admin:deleteDecline '{"firstName":"Ada","surname":"Lovelace"}'`.
@@ -156,16 +163,32 @@ export const deleteDecline = internalMutation({
   args: { firstName: v.string(), surname: v.string() },
   returns: v.object({ declines: v.number(), limitersReset: v.boolean() }),
   handler: async (ctx, args) => {
-    const pepper = process.env.OTP_PEPPER;
-    if (!pepper) throw new Error("OTP_PEPPER is not set; cannot derive the per-name key");
     const nameKey = declineNameKey(args.firstName, args.surname);
     const rows = await ctx.db
       .query("declines")
       .withIndex("by_nameKey", (q) => q.eq("nameKey", nameKey))
       .collect();
     for (const row of rows) await ctx.db.delete(row._id);
-    await rateLimiter.reset(ctx, "declinePerName", { key: await declineLimiterKey(nameKey, pepper) });
+    await resetDeclineLimiter(ctx, nameKey);
     return { declines: rows.length, limitersReset: true };
+  },
+});
+
+/**
+ * Host-only erasure of one decline by id, for when a typed name misses the row (odd characters).
+ * Resets the name's limiter bucket from the row's stored nameKey. Counts only.
+ * `npx convex run admin:deleteDeclineById '{"id":"<_id from rsvps:declines-csv>"}'`.
+ */
+export const deleteDeclineById = internalMutation({
+  args: { id: v.id("declines") },
+  returns: v.object({ declines: v.number(), limitersReset: v.boolean() }),
+  handler: async (ctx, args) => {
+    const row = await ctx.db.get(args.id);
+    if (!row) return { declines: 0, limitersReset: false };
+    await ctx.db.delete(row._id);
+    // The stored key, like purgeGuests: it is the exact key the limiter was charged under.
+    await resetDeclineLimiter(ctx, row.nameKey);
+    return { declines: 1, limitersReset: true };
   },
 });
 

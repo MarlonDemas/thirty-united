@@ -9,7 +9,13 @@ export const REASON_MAX = 140;
 const NAME_RE = /^[\p{L}\p{M}' ’.\- ]+$/u;
 const HAS_LETTER_RE = /\p{L}/u;
 const URL_RE = /https?:\/\/|www\./i;
-const KEY_STRIP = /[\p{Cc}\p{Cf}\p{Default_Ignorable_Code_Point}]/gu;
+// Hangul fillers and braille blank render as nothing but are letters/symbols. The fillers are also
+// Default_Ignorable; listed anyway so the intent survives a Unicode-table change.
+const KEY_STRIP = /[\p{Cc}\p{Cf}\p{Default_Ignorable_Code_Point}\u115F\u1160\u3164\uFFA0\u2800]/gu;
+// Hidden text that must never reach storage or exports.
+const HIDDEN = /[\p{Cf}\p{Default_Ignorable_Code_Point}]/gu;
+const APOSTROPHES = /[’‘ʼ`´]/g;
+const TAG_BLOCK = /[\u{E0020}-\u{E007E}]/gu;
 
 export interface DeclineInput {
   firstName: string;
@@ -32,11 +38,17 @@ export type DeclineValidation =
 
 function keyPart(name: string): string {
   return name
+    .replace(APOSTROPHES, "'")
     .normalize("NFKC")
     .replace(KEY_STRIP, "")
     .toLowerCase()
     .replace(/\s+/g, " ")
     .trim();
+}
+
+/** Maps the Unicode tag block (U+E0020-E007E) onto ASCII so hidden-text URLs can be seen. */
+function untag(s: string): string {
+  return s.replace(TAG_BLOCK, (c) => String.fromCharCode(c.codePointAt(0)! - 0xe0000));
 }
 
 /** Normalised `first|surname` key. Cleans the raw names first, so admin lookups match stored rows. */
@@ -59,8 +71,10 @@ export function validateDecline(input: DeclineInput): DeclineValidation {
     const val = clean(raw)?.normalize("NFC");
     if (!val) errors[key] = "Required";
     else if (val.length > LIMITS.name) errors[key] = `Max ${LIMITS.name} characters`;
-    else if (!NAME_RE.test(val) || !HAS_LETTER_RE.test(val)) errors[key] = "Use letters only";
-    return val ?? "";
+    else if (!NAME_RE.test(val) || !HAS_LETTER_RE.test(keyPart(val))) {
+      errors[key] = "Use letters only";
+    }
+    return val?.replace(HIDDEN, "") ?? "";
   };
   const firstName = name("firstName", input.firstName);
   const surname = name("surname", input.surname);
@@ -69,10 +83,11 @@ export function validateDecline(input: DeclineInput): DeclineValidation {
   const rawReason = clean(input.reason);
   if (rawReason) {
     if (rawReason.length > REASON_MAX) errors.reason = `Max ${REASON_MAX} characters`;
-    // Also test the NFKC form so full-width "ｈｔｔｐ：／／" can't slip past.
-    else if (URL_RE.test(rawReason) || URL_RE.test(rawReason.normalize("NFKC"))) {
+    // keyPart(untag(x)) NFKC-folds (full-width), drops invisible characters ("ht\u00ADtps://"), lowercases and
+    // reads tag characters as ASCII; each step can only create a match, so this one form covers the raw text too.
+    else if (URL_RE.test(keyPart(untag(rawReason)))) {
       errors.reason = "Links are not allowed";
-    } else reason = rawReason;
+    } else reason = rawReason.replace(HIDDEN, "").trim() || undefined;
   }
 
   if (

@@ -36,6 +36,9 @@ export const record = internalMutation({
     // Check first (non-consuming), global first, so a drained global bucket never burns a name's tokens.
     const global = await rateLimiter.check(ctx, "declineDailyGlobal");
     if (!global.ok) return { status: "rate_limited" as const };
+    // At the cap every request is rate_limited, so an existing name can't be told from a new one.
+    const stored = await ctx.db.query("declines").take(MAX_DECLINES);
+    if (stored.length >= MAX_DECLINES) return { status: "rate_limited" as const };
     const perName = await rateLimiter.check(ctx, "declinePerName", { key: args.rateKey });
     // Per-name exhausted looks like success and writes nothing: no enumeration, no spam.
     if (!perName.ok) return { status: "saved" as const };
@@ -44,10 +47,6 @@ export const record = internalMutation({
       .query("declines")
       .withIndex("by_nameKey", (q) => q.eq("nameKey", args.nameKey))
       .first();
-    if (!existing) {
-      const rows = await ctx.db.query("declines").take(MAX_DECLINES);
-      if (rows.length >= MAX_DECLINES) return { status: "rate_limited" as const };
-    }
 
     await rateLimiter.limit(ctx, "declinePerName", { key: args.rateKey });
     await rateLimiter.limit(ctx, "declineDailyGlobal");
