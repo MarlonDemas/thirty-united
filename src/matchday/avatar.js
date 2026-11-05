@@ -25,7 +25,7 @@
 //                                    crouched stance (leg IK: soles on the grass), chest out, both arms thrust straight down and back, held `hold` s. It ends
 //                                    in the 'siuuu' hold, so the pose stays until setPose() changes it. Skippable (skip / reduced motion: the end pose).
 //   cut()                            the next step re-plants the feet where the figure now stands without dropping the stride speed (a cinematic cut)
-//   setPose('huddle' | 'applaud' | 'siuuu' | null)   an upper-body hold that eases in while the guest stands (null = back to idle / gait); one hold
+//   setPose('huddle' | 'siuuu' | 'dejected' | null)   an upper-body hold that eases in while the guest stands (null = back to idle / gait); one hold
 //                                    cross-fades into the next
 //   setName(name, number = '30')     the shirt back: the name over the seat number (the placeholder 30 until the reply is saved) (canvas fillText only); '' hides it
 //   reset(), state(), object (the root group), joints
@@ -188,9 +188,9 @@ export function createAvatar(world, { tl }) {
       const b = Math.abs(Math.sin(t * 7));
       J.spine.rotation.set(0.5, 0, 0); J.head.rotation.set(0.3, 0, 0); J.shL.rotation.set(0.55, 0, 1.2); J.shR.rotation.set(0.55, 0, -1.2);
       J.elL.rotation.set(-0.35, 0, 0); J.elR.rotation.set(-0.35, 0, 0); J.kneeL.rotation.set(0.3, 0, 0); J.kneeR.rotation.set(0.3, 0, 0); J.hips.position.y = 0.86 + 0.05 * b;
-    } else if (name === 'applaud') {   // hands up in front, clapping, eyes up to the stands
-      const k = 0.5 + 0.5 * Math.sin(t * 13);
-      J.shL.rotation.set(-1.15, 0, 0.12 + 0.22 * k); J.shR.rotation.set(-1.15, 0, -0.12 - 0.22 * k); J.elL.rotation.set(-1.05, 0, 0); J.elR.rotation.set(-1.05, 0, 0); J.head.rotation.set(-0.15, 0, 0);
+    } else if (name === 'dejected') {   // the AWAY ending: head bowed, shoulders slumped, arms hanging, a slow breath
+      const b = Math.sin(t * 1.3);
+      J.spine.rotation.set(0.3 + 0.015 * b, 0, 0); J.head.rotation.set(0.6 + 0.02 * b, 0, 0); J.shL.rotation.set(0.1, 0, 0.12); J.shR.rotation.set(0.1, 0, -0.12); J.elL.rotation.set(-0.12, 0, 0); J.elR.rotation.set(-0.12, 0, 0);
     } else if (name === 'siuuu') { siuuuLand(9); J.spine.rotation.x += 0.012 * Math.sin(t * 2.2); }   // the landing stance, settled, breathing
   }
 

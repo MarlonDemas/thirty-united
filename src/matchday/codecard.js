@@ -5,7 +5,7 @@
 import { h, statusLine, SEND_FAILED } from './ui.js';
 import { FIELD } from './fields.js';
 import { haptic, HAPTICS } from '../lib/haptics.ts';
-import { requestCode, verifyAndSave, hasCodeFor, getSent, getState, onState } from './submit.js';
+import { requestCode, verifyAndSave, submitDecline, hasCodeFor, getSent, getState, onState } from './submit.js';
 
 const CODE_LEN = 6;
 const tries = (n) => `${n} ${n === 1 ? 'try' : 'tries'} left`;
@@ -107,4 +107,34 @@ export function codeCard({ side, getValues, setEmail, onSaved, onFix, onClosed, 
     },
     dispose() { disposed = true; off(); if (timer) clearInterval(timer); },
   };
+}
+
+// The name-only decline's send step (no email, no code): saves on open, and a failure stays here with a plain line and "Try again" (never a silent retry).
+// Same shape as codeCard: { nodes, start(), dispose() }; the owner reacts to onSaved / onFix / onClosed. The guest's answers only travel through submit.js.
+export function declineCard({ getValues, onSaved, onFix, onClosed, id = 'dc' }) {
+  let busy = false, disposed = false, started = false, errors = {};
+  const slot = h('div', { id: id + '-st', class: 'slot' });
+  const retry = h('button', { class: 'btn', type: 'button', hidden: true, text: 'Try again' });
+  const fix = h('button', { class: 'btn ghost', type: 'button', hidden: true, text: 'Check my answers' });
+  const nodes = [h('p', { class: 'kicker', id: id + '-k', text: 'Your reply' }), h('h2', { id: id + '-h', tabindex: '-1', text: 'Sending your reply' }), slot, h('div', { class: 'row' }, retry, fix)];
+  const say = (tone, text) => slot.replaceChildren(statusLine(tone, text));
+
+  async function send() {
+    busy = true; retry.hidden = true; fix.hidden = true; say('info', 'Sending your reply…');
+    const r = await submitDecline(getValues());
+    if (disposed) return;
+    busy = false;
+    switch (r.status) {
+      case 'saved': haptic(HAPTICS.number); onSaved(getSent() ?? r); return;
+      case 'closed': onClosed(); return;
+      case 'invalid_payload': case 'invalid_answers': errors = r.errors ?? {}; say('err', 'A few answers need another look.'); fix.hidden = false; fix.focus({ preventScroll: true }); return;
+      case 'rate_limited': say('warn', 'A lot of replies are coming in right now. Please try again in a little while.'); break;
+      case 'service_unavailable': say('err', "Replying with just your name isn't open right now. Choose Check my answers, answer Yes, and I'll send a code to your email instead."); fix.hidden = false; break;   // the way out: the form, where the answer can switch
+      default: say('err', SEND_FAILED);
+    }
+    retry.hidden = false; retry.focus({ preventScroll: true });
+  }
+  retry.addEventListener('click', () => { if (!busy) send(); });
+  fix.addEventListener('click', () => onFix(errors));
+  return { nodes, start() { if (started) return; started = true; send(); }, dispose() { disposed = true; } };
 }

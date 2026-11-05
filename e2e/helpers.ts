@@ -17,6 +17,14 @@ export function uniqueEmail(tag = "t"): string {
   return `e2e+${Date.now()}-${process.pid}-${counter}-${tag}@example.com`;
 }
 
+let nameCounter = 0;
+/** A fresh surname per call, letters only (decline names reject digits): the digits of timestamp + pid + counter mapped to a-j. Unique per test, so the 2-per-name-per-day limit never bites. */
+export function uniqueSurname(): string {
+  nameCounter += 1;
+  const letters = `${Date.now()}${process.pid}${nameCounter}`.replace(/\d/g, (d) => "abcdefghij"[Number(d)]);
+  return `Zz${letters}`;
+}
+
 export const worldUrl = (key: string | null = INVITE_KEY) => (key === null ? "/" : `/?k=${encodeURIComponent(key)}`);
 
 /** Opens the world and waits for the world contract's `__ready` flag (game or fallback page). */
@@ -29,7 +37,12 @@ export type Answers = {
   attending?: "yes" | "maybe" | "no";
   first?: string;
   surname?: string;
-  email: string;
+  /** Required except for a name-only decline (`attending: "no", repliedBefore: "no"`), which has no email field. */
+  email?: string;
+  /** Only for `attending: "no"`: the "Have you replied before?" answer. Defaults to "yes" (the email + code path). */
+  repliedBefore?: "yes" | "no";
+  /** Only for a name-only decline. */
+  reason?: string;
   team?: string;
   preferred?: string;
   sport?: "football" | "other";
@@ -40,9 +53,21 @@ export async function fillFastLane(page: Page, a: Answers) {
   const form = page.locator("#fast-form");
   await expect(form).toBeVisible();
   const label = { yes: "Yes", maybe: "Not sure yet", no: "Can't make it" }[a.attending ?? "yes"];
-  await form.getByRole("radio", { name: label, exact: true }).click();
+  await form.getByRole("radiogroup", { name: "Can you make it?" }).getByRole("radio", { name: label, exact: true }).click();
   await form.getByLabel("First name").fill(a.first ?? "Ada");
   if (a.surname !== undefined || a.attending !== undefined) await form.getByLabel("Surname").fill(a.surname ?? "Lovelace");
+  if (a.attending === "no") {
+    // The fast lane has two radiogroups with a "Yes" button: scope by the group's accessible name.
+    const replied = form.getByRole("radiogroup", { name: "Have you replied before?" });
+    const nameOnly = a.repliedBefore === "no";
+    await replied.getByRole("radio", { name: nameOnly ? "No" : "Yes", exact: true }).click();
+    if (nameOnly) {
+      await expect(form.getByLabel("Email", { exact: true })).toBeHidden(); // hidden fields stay in the DOM
+      if (a.reason !== undefined) await form.getByLabel("Reason (optional)").fill(a.reason);
+      return;
+    }
+  }
+  if (a.email === undefined) throw new Error("fillFastLane: email is required unless this is a name-only decline");
   await form.getByLabel("Email", { exact: true }).fill(a.email);
   if (a.attending === "no") return;
   if (a.preferred) await form.getByLabel("Name on your shirt (optional)").fill(a.preferred);

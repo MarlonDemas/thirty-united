@@ -56,7 +56,7 @@ export function createTeammates(world) {
   const extraAgents = new Map();   // challenge movers (the second keeper, a live ball) while active
   // the full-time huddle: four more HOME teammates, hidden until finale; they jog in from just outside the frame and close round the guest
   const huddlers = [0, 1, 2, 3].map((i) => { const fig = make('huddle' + (i + 1)); fig.root.visible = false; return { id: 'huddle' + (i + 1), fig, x: 0, z: 0, h: 0, from: [0, 0], to: [0, 0] }; });
-  let hud = null, lastT = 0;   // { t0, run, cx, cz } while the huddle is on
+  let hud = null, lastT = 0, down = false;   // hud: { t0, run, cx, cz } while the huddle is on; down: the standing squad hang their heads (the AWAY ending)
 
   function step(t) {
     for (const r of runners) {
@@ -81,7 +81,8 @@ export function createTeammates(world) {
       const J = I.fig.joints; I.fig.root.position.set(I.x, 0, I.z);
       I.ry = lerpAngle(I.ry, Math.atan2(I.faceTo[0] - I.x, I.faceTo[1] - I.z), 1 - Math.exp(-5 * dt)); I.fig.root.rotation.y = I.ry;   // turns, never snaps
       pose(J, 0, 0);
-      if (I.wave) { J.shR.rotation.set(0, 0, -2.6 - 0.25 * Math.sin(t * 9)); J.elR.rotation.set(-0.4, 0, 0); }   // right arm up, waving
+      if (down) { const s = Math.sin(t * 0.8 + I.ph); J.spine.rotation.set(0.28 + 0.015 * s, 0, 0); J.head.rotation.set(0.55, 0, 0); J.shL.rotation.set(0.1, 0, 0.12); J.shR.rotation.set(0.1, 0, -0.12); }   // heads down, shoulders slumped
+      else if (I.wave) { J.shR.rotation.set(0, 0, -2.6 - 0.25 * Math.sin(t * 9)); J.elR.rotation.set(-0.4, 0, 0); }   // right arm up, waving
       else { const s = Math.sin(t * 0.9 + I.ph); J.spine.rotation.set(0.08 + 0.06 * s, 0.12 * Math.sin(t * 0.5 + I.ph), 0.05 * s); J.shL.rotation.set(-0.2 * s, 0, 0.25); J.shR.rotation.set(0.2 * s, 0, -0.25); }
     }
     if (hud) {   // run in (jog), then lean in with arms out over the neighbours' shoulders and bounce
@@ -108,6 +109,8 @@ export function createTeammates(world) {
     get: (id) => idle.find((i) => i.id === id) || null,
     addAgent(id, fn) { extraAgents.set(id, fn); },   // fn() -> an agent record, or null while inactive
     removeAgent(id) { extraAgents.delete(id); },
+    drooped: () => down,
+    droop(on = true) { down = !!on; },   // the standing squad hang their heads (runners keep jogging)
     wave(id, on = true) { const I = idle.find((i) => i.id === id); if (I) I.wave = on; },
     face(id, x, z) { const I = idle.find((i) => i.id === id); if (I) I.faceTo = x === undefined ? I.face : [x, z]; },   // face(id) turns back to the default
     // drive(id, fn): fn(I, t, dt) sets I.x, I.z, I.ry and the joints each step until it returns 'done'; set I.agent / I.related while the figure moves
@@ -129,7 +132,7 @@ export function createTeammates(world) {
     huddleState: () => (hud ? { on: true, settled: sim() - hud.t0 >= hud.run, at: huddlers.map((H) => [+H.x.toFixed(2), +H.z.toFixed(2)]) } : { on: false }),
     reset() {
       for (const I of idle) { const d = IDLE.find((e) => e.id === I.id); I.wave = false; I.drive = null; I.agent = false; I.related = []; I.x = d.x; I.z = d.z; I.faceTo = d.face; I.ry = Math.atan2(d.face[0] - d.x, d.face[1] - d.z); }
-      extraAgents.clear(); hud = null; for (const H of huddlers) H.fig.root.visible = false;
+      extraAgents.clear(); hud = null; down = false; for (const H of huddlers) H.fig.root.visible = false;
     },
   };
 }

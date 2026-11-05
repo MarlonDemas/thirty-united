@@ -1,10 +1,10 @@
-// matchday-rsvp: the no-WebGL / load-failure / lost-context page. A plain HTML page: event details, then the fast-lane form, then the code card. No three.js (imports config.js, ui.js, codecard.js, submit.js, teardown.js only).
+// matchday-rsvp: the no-WebGL / load-failure / lost-context page. A plain HTML page: event details, then the fast-lane form, then the code card (or, for a name-only decline, the decline card). No three.js (imports config.js, ui.js, codecard.js, submit.js, teardown.js only).
 // Sets window.__fallback and window.__ready so capture/tests do not hang, and keeps the contract stubs (__views, __setView, __dbg) callable.
 // It saves through the same submit.js as the game (one page-wide state), so a reply the game already saved shows its confirmation here, never a fresh form.
 import { EVENT, DATE_LINE } from './config.js';
 import { h, fastLaneForm, confirmCard } from './ui.js';
-import { codeCard } from './codecard.js';
-import { mapServerErrors, withAttending } from './fields.js';
+import { codeCard, declineCard } from './codecard.js';
+import { mapServerErrors, withAttending, nameOnly } from './fields.js';
 import { getSent, closedText } from './submit.js';
 import { runTeardown } from './teardown.js';
 
@@ -25,8 +25,9 @@ export function showFallback(reason, initial = null) {
     if (closedText()) { showClosed(); return; }
     code?.dispose();
     const { side, values } = answers;
-    code = codeCard({ side, getValues: () => withAttending(side, values), setEmail: (e) => { values.email = e; }, id: 'fb-cc',
-      onSaved: showConfirm, onClosed: showClosed, onFix: (errs) => showForm(mapServerErrors(errs, true)) });
+    const to = { onSaved: showConfirm, onClosed: showClosed, onFix: (errs) => showForm(mapServerErrors(errs, true)) };
+    code = nameOnly(withAttending(side, values)) ? declineCard({ getValues: () => withAttending(side, values), id: 'fb-cc', ...to })   // "Have you replied before?" = No: name-only, no code
+      : codeCard({ side, getValues: () => withAttending(side, values), setEmail: (e) => { values.email = e; }, id: 'fb-cc', ...to });
     card.replaceChildren(...code.nodes); card.querySelector('h2').id = 'fb-h'; focusHead(); code.start();
   };
   const showForm = (errors = null) => {

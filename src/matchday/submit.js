@@ -1,6 +1,7 @@
 // matchday-rsvp: the ONE transport for the game, the fast lane and the no-WebGL page. Three-free. Two Convex actions, called with ConvexHttpClient (fetch only):
 //   api.otp.requestCode { email, inviteKey }                       -> { status: 'sent' | 'rate_limited' | 'invalid_email' | 'invalid_link' | 'service_unavailable' }
 //   api.rsvp.verifyAndSave { email, code, payload, inviteKey }     -> { status: 'saved' | 'updated' | 'invalid_code' | 'code_expired' | 'too_many_attempts' | 'no_code' | 'invalid_payload' | ... }
+//   api.declines.submitDecline { firstName, surname, reason?, noticeVersion, inviteKey } -> { status: 'saved' | 'rate_limited' | 'invalid_payload' | 'invalid_link' | 'service_unavailable' }   (a name-only decline: no email, no code)
 // Page-wide state of the save:  idle -> sending -> sent | failed | idle (a refused code goes back to idle)   and   closed (no invite key, or the server said invalid_link).
 //   - The confirmation renders only from a saved/updated response (getSent()); nothing is ever "accepted locally".
 //   - Each call is raced against a 10 s timer (ConvexHttpClient has no AbortSignal). A timed-out or thrown call is { status: 'failed' }; it is never retried for you.
@@ -9,7 +10,7 @@
 //   - The invite key is read once from ?k= into memory. No storage. Raw Convex errors and payloads are never logged (they echo guest data).
 //   - Production is also CLOSED while EVENT.privacy has placeholders (privacyProblems) or VITE_CONVEX_URL is missing.
 import { EVENT, MISSING_KEY_MESSAGE } from './config.js';
-import { buildPayload, normalizeEmail } from './fields.js';
+import { buildPayload, buildDecline, normalizeEmail } from './fields.js';
 
 const TIMEOUT_MS = 10000;
 let state = 'idle', sent = null, inflight = null, codeFor = null, linkBad = false, closed = null, clientP = null;
@@ -106,6 +107,33 @@ export function verifyAndSave(side, values, code) {
       if (r.status === 'invalid_code') return { status: r.status, attemptsLeft: typeof r.attemptsLeft === 'number' && Number.isFinite(r.attemptsLeft) ? r.attemptsLeft : null };
       if (r.status === 'invalid_payload') return { status: r.status, errors: r.errors && typeof r.errors === 'object' ? { ...r.errors } : {} };
       return { status: String(r.status) };
+    } catch { inflight = null; setState('failed'); return { status: 'failed' }; }
+  })();
+  return inflight;
+}
+
+// A name-only decline (a guest who has not replied before): no email and no code. values = the flat answers (firstName, surname, reason). Shares the page-wide state with verifyAndSave.
+// Resolves to { status: 'saved', firstName, attending: 'no', nameOnly: true } or rate_limited | invalid_payload (+ errors) | invalid_answers | service_unavailable | failed | closed.
+// The server answers saved for a duplicate too, so nothing here can say "already declined".
+export function submitDecline(values) {
+  if (state === 'sent' && sent) return Promise.resolve({ ...sent });
+  if (state === 'sending' && inflight) return inflight;
+  if (closedText()) return Promise.resolve({ status: 'closed' });
+  let payload;
+  try { payload = buildDecline(values); } catch { return Promise.resolve({ status: 'invalid_answers' }); }
+  setState('sending');
+  inflight = (async () => {
+    try {
+      const r = await timed(client().then(({ http, api }) => http.action(api.declines.submitDecline, { ...payload, inviteKey: INVITE_KEY })));
+      inflight = null;
+      if (r.status === 'saved') {
+        sent = Object.freeze({ status: 'saved', firstName: payload.firstName, attending: 'no', nameOnly: true, answers: Object.freeze({}) });
+        setState('sent'); return { ...sent };
+      }
+      if (r.status === 'invalid_link') { closeLink(); return { status: 'closed' }; }
+      setState('idle');
+      if (r.status === 'invalid_payload') return { status: r.status, errors: r.errors && typeof r.errors === 'object' ? { ...r.errors } : {} };
+      return { status: String(r.status) };   // rate_limited | service_unavailable
     } catch { inflight = null; setState('failed'); return { status: 'failed' }; }
   })();
   return inflight;

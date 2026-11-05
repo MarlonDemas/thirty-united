@@ -39,6 +39,27 @@ export async function resetLimits(email: string): Promise<void> {
   await run("npx", ["convex", "run", "admin:resetCodeLimits", JSON.stringify({ email })]);
 }
 
+type Name = { firstName: string; surname: string };
+
+/** One name-only decline row via the host-only `admin:getDecline`, or null. Local backend only (same `convex run` path as resetLimits). */
+export async function getDecline(n: Name): Promise<{ firstName: string; surname: string; reason?: string } | null> {
+  const { stdout } = await run("npx", ["convex", "run", "admin:getDecline", JSON.stringify(n)]);
+  // A null result prints nothing on stdout; a row prints as JSON (pretty-printed over several lines).
+  const text = stdout.trim();
+  if (text === "" || text === "null") return null;
+  return JSON.parse(text.slice(text.indexOf("{")));
+}
+
+/** Erases a decline row and that name's per-name limiter bucket (`admin:deleteDecline`). */
+export async function deleteDecline(n: Name): Promise<void> {
+  await run("npx", ["convex", "run", "admin:deleteDecline", JSON.stringify(n)]);
+}
+
+/** Resets the global daily decline bucket (`admin:resetDeclineLimits`) so repeated runs never exhaust the 50/day cap. */
+export async function resetDeclineLimits(): Promise<void> {
+  await run("npx", ["convex", "run", "admin:resetDeclineLimits", "{}"]);
+}
+
 function escape(s: string) {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }

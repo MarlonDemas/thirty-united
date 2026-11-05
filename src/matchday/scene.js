@@ -7,7 +7,7 @@
  *                                             game.js calls world.sim.step(realDt) every frame and __dbg.simStep(dt) calls it without rendering.
  * world.crowd                                { cheer(at=0)  3 s jump-and-cheer burst, scarves up
  *                                              wave(seconds=32 | false)  Mexican wave (one lap = 16 s)
- *                                              applaud(seconds=4)  polite clapping,  step(dt), count, triangles, uniforms }
+ *                                              hush(on=true) the stands go still and quiet (AWAY ending; hush(false) snaps them back),  step(dt), count, triangles, uniforms }
  * world.scoreboard                           { draw(lines?)  lines = ['text' | {text,size,color,weight}] redraws the LED screen (no args = default),
  *                                              canvas, ctx, texture, mesh, position }
  * world.goal  (= world.goals.north)          the goal the guest shoots at (z = -52.5, faces +z):

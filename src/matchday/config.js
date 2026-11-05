@@ -21,8 +21,8 @@ export const EVENT = {
 };
 // The invite key travels in the link (?k=). Same text for a missing key and for the server's invalid_link.
 export const MISSING_KEY_MESSAGE = 'This link is missing its invite key. Ask Makes to send you the full link.';
-// Version string sent with every RSVP so the server can tell which privacy notice the guest saw. Bump it whenever EVENT.privacy or the notice wording changes. Must match /^[a-z0-9.-]{1,32}$/.
-export const NOTICE_VERSION = 'popia-short-2026-11';
+// Version string sent with every RSVP so the server can tell which privacy notice the guest saw. Bump it whenever EVENT.privacy or the notice wording changes (convex/lib/declineValidation.ts allow-lists the exact string, so bump both together). Must match /^[a-z0-9.-]{1,32}$/.
+export const NOTICE_VERSION = 'popia-2026-11-v2';
 const num = (hex) => parseInt(hex.slice(1), 16);
 export const KIT_HEX = Object.fromEntries(Object.entries(EVENT.kits).map(([k, v]) => [k, num(v)]));
 export const TITLE_UC = EVENT.brand;

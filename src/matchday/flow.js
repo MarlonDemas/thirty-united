@@ -2,8 +2,10 @@
 //   intro: the invitation ticket floats over the plaza; walk (or tap a choice) to the HOME END or AWAY END kiosk (stations.js, station 1: names + ticket hand-in), or "Just reply" (the fast lane)
 //   -> the gate opens and a cinematic walk-out through the tunnel
 //   -> HOME: stations 2-4 on the pitch in any order (email + team at the HOME dugout, how to reach you at the corner flag, plus one at the penalty spot) -> full time -> the code card
-//   -> AWAY: the kiosk takes name + email; on to the AWAY dugout touchline, the floodlights dim, the crowd applauds -> the code card
-//   -> the code card (codecard.js) asks for the emailed 6-digit code and saves; the confirmation shows only from the server's saved/updated reply
+//   -> AWAY: the kiosk asks "Have you replied before?" (Yes: name + email; No: name + an optional reason, no email); on to the AWAY dugout touchline for the "losing out" ending:
+//      the floodlights dim to 45%, the crowd and the squad go quiet and hang their heads, the guest bows theirs, the scoreboard reads HOME 1-0 AWAY (a gentle, wistful miss, never mocking)
+//   -> the send step. Email branch: the code card (codecard.js) asks for the emailed 6-digit code and saves. Name-only branch: the decline card saves at once (submit.js submitDecline, no code)
+//   -> the confirmation shows only from the server's saved/updated reply (a name-only decline: saved)
 // Modules: timeline.js (sim clock), hud.js (overlay), roam.js (third-person rig + camera moves), avatar.js (the guest's footballer), stations.js (registry, boards, beacons, cards),
 // challenges/*.js (ticket, dribble, corner, penalty), teammates.js (the squad: passes, waves, celebrations, the full-time huddle), shirt.js (the guest's shirt).
 // Everything animated runs on the sim clock, so window.__dbg.simStep(dt) is deterministic.
@@ -12,8 +14,8 @@ import * as THREE from 'three';
 import { mulberry32, reducedMotion, lerp, smoother, bezier, anglesFor } from './util.js';
 import { EVENT, TITLE_UC, DATE_LINE, THEME, applyMotion, clean } from './config.js';
 import { h, fastLaneForm, confirmCard } from './ui.js';   // three-free builders shared with fallback.js
-import { codeCard } from './codecard.js';
-import { mapServerErrors, withAttending } from './fields.js';
+import { codeCard, declineCard } from './codecard.js';
+import { mapServerErrors, withAttending, nameOnly } from './fields.js';
 import { closedText, resetForDev } from './submit.js';
 import { createTimeline } from './timeline.js';
 import { createHud } from './hud.js';
@@ -36,7 +38,7 @@ const SEED = 20261212;
 // 2.8, and a ~0.8 s slow-motion beat per goal); budget 30 (measured 29.73 s; e2e/world-walk.spec.ts skips these). A skipped last station keeps the 2.2 s huddle.
 // Skip (tap, click, Space, Enter, Escape) always wins over every one of these. Ball flights and the short waits after a goal or a miss are not skippable
 // (they are the guest's own result), about 8 s in a full HOME run. The cinematic moves themselves live in cine.js (walk-out rig, slow-mo, tracking, letterbox).
-const PACE = { huddle: 2.2, squadHold: 4.0, arm: 0.6, gate: 0.5, walkOut: 6.4, awayWalk: 8.0, fullTime: 2.8, fireworks: 0.9, confetti: 1.6, dim: 1.2, awayPull: 3.2, awayLook: 2.0, awayHold: 2.0, awayEnd: 0.8, hint: 6 };
+const PACE = { huddle: 2.2, squadHold: 4.0, arm: 0.6, gate: 0.5, walkOut: 6.4, awayWalk: 8.0, fullTime: 2.8, fireworks: 0.9, confetti: 1.6, dim: 1.2, awayPull: 3.2, awayLook: 2.0, awayHold: 2.0, awayEnd: 1.6, awayDim: 0.45, hint: 6 };
 const FLIP = THEME.motion.ms.flip / 1000;
 const V3 = (x, y, z) => new THREE.Vector3(x, y, z);
 const easeFlip = bezier(...THEME.motion.ease.flip.match(/[\d.]+/g).map(Number));
@@ -249,16 +251,18 @@ export function createFlow(world, { audio, fx, teammates }) {
     tl.after(PACE.fireworks, () => fx.startFireworks()); tl.after(PACE.confetti, () => fx.startConfetti());
     tl.after(PACE.fullTime, showCode, { skip: true });
   }
-  // AWAY: the floodlights dim to 60%, the crowd applauds, the scoreboard says goodbye by name, then the send. On the pitch the camera pulls slowly back
-  // from the touchline and rises a little while the lights go down, turning from the dugout to the bowl and the board.
+  // AWAY, "losing out": the floodlights dim to 45%, the stands go still and quiet, the squad and the guest hang their heads, and the scoreboard reads a loss
+  // (HOME 1-0 AWAY, "You'll be missed", the guest's shirt name). Warm and wistful, never mocking: nobody boos. Then the send. On the pitch the camera pulls slowly
+  // back from the touchline and rises a little while the lights go down, turning from the dugout to the bowl and the board.
   function awayEnd() {
     S.stage = 'awayEnd'; hud.hideHint(); tl.cancel(flipTween); flipTween = null;
-    const p = guestAt(), pull = onPitch(p.x, p.z);
-    const from = world.lightLevel ?? 1, dim = tl.tween(pull ? PACE.awayPull : PACE.dim, (u) => world.setLights(lerp(from, 0.6, smoother(u))), null, { skip: true });
+    const p = guestAt(), pull = onPitch(p.x, p.z), name = shirtName(26);
+    const from = world.lightLevel ?? 1, dim = tl.tween(pull ? PACE.awayPull : PACE.dim, (u) => world.setLights(lerp(from, PACE.awayDim, smoother(u))), null, { skip: true });
     if (reducedMotion()) tl.finish(dim);
-    crowd.applaud(6); audio.applause(5); avatar.setPose('applaud');   // the guest applauds the stands back
-    scoreboard.draw([{ text: TITLE_UC, size: 64, color: THEME.color.scoreboardDim }, { text: 'AWAY', size: 190, color: THEME.color.accentAway, weight: 800 }, { text: shirtName(26).toUpperCase(), size: 100, color: THEME.color.scoreboardText, weight: 700 }]);
-    const say = 'The crowd applauds you.', send = (wait = PACE.awayEnd) => tl.after(wait, showCode, { skip: true });
+    crowd.hush(true); audio.hush(true); teammates.settle(); teammates.droop(true); avatar.setPose('dejected');   // the stands fall quiet; heads drop
+    scoreboard.draw([{ text: 'FULL TIME', size: 64, color: THEME.color.scoreboardDim }, { text: 'HOME 1–0 AWAY', size: 170, color: THEME.color.scoreboardText, weight: 800 },
+      { text: "YOU'LL BE MISSED", size: 96, color: THEME.color.accentAway, weight: 800 }, ...(name ? [{ text: name.toUpperCase(), size: 70, color: THEME.color.scoreboardDim, weight: 700 }] : [])]);
+    const say = "Full time. The crowd falls quiet. The scoreboard reads: you'll be missed.", send = (wait = PACE.awayEnd) => tl.after(wait, showCode, { skip: true });
     if (pull) {
       const d = awayFromBoard(p.x, p.z), E = V3(p.x + d[0] * 10, 3.0, p.z + d[1] * 10), mid = V3(p.x + d[0] * 4.5, 2.1, p.z + d[1] * 4.5), board = V3(SCOREBOARD[0], 14, SCOREBOARD[2]);
       const a = anglesFor(E.toArray(), board.toArray());
@@ -337,15 +341,16 @@ export function createFlow(world, { audio, fx, teammates }) {
 
   // -- data: submit.js is the one transport. The code card (codecard.js) requests the emailed code when it opens and saves on a good code; the confirmation renders ONLY from the
   // server's saved/updated reply (a returning guest gets "welcome back", their seat kept). A refused code or a failed call stays on the card. -------------------------------
-  let code = null;
+  let code = null;   // the send step's card: codeCard (email branch) or declineCard (name-only)
   function showCode() {
     if (S.staged || S.stage === 'done') return;   // a staged view (capture, dev) has no real answers: it never asks for a code
     const shut = closedText(); if (shut) { showClosed(); return; }
     code?.dispose(); S.stage = 'code'; hud.hideWalk(); stations.close();
     const mine = S, side = S.side, answers = () => withAttending(side, S.values);
-    code = codeCard({ side, getValues: answers, setEmail: (e) => { S.values.email = e; },
-      onSaved: (r) => { if (S === mine) showConfirmation(r); }, onFix: (errs) => { if (S === mine) showFast({ fix: true, errors: serverErrors(errs) }); }, onClosed: () => { if (S === mine) showClosed(); } });
-    hud.showCard(code.nodes, { labelledBy: 'cc-k', head: true, kind: 'code' });
+    const to = { onSaved: (r) => { if (S === mine) showConfirmation(r); }, onFix: (errs) => { if (S === mine) showFast({ fix: true, errors: serverErrors(errs) }); }, onClosed: () => { if (S === mine) showClosed(); } };
+    const plain = nameOnly(answers());   // "Have you replied before?" = No: no email and no code, the reply goes straight to submitDecline
+    code = plain ? declineCard({ getValues: answers, ...to }) : codeCard({ side, getValues: answers, setEmail: (e) => { S.values.email = e; }, ...to });
+    hud.showCard(code.nodes, { labelledBy: plain ? 'dc-k' : 'cc-k', head: true, kind: plain ? 'decline' : 'code' });
     code.start();
   }
   const serverErrors = (errs) => mapServerErrors(errs, true);
@@ -366,8 +371,8 @@ export function createFlow(world, { audio, fx, teammates }) {
   // -- reset + staged views ------------------------------------------------------------------------------------------------------------------------------
   function reset() {
     code?.dispose(); code = null; tl.clear(); cine.reset(); for (const c of Object.values(challenges)) { c.stop(); c.reset?.(); } ticket.reset();
-    stations.reset(); roam.reset(); resetGates(); world.setLights(1);
-    scoreboard.draw(); fx.stop(); crowd.wave(false); crowd.applaud(0); teammates.reset();
+    stations.reset(); roam.reset(); resetGates(); world.setLights(1); crowd.hush(false); audio.hush(false);
+    scoreboard.draw(); fx.stop(); crowd.wave(false); teammates.reset();
     hud.reset(); guideKey = ''; fastShown = null; S = fresh(); resetForDev(); shirt.draw(''); avatar.reset(); waving = null; chipTop = null; hud.setChipTop(null); squadTimer = null;
     place(VIEWS.gates);
   }
@@ -452,7 +457,7 @@ export function createFlow(world, { audio, fx, teammates }) {
       stage: S.stage, side: S.side, score: S.score, values: { ...S.values }, ...stations.state(),
       card: hud.cardOpen() ? hud.card.dataset.kind || 'card' : null, heading: hud.cardOpen() ? (hud.card.querySelector('h2, label, .label')?.textContent ?? '') : null,
       chip: hud.chipText(), toast: hud.toastText(), walk: hud.walkText(), skippable: tl.skippable().length,
-      simT: sim.t, huddle: teammates.huddleState(), siuuu: S.siuuu && { ...S.siuuu }, avatar: avatar.state(), shirt: shirt.state().name, waving, camera: camera.position.toArray(), fov: camera.fov, lights: world.lightLevel, roam: roam.state(), ticket: ticket.state(), penalty: challenges.penalty.state(), dribble: challenges.dribble.state(), corner: challenges.corner.state(),
+      simT: sim.t, huddle: teammates.huddleState(), siuuu: S.siuuu && { ...S.siuuu }, avatar: avatar.state(), shirt: shirt.state().name, waving, camera: camera.position.toArray(), fov: camera.fov, lights: world.lightLevel, crowd: { hush: crowd.state.hush }, squad: { drooped: teammates.drooped() }, roam: roam.state(), ticket: ticket.state(), penalty: challenges.penalty.state(), dribble: challenges.dribble.state(), corner: challenges.corner.state(),
     }),
     // dev: put the guest at a station's stand point ('1:home' | '1:away' | 2 | 3 | 4), the start ('start') or anywhere ({ x, z, yaw }). Proximity then opens the card.
     teleport(where) {

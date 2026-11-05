@@ -1,4 +1,4 @@
-// Procedural WebAudio for the match: crowd ambience (filtered noise bed), goal roar, referee whistle, polite applause, firework thump, the crowd's "Siuuu".
+// Procedural WebAudio for the match: crowd ambience (filtered noise bed), goal roar, referee whistle, firework thump, the crowd's "Siuuu".
 // No audio files. Noise buffers are filled from a seeded RNG (no Math.random). The context is created on the first user gesture (unlock()).
 import { mulberry32 } from './util.js';
 
@@ -12,9 +12,7 @@ export function createAudio() {
     fn(d, n); return b;
   };
   const whiteBuf = () => noiseBuffer(3, (d, n) => { for (let i = 0; i < n; i++) d[i] = rng() * 2 - 1; });
-  // crackle: sparse random impulses, the grain of clapping hands
-  const crackleBuf = () => noiseBuffer(3, (d, n) => { for (let i = 0; i < n; i++) d[i] = rng() < 0.012 ? (rng() * 2 - 1) * (0.4 + rng()) : 0; });
-  let white = null, crackle = null;
+  let white = null;
 
   const src = (buf, loop = true) => { const s = ctx.createBufferSource(); s.buffer = buf; s.loop = loop; return s; };
   const env = (g, t0, pts) => { g.gain.cancelScheduledValues(t0); g.gain.setValueAtTime(pts[0][1], t0); for (const [dt, v] of pts.slice(1)) g.gain.linearRampToValueAtTime(v, t0 + dt); };
@@ -43,7 +41,7 @@ export function createAudio() {
           const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return false;
           ctx = new AC(); master = ctx.createGain(); master.gain.value = muted ? 0 : 0.9;
           slowLp = ctx.createBiquadFilter(); slowLp.type = 'lowpass'; slowLp.frequency.value = 18000; master.connect(slowLp).connect(ctx.destination);   // slow-mo dips it
-          white = whiteBuf(); crackle = crackleBuf(); startAmbience();
+          white = whiteBuf(); startAmbience();
         }
         if (ctx.state === 'suspended') ctx.resume();
         return true;
@@ -60,6 +58,10 @@ export function createAudio() {
       if (!ctx || !bedLp) return; try {
         const t = ctx.currentTime; bedLp.frequency.setTargetAtTime(320 * Math.pow(1600 / 320, m), t, 0.12); ambGain.gain.setTargetAtTime(0.2 * (0.5 + 0.5 * m), t, 0.15);
       } catch {}
+    },
+    // the AWAY ending: the crowd bed drops to a low, dull murmur (on = false brings it back)
+    hush(on = true) {
+      if (!ctx || !ambGain || !bedLp) return; try { const t = ctx.currentTime; ambGain.gain.setTargetAtTime(on ? 0.05 : 0.2, t, 0.8); bedLp.frequency.setTargetAtTime(on ? 500 : 1600, t, 0.8); } catch {}
     },
     // a slow-motion goal beat: k = 0 normal, 1 full slow-mo (everything goes low and dull for a moment)
     slowmo(k) {
@@ -104,15 +106,6 @@ export function createAudio() {
           o.connect(g); o2.connect(g); g.connect(master);
           for (const n of [o, o2, trem]) { n.start(t + a); n.stop(t + a + len + 0.05); }
         }
-      } catch {}
-    },
-    // polite applause: crackle through band-pass, low level, fades in and out
-    applause(seconds = 4) {
-      if (!ctx) return; try {
-        const t = ctx.currentTime, s = src(crackle), hp = ctx.createBiquadFilter(), bp = ctx.createBiquadFilter(), g = ctx.createGain();
-        hp.type = 'highpass'; hp.frequency.value = 1400; bp.type = 'bandpass'; bp.frequency.value = 3200; bp.Q.value = 0.5;
-        env(g, t, [[0, 0], [0.5, 0.9], [seconds - 1, 0.7], [seconds, 0]]);
-        s.connect(hp).connect(bp).connect(g).connect(master); s.start(t); s.stop(t + seconds + 0.1);
       } catch {}
     },
     // turnstile reader beep (accepted)

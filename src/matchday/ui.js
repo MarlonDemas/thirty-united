@@ -1,7 +1,7 @@
 // matchday-rsvp: DOM builders shared by the game (flow.js) and the no-WebGL page (fallback.js). NO three.js import here, so the fallback path never depends on it.
 // User text is only ever written with textContent / text nodes (see h()). Validation is f.validate() from fields.js, the same for every path.
 import { EVENT } from './config.js';
-import { FIELD, FAST_KEYS, keysFor, valueOf } from './fields.js';
+import { FIELD, FAST_KEYS, keysFor, valueOf, noticeSide } from './fields.js';
 import { getState, onState, closedText } from './submit.js';
 import { formatSeat } from '../lib/seat.ts';
 import { buildIcs, googleCalendarUrl, ICS_FILE_NAME } from '../lib/calendar.ts';
@@ -58,9 +58,9 @@ export function checkField(f, control, err) {
 export const closedNote = () => h('p', { class: 'closed', role: 'status', text: closedText() ?? '' });
 
 // A <form> of several fields (a station's card, or the whole fast lane): label + control + its own error line per field, conditional fields shown only when their answer asks for them.
-// keys = FIELD keys; init = flat values; onValid(values) gets cleaned values by value key (attendingFast comes back as `attending`); hidden fields are left out.
+// keys = FIELD keys; init = flat values; side = the kiosk's side when known ('home'|'away', stations); onValid(values) gets cleaned values by value key (attendingFast comes back as `attending`); hidden fields are left out.
 // Returns { form, items, read(), focusFirst(), setErrors({ key: msg }), onChange(fn) }. Validation is fields.js (the server's rules); the server stays authoritative.
-export function fieldsForm({ keys, id, init = {}, onValid, onChange }) {
+export function fieldsForm({ keys, id, init = {}, side, onValid, onChange }) {
   let form;
   const items = keys.map((k) => {
     const f = FIELD[k], fid = `${id}-${k}`, err = h('p', { class: 'err', id: fid + '-err', role: 'alert' });
@@ -71,10 +71,10 @@ export function fieldsForm({ keys, id, init = {}, onValid, onChange }) {
   const refresh = () => { const shown = keysFor(keys, read()); for (const it of items) it.w.hidden = !shown.includes(it.k); };
   form = h('form', { novalidate: true, autocomplete: 'on', onsubmit: (ev) => {
     ev.preventDefault();
-    const shown = keysFor(keys, read()), out = {}; let first = null;
+    const all = read(), shown = keysFor(keys, all), out = {}; let first = null;
     for (const it of items) {
       if (!shown.includes(it.k)) continue;
-      const r = it.f.validate(it.c.read());
+      const r = it.f.validate(it.c.read(), all, side);
       it.err.textContent = r.ok ? '' : r.error; it.c.invalid(!r.ok);
       if (r.ok) out[it.k === 'attendingFast' ? 'attending' : it.k] = r.value; else first ??= it;
     }
@@ -102,24 +102,28 @@ export function privacyNotice({ capped = true, side = 'home' } = {}) {
   if (!EVENT.privacy) return Object.assign(h('p', { class: 'notice' }), { setSide() {} });   // missing config: the form is closed in production anyway, so render nothing rather than throw
   const P = EVENT.privacy, link = /^https:\/\//.test(P.policyUrl) ? h('a', { href: P.policyUrl, target: '_blank', rel: 'noopener noreferrer', text: ' Full notice' }) : null;
   const val = (k) => (typeof P[k] === 'string' && P[k].trim() ? P[k] : `[${k} missing]`);   // a missing/blank key shows as "[contact missing]", never "undefined"; any non-blank string (placeholders too) shows as written
-  // The wording follows the side: a decline only gives a name and email, so it never claims the rest. setSide() swaps it when the fast-lane guest changes their answer.
+  // The wording follows the side: a decline only gives a name and email (or, name-only, a name and an optional reason), so it never claims the rest. setSide(s) swaps it
+  // when the guest changes an answer: side is 'home', 'away' (name and email) or 'decline' (name-only, fields.js noticeSide).
   // lead + ' ' + rest is the one notice sentence (NOTICE_VERSION covers it), split so the lead can be the summary; only the lead depends on the side.
-  const lead = (s) => `${val('responsibleParty')} uses ${s === 'away' ? 'your name and email only' : 'your name, email, WhatsApp number (if you give one), team and plus-one name only'} to manage RSVPs for this event${s === 'away' ? '' : ' and send you event details'}.`;
+  const WHAT = { decline: 'your first name, surname and, if you give one, a short reason only', away: 'your name and email only', home: 'your name, email, WhatsApp number (if you give one), team and plus-one name only' };
+  const lead = (s) => `${val('responsibleParty')} uses ${WHAT[s] ?? WHAT.home} to manage RSVPs for this event${s === 'home' || !WHAT[s] ? ' and send you event details' : ''}.`;
   const rest = () => `Replying is optional. I delete your details ${val('retention')}. You can ask to see, correct or delete them at ${val('contact')}.`;
   const t1 = document.createTextNode(lead(side)), t2 = document.createTextNode(rest()), setSide = (s) => { t1.data = lead(s); t2.data = rest(); };
   if (!capped) return Object.assign(h('p', { class: 'notice' }, t1, ' ', t2, link), { setSide });
   return Object.assign(h('details', { class: 'notice', open: !matchMedia('(max-width: 560px)').matches }, h('summary', {}, t1), h('p', {}, t2, link)), { setSide });
 }
 
-// Closing card for a saved RSVP, built ONLY from the server's saved/updated reply { status, firstName, attending, ticketNo } (never from what the guest typed).
+// Closing card for a saved RSVP, built from the server's saved/updated reply { status, firstName, attending, ticketNo }. The one exception is a name-only decline (r.nameOnly):
+// its firstName is the guest's own typed text (submit.js echoes the payload). Every value here is written with textContent only.
 // "updated" is a returning guest: the same seat, kept. No exclamation marks; a No gets no warm closing line and no poster.
 export const seatNo = formatSeat;   // lib/seat.ts: three digits, 007
 export function confirmCard(r, { id = 'd-h' } = {}) {
   const back = r.status === 'updated', no = r.attending === 'no', maybe = r.attending === 'maybe';
   const who = r.answers?.preferredName?.trim() || r.firstName;   // the name the shirt and poster carry: preferred, else first
   const kicker = no ? 'Reply saved' : maybe ? 'Pencilled in' : 'Signed';
-  const heading = no ? `${back ? 'Updated' : 'Noted'}, ${who}` : back ? `Welcome back, ${who}` : maybe ? `Pencilled in, ${who}` : `You're in, ${who}`;
-  const body = no ? 'You are down as not coming. Use the same email to change your answer.'
+  const heading = no ? `${back && !r.nameOnly ? 'Updated' : 'Noted'}, ${who}` : back ? `Welcome back, ${who}` : maybe ? `Pencilled in, ${who}` : `You're in, ${who}`;
+  const body = r.nameOnly ? "You'll be missed. If plans change, open your invite link again."   // a name-only decline gave no email: never point at one
+    : no ? 'You are down as not coming. Use the same email to change your answer.'
     : back ? `Your answer is updated and seat ${seatNo(r.ticketNo)} is kept. I'll send the venue and details closer to the day.`
     : maybe ? `Seat ${seatNo(r.ticketNo)} is held while you decide. Use the same email to change your answer. I'll send the venue and details closer to the day.`
     : `I'll send the venue and details closer to the day.`;
@@ -147,7 +151,7 @@ function keepsakeRow(r) {
 }
 
 // ---- fast lane: the whole RSVP as one <form> (can you make it, then the fields that answer asks for, one Send) --------------------------------------
-// Every field is here, so a guest who never plays the game can still give the host everything. Yes and Not sure yet ask for everything; Can't make it asks for name and email.
+// Every field is here, so a guest who never plays the game can still give the host everything. Yes and Not sure yet ask for everything; Can't make it asks "Have you replied before?" first: Yes then wants name and email (the code path), No wants name and an optional reason (no email).
 // onSend({ side: 'home'|'away', values }) runs with validated flat values only (fields.js), and never while a save is in flight or after one succeeded (shared state, submit.js).
 // init = earlier answers (values by key); errors = server errors by field key, shown inline when the form is reopened to fix them.
 export function fastLaneForm({ onSend, capped = true, init = {}, errors = null }) {
@@ -155,9 +159,9 @@ export function fastLaneForm({ onSend, capped = true, init = {}, errors = null }
     const form = h('form', { id: 'fast-form', name: 'rsvp', novalidate: true, onsubmit: (ev) => ev.preventDefault() }, closedNote());
     return { form };
   }
-  const notice = privacyNotice({ capped, side: init.attending === 'no' ? 'away' : 'home' });
+  const notice = privacyNotice({ capped, side: noticeSide(init) });
   const f = fieldsForm({ keys: FAST_KEYS, id: 'fl', init, onValid: (values) => { if (getState() === 'sending' || getState() === 'sent') return; onSend({ side: values.attending === 'no' ? 'away' : 'home', values }); },
-    onChange: (v) => notice.setSide(v.attending === 'no' ? 'away' : 'home') });
+    onChange: (v) => notice.setSide(noticeSide(v)) });
   const form = f.form; form.id = 'fast-form'; form.name = 'rsvp';
   const btn = h('button', { class: 'btn', type: 'submit', text: 'Continue' });
   // The card replaces this form's nodes when it closes; the first state change after that releases the subscription (there is no close event to hook).

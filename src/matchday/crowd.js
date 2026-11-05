@@ -116,7 +116,7 @@ vCrowd = col;`);
   group.add(mLower, mUpper);
 
   // ---- sim-clock driven state ---------------------------------------------------------------------------------------
-  const st = { t: 0, cheerT: -1, waveT: 0, waveLeft: 0, clapLeft: 0 };
+  const st = { t: 0, cheerT: -1, waveT: 0, waveLeft: 0, clapLeft: 0, hush: 0, hushTo: 0 };
   const api = {
     group, meshes: [mLower, mUpper], uniforms, count: lower.length + upper.length,
     triangles: lower.length * mLower.userData.trisEach + upper.length * mUpper.userData.trisEach,
@@ -124,10 +124,11 @@ vCrowd = col;`);
     cheer(at = 0) { st.cheerT = at; },
     // Mexican wave around the bowl; seconds = how long it keeps going (one lap = 16 s). wave(false) stops it.
     wave(seconds = 32) { if (seconds === false || seconds <= 0 || reducedMotion()) { st.waveLeft = 0; uniforms.uWaveOn.value = 0; } else { st.waveLeft = seconds; st.waveT = 0; uniforms.uWaveOn.value = 1; } },
-    // polite applause (AWAY branch), arms clapping for `seconds`
-    applaud(seconds = 4) { st.clapLeft = seconds; },
+    // the AWAY ending: the stands go quiet (everyone settles to a still pose, no bob, sway or clapping), easing in with a 1/1.2 s time constant. hush(false) snaps them back to moving, so a reset is deterministic
+    hush(on = true) { st.hushTo = on ? 1 : 0; if (on) { st.clapLeft = 0; api.wave(false); st.cheerT = -1; } else st.hush = 0; },
     step(dt) {
-      st.t += dt; uniforms.uTime.value = st.t; uniforms.uCalm.value = reducedMotion() ? 1 : 0;
+      st.hush += (st.hushTo - st.hush) * Math.min(1, dt * 1.2);
+      st.t += dt; uniforms.uTime.value = st.t; uniforms.uCalm.value = reducedMotion() ? 1 : st.hush;
       if (st.cheerT >= 0) { st.cheerT += dt; if (st.cheerT > 3.0) st.cheerT = -1; }
       uniforms.uCheerT.value = st.cheerT;
       if (st.waveLeft > 0) { st.waveT += dt; st.waveLeft -= dt; if (st.waveLeft <= 0) uniforms.uWaveOn.value = 0; }

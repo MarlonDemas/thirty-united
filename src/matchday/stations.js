@@ -1,5 +1,5 @@
 // matchday-rsvp: the station registry (open-roam). Four stations, a short group of questions each (fields.js GROUPS):
-//   1 names   the kiosk in the chosen END (HOME or AWAY lane)    first name, surname, name on the shirt, "Not sure yet" (AWAY: names + email)   challenge: hand in the ticket (challenges/ticket.js)
+//   1 names   the kiosk in the chosen END (HOME or AWAY lane)    first name, surname, name on the shirt, "Not sure yet" (AWAY: replied before? then names + email, or names + an optional reason)   challenge: hand in the ticket (challenges/ticket.js)
 //   2 email   the HOME dugout                                     email + who you support (the shirt hangs here)                                    challenge: dribble and shoot (challenges/dribble.js)
 //   3 reach   the north-east corner flag                          email or WhatsApp, and the number                                                 challenge: the corner and a teammate's header (challenges/corner.js)
 //   4 plus    the north penalty spot                              plus one, and their name                                                          challenge: the penalty (challenges/penalty.js)
@@ -8,7 +8,7 @@
 // Never blocking: confirming saves the answer at once; "Skip ..." completes the station without the challenge; challenges allow at most one failure.
 import * as THREE from 'three';
 import { THEME, KIT_HEX, fontCss } from './config.js';
-import { GROUPS } from './fields.js';
+import { GROUPS, noticeSide } from './fields.js';
 import { h, fieldsForm, closedNote, privacyNotice } from './ui.js';
 import { closedText } from './submit.js';
 import { canvasTex, anglesFor, reducedMotion } from './util.js';
@@ -23,7 +23,7 @@ export const STATIONS = [
 ];
 const BLURB = {
   '1:home': 'Your name goes on the back. A few lines so I can seat you properly. Then hand in your ticket.',
-  '1:away': "Can't make it? Leave your name and email, then hand in your ticket.",
+  '1:away': "Can't make it? Tell me if you've replied before and leave your name, then hand in your ticket.",
   2: 'Your email, and who you support (Neutral is fine). Then take the pass, dribble through the cones and shoot.',
   3: 'How should I send you the details? Then whip in a corner for the striker to head in.',
   4: 'Bringing someone? Then score from the spot.',
@@ -109,14 +109,15 @@ export function createStations(world, { hud, roam, challenges, getSide, getValue
     const id = 'st-' + s.k.replace(':', '-');
     const kicker = s.id === 1 ? (s.side === 'home' ? 'HOME END · Station 1 of 4' : 'AWAY END · Your reply') : `Station ${s.id} of 4 · ${s.where}`;
     const closed = !!closedText();
-    const ff = closed ? null : fieldsForm({ keys: s.keys, id, init: getValues(), onValid: (value) => submit(s, value) });
+    const init = getValues(), notice = s.id === 1 && !closed ? privacyNotice({ side: noticeSide(init, s.side) }) : null;   // the AWAY notice follows "Have you replied before?"
+    const ff = closed ? null : fieldsForm({ keys: s.keys, id, init, side: s.side, onValid: (value) => submit(s, value), onChange: (v) => notice?.setSide(noticeSide(v, s.side)) });
     const form = ff ? ff.form : h('form', { novalidate: true, onsubmit: (ev) => ev.preventDefault() }, closedNote());
     const row = h('div', { class: 'row' });
     if (s.challenge && challenges[s.challenge]) row.append(h('button', { class: 'btn', type: 'submit', disabled: closed, onclick: () => { mode = 'play'; }, text: 'Take the challenge' }));
     row.append(h('button', { class: s.challenge && challenges[s.challenge] ? 'btn ghost' : 'btn', type: 'submit', disabled: closed, onclick: () => { mode = 'skip'; }, text: s.skipLabel }));
     form.append(row);
     return [h('p', { class: 'kicker', id: id + '-k', text: kicker }), h('p', { text: BLURB[s.k] }),
-      ...(s.id === 1 && !closed ? [privacyNotice({ side: s.side })] : []), form,
+      ...(notice ? [notice] : []), form,
       h('div', { class: 'row' }, h('button', { class: 'linkbtn', type: 'button', onclick: () => api.close({ suppress: true }), text: 'Not now' }))];
   }
   function openCard(s, opts = {}) {

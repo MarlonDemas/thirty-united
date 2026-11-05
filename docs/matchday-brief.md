@@ -7,6 +7,8 @@ EVENT (✎ all editable, in worlds/matchday-rsvp/config.js, the one file an orga
 BEFORE GO-LIVE:
 - [ ] Fill the four `EVENT.privacy` values in `src/matchday/config.js` (`responsibleParty`, `contact`, `retention`, `policyUrl`). Production stays closed while any placeholder remains.
 - [ ] Set `RETENTION_DAYS` in `convex/admin.ts` to the retention period stated in `EVENT.privacy.retention`.
+- [ ] Set `DECLINES_OPEN` to `"true"` on production (`incredible-crane-757`) and on the preview deployment (`modest-marten-55`), and redeploy the preview backend so it has the declines code. Until it is set, the name-only decline answers `service_unavailable`.
+- [ ] Keep `NOTICE_VERSION` in `src/matchday/config.js` inside the server's `DECLINE_NOTICE_VERSIONS` allow-list in `convex/lib/declineValidation.ts`: any bump changes both. Filling the privacy placeholders before launch needs no bump, because nobody has seen v2 in production yet.
 - [ ] Bump `NOTICE_VERSION` whenever the notice wording changes after go-live (format `/^[a-z0-9.-]{1,32}$/`).
 - [ ] Confirm the Netlify site's environment variables do not set `NODE_ENV` (the build refuses a non-production `NODE_ENV`).
 - [ ] Open question for the owner: guests who replied before the privacy notice existed. Decide whether to send them the notice.
