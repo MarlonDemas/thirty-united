@@ -75,6 +75,11 @@ button:disabled{opacity:.45;cursor:default}
 #skip{top:auto;bottom:24px;min-height:44px;display:grid;place-items:center;font-size:var(--fs-label);line-height:var(--lh-label);pointer-events:none;animation:fade var(--dur-fast) var(--ease-out) both}
 #skip[hidden]{display:none}
 #hint{animation:fade var(--dur-fast) var(--ease-out) both}
+/* the floating stick: a ring where the left thumb landed and a knob that follows it (hud.js); never takes a touch */
+#stick{position:fixed;left:0;top:0;width:0;height:0;pointer-events:none!important}
+#stick[hidden]{display:none}
+#stick::before{content:"";position:absolute;left:-56px;top:-56px;width:112px;height:112px;box-sizing:border-box;border-radius:50%;border:2px solid rgba(255,255,255,.5);background:rgba(14,11,19,.28)}
+#stick i{position:absolute;left:-24px;top:-24px;width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,.8);box-shadow:0 0 0 2px rgba(14,11,19,.5)}
 @keyframes fade{from{opacity:0}to{opacity:1}}
 /* cinematic letterbox (cine.js): two thin bars, 7% of the height, scaled in by --lb (0..1, driven on the sim clock); first in #ui, so every overlay sits above */
 #lb,#dip{position:fixed;inset:0;pointer-events:none!important}
@@ -96,7 +101,7 @@ button:disabled{opacity:.45;cursor:default}
   .choice{min-height:70px;padding:8px 14px}
   #card dt,#card dd{padding:3px 0}
   #card:not([hidden])~#toast,#card:not([hidden])~#hint{display:none}
-  #hint{top:68px}
+  #hint{top:auto;bottom:104px}   /* centred just above the Walk button, between the feet and the thumb: where the eye already is */
 }
 /* challenge chip: slim, top-centre, the instruction plus a real Skip button; the ball and the goal mouth stay clear below it */
 #chal{display:flex;align-items:center;gap:10px;padding:4px 4px 4px 16px;max-width:calc(100vw - 136px)}

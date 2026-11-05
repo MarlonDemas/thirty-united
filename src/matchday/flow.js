@@ -297,7 +297,7 @@ export function createFlow(world, { audio, fx, teammates }) {
     if (roam.pos.x * sx < 0.5 && roam.pos.z > 131) roam.walkTo(sx * 1.6, 131.6, { onArrive: () => { if (S.stage === 'roam' && !S.side) stations.walkTo(s); }, within: 0.6 });
     else stations.walkTo(s);
   }
-  function showHint() { if (S.hinted) return; S.hinted = true; hud.hint(hud.isTouch() ? 'Tap the ground to walk, drag to look' : 'WASD or arrows to walk, Shift to run, drag to look', PACE.hint); }
+  function showHint() { if (S.hinted) return; S.hinted = true; hud.hint(hud.isTouch() ? 'Drag the left side to walk' : 'WASD or arrows to walk, Shift to run, drag to look', PACE.hint); }
   function walkToNext() {
     if (!S.side) { showIntro(); return; }
     const nx = stations.next(); if (!nx || S.stage !== 'roam') return;

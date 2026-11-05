@@ -2,7 +2,9 @@
 // behind and over the right shoulder, along the look (ctl.yaw / ctl.pitch; forward = (-sin yaw, -cos yaw)). Callers still say "the guest at (x, EYE, z)
 // looking at the target" (anglesFor / lookFrom): the boom keeps that look and pulls the camera back from the avatar's shoulder.
 // Desktop: W/S or Up/Down walk along the camera, A/D strafe, Left/Right turn, Shift runs, drag orbits (controls.js); the avatar faces where it moves.
-// Phones (and any pointer): a tap (< 8 px, < 250 ms) on the ground walks there; a tap on a station walks to it. Cinematic camera moves (glide) live here too,
+// Phones: a floating stick under the left thumb (left half of the screen; push distance sets the pace, full push runs; forward is the view, and the view eases in
+// behind the travel while the right thumb is not dragging), a right-side drag looks, a tap on the ground (a sky tap walks that way) or on a station walks there.
+// Mouse and pointer: a tap (< 8 px, < 250 ms) on the ground walks there; a tap on a station walks to it. Cinematic camera moves (glide) live here too,
 // because they own the same camera. Everything moves on the sim clock: step(dt) is called from the sim step, so window.__dbg.simStep(dt) stays deterministic.
 //
 // Boom: look point = (P.x, height, P.z) + shoulder metres to the camera's right; camera = look point - viewDir(yaw, pitch) * len. place() clamps the pitch so
@@ -17,9 +19,11 @@
 //   moveTo(x, z, { yaw, pitch }) sets the look BEFORE it places the camera; teleport(x, z, { yaw, pitch, look, fov }) also turns the avatar to the look.
 //   glide({...}): pts are the AVATAR's ground path (default), free: true = a camera-only move (pts are camera points; the avatar stays), rig = cine.js.
 import * as THREE from 'three';
+import { TAP, STICK_R } from './controls.js';
 import { lerp, lerpAngle, smoother, smooth01, clamp, anglesFor, reducedMotion, mulberry32 } from './util.js';
 
 export const EYE = 1.7;                           // the guest's eye line: callers aim from (x, EYE, z)
+const wrap = (a) => (((a + Math.PI) % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI) - Math.PI;   // an angle difference, in -PI..PI
 const R = 0.35;                                   // the guest's footprint radius
 // the roaming boom: 4.2 m back from a look point at chest height, 0.35 m right. Long and low enough that the feet sit at ~75% of the frame height on every
 // aspect (the centred bottom 'Walk to next station' button starts at ~86-90%), with the head at ~40%
@@ -61,6 +65,10 @@ export function createRoam(world, { tl, signal, avatar = null, canMove = () => t
   const dom = renderer.domElement;
   const P = { x: 0, z: 136 };
   let zones = {}, extra = [], keys = new Set(), auto = null, cam = null, camCine = false, detached = false, moving = 0, held = false;
+  // the floating stick (touch): id = the finger, o = where it landed (the origin follows a thumb that pushes past STICK_R), x/y in -1..1 (y down), on = past the dead
+  // zone, ref = the yaw the push is measured against (the view when the thumb landed, moved along by any look drag, so easing the camera never turns the walk)
+  const stick = { id: null, ox: 0, oy: 0, x: 0, y: 0, on: false, run: false, ref: 0, yaw: 0, fresh: false }, uiEl = document.getElementById('ui');
+  let nudge = 1;   // which way a head-on push slides round a thin obstacle (kept, so it does not jitter)
   const boom = { ...BOOM }, lag = new THREE.Vector3();   // lag: a camera catch-up offset that decays (after the avatar's offset is folded into P)
   const setZones = (z) => { zones = { plaza: true, laneHome: false, laneAway: false, inside: false, pitch: false, ...z }; };
   setZones({});
@@ -102,14 +110,16 @@ export function createRoam(world, { tl, signal, avatar = null, canMove = () => t
     if (!reducedMotion()) lag.add(new THREE.Vector3(before.x - after.x, before.y - after.y, before.z - after.z));
   }
   // move with sliding: the full step, else each axis on its own
-  function moveBy(dx, dz) {
+  // side (the stick, a tap's walk): a push straight into a thin obstacle (the lane divider dead ahead of the start) has nothing to slide along, so it steps round it
+  function moveBy(dx, dz, side = false) {
     const x0 = P.x, z0 = P.z;
     if (free(P.x + dx, P.z + dz)) { P.x += dx; P.z += dz; } else if (dx && free(P.x + dx, P.z)) P.x += dx; else if (dz && free(P.x, P.z + dz)) P.z += dz;
+    else if (side && inZone(P.x + dx, P.z + dz)) for (const k of [dx && dz ? -Math.sign(dx * dz) : nudge, dx && dz ? Math.sign(dx * dz) : -nudge]) if (free(P.x - dz * k * 0.6, P.z + dx * k * 0.6)) { P.x -= dz * k * 0.6; P.z += dx * k * 0.6; nudge = k; break; }
     return Math.hypot(P.x - x0, P.z - z0);
   }
   // the rig: the camera on the boom behind the avatar, plus the (halved) handheld sway while moving (none under reduced motion); re-applies the look every step
   const place = () => {
-    const k = reducedMotion() ? 0 : smoother(moving) * (keys.has('Shift') ? 1.35 : 1) * SWAY_K, t = sim.t;
+    const k = reducedMotion() ? 0 : smoother(moving) * (keys.has('Shift') || stick.run ? 1.35 : 1) * SWAY_K, t = sim.t;
     if (!held) { const c = boomCam(P.x, P.z, ctl.yaw, ctl.pitch); ctl.pitch = c.pitch; camera.position.set(c.x + lag.x, c.y + lag.y, c.z + lag.z); }
     ctl.sway.yaw = swayAt(SWAY.yaw, t) * k; ctl.sway.pitch = swayAt(SWAY.pitch, t) * k; ctl.sway.roll = swayAt(SWAY.roll, t) * k; ctl.apply();
   };
@@ -125,18 +135,45 @@ export function createRoam(world, { tl, signal, avatar = null, canMove = () => t
   addEventListener('keyup', (ev) => { keys.delete(ev.code); if (ev.key === 'Shift') keys.delete('Shift'); }, { signal });
   addEventListener('blur', () => keys.clear(), { signal });
 
-  // ---- tap to move ----------------------------------------------------------------------------------------------------------
+  // ---- tap to move + the floating stick ------------------------------------------------------------------------------------
   const ray = new THREE.Raycaster(), ndc = new THREE.Vector2(), ground = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), hit = new THREE.Vector3();
   let down = null;
+  const emit = () => uiEl?.dispatchEvent(new CustomEvent('stick', { detail: { on: stick.on, ox: stick.ox, oy: stick.oy, kx: stick.x * STICK_R, ky: stick.y * STICK_R } }));   // hud.js draws the ring
+  const endStick = () => { const was = stick.on; stick.id = null; stick.on = stick.run = false; stick.x = stick.y = 0; if (was) emit(); };
+  // the stick owns a touch that lands in the left half, but not on or just around the "Walk to next station" button: that stays a button
+  ctl.claim = (ev) => {
+    if (ev.pointerType !== 'touch' || stick.id !== null || !canMove() || cam || detached || ev.clientX > innerWidth / 2) return false;
+    const r = document.getElementById('walk')?.hidden === false && document.getElementById('walk').getBoundingClientRect();
+    if (r && ev.clientX > r.left - 16 && ev.clientX < r.right + 16 && ev.clientY > r.top - 16) return false;
+    Object.assign(stick, { id: ev.pointerId, ox: ev.clientX, oy: ev.clientY, x: 0, y: 0, on: false, fresh: true, ref: ctl.yaw, yaw: ctl.yaw });
+    try { dom.setPointerCapture(ev.pointerId); } catch {}
+    return true;
+  };
+  dom.addEventListener('pointermove', (ev) => {
+    if (ev.pointerId !== stick.id) return;
+    let dx = ev.clientX - stick.ox, dy = ev.clientY - stick.oy; const d = Math.hypot(dx, dy);
+    if (!stick.on) { if (d < TAP.slop) return; stick.on = true; down = null; }   // past the slop it is a walk, not a tap
+    if (d > STICK_R) { stick.ox += dx * (1 - STICK_R / d); stick.oy += dy * (1 - STICK_R / d); dx = ev.clientX - stick.ox; dy = ev.clientY - stick.oy; }
+    stick.x = dx / STICK_R; stick.y = dy / STICK_R; emit();
+  }, { signal });
+  for (const t of ['pointerup', 'pointercancel']) dom.addEventListener(t, (ev) => { if (ev.pointerId === stick.id) endStick(); }, { signal });
   // a pointerdown that skipped a camera move is preventDefault()ed by the flow's capture handler: it never also starts a walk
-  dom.addEventListener('pointerdown', (ev) => { down = ev.button > 0 || ev.defaultPrevented ? null : { x: ev.clientX, y: ev.clientY, t: performance.now(), id: ev.pointerId }; }, { signal });
+  dom.addEventListener('pointerdown', (ev) => { down = ev.button > 0 || ev.defaultPrevented ? null : { x: ev.clientX, y: ev.clientY, t: performance.now(), id: ev.pointerId, ...(ev.pointerType === 'touch' ? TAP : { slop: 8, ms: 250 }) }; }, { signal });
   dom.addEventListener('pointerup', (ev) => {
     const d = down; down = null;
-    if (!d || d.id !== ev.pointerId || Math.hypot(ev.clientX - d.x, ev.clientY - d.y) >= 8 || performance.now() - d.t >= 250 || !canMove() || detached || cam) return;
+    if (!d || d.id !== ev.pointerId || Math.hypot(ev.clientX - d.x, ev.clientY - d.y) >= d.slop || performance.now() - d.t >= d.ms || !canMove() || detached || cam) return;
+    // a fingertip is not a pin: a station within ~20 px of the tap counts
+    for (const [ox, oy] of [[0, 0], [-20, 0], [20, 0], [0, -20], [0, 20]]) {
+      ndc.set((ev.clientX + ox) / innerWidth * 2 - 1, -((ev.clientY + oy) / innerHeight * 2 - 1)); ray.setFromCamera(ndc, camera);
+      const picks = ray.intersectObjects(pickables(), true);
+      if (picks.length) { let o = picks[0].object; while (o && !o.userData.station) o = o.parent; if (o) { onTap?.({ station: o.userData.station }); return; } }
+    }
+    // ground: where the ray lands (at most 30 m out); a tap above the horizon (about half the screen at this boom) walks that way for 14 m instead of doing nothing
     ndc.set(ev.clientX / innerWidth * 2 - 1, -(ev.clientY / innerHeight * 2 - 1)); ray.setFromCamera(ndc, camera);
-    const picks = ray.intersectObjects(pickables(), true);
-    if (picks.length) { let o = picks[0].object; while (o && !o.userData.station) o = o.parent; if (o) { onTap?.({ station: o.userData.station }); return; } }
-    if (ray.ray.intersectPlane(ground, hit) && Math.hypot(hit.x - P.x, hit.z - P.z) < 140) { api.walkTo(hit.x, hit.z); onTap?.({ ground: [hit.x, hit.z] }); }
+    const got = ray.ray.intersectPlane(ground, hit), ax = got ? hit.x - P.x : ray.ray.direction.x, az = got ? hit.z - P.z : ray.ray.direction.z, len = Math.hypot(ax, az);
+    if (len < 1e-3) return;
+    const k = (got ? Math.min(len, 30) : 14) / len, x = P.x + ax * k, z = P.z + az * k;
+    api.walkTo(x, z); onTap?.({ ground: [x, z] });
   }, { signal });
 
   // ---- cinematic camera moves -----------------------------------------------------------------------------------------------
@@ -231,7 +268,7 @@ export function createRoam(world, { tl, signal, avatar = null, canMove = () => t
     // look angles toward a world point from the guest's eye line (x, EYE, z); the boom keeps this look
     lookFrom: (x, z, target) => anglesFor([x, EYE, z], target),
     teleport(x, z, { yaw, pitch, look, fov } = {}) {
-      tl.cancel(cam); cam = null; camCine = false; auto = null; detached = false; held = false; P.x = x; P.z = z; moving = 0; lag.set(0, 0, 0); avatar?.clearOffset();
+      tl.cancel(cam); cam = null; camCine = false; auto = null; endStick(); detached = false; held = false; P.x = x; P.z = z; moving = 0; lag.set(0, 0, 0); avatar?.clearOffset();
       if (look) ({ yaw, pitch } = anglesFor([x, EYE, z], look));
       if (yaw !== undefined) { ctl.yaw = yaw; ctl.pitch = pitch ?? 0; }
       avatar?.snap(ctl.yaw + Math.PI);   // the avatar faces the look (its forward (sin h, cos h) = the camera's (-sin yaw, -cos yaw))
@@ -250,28 +287,41 @@ export function createRoam(world, { tl, signal, avatar = null, canMove = () => t
       place();
     },
     walkTo(x, z, { onArrive, speed = SPEED.auto, within = 0.15 } = {}) { auto = { x, z, onArrive, speed, within, stall: 0 }; },
-    stop() { auto = null; keys.clear(); },
+    stop() { auto = null; keys.clear(); endStick(); },
     releaseKeys() { keys.clear(); },
     step(dt) {
       if (detached || (cam && tl.has(cam))) return;
       let vx = 0, vz = 0, speed = 0;
       if (!canMove()) { auto = null; keys.clear(); }
+      const driving = stick.on && canMove();
       const f = (keys.has('KeyW') || keys.has('ArrowUp') ? 1 : 0) - (keys.has('KeyS') || keys.has('ArrowDown') ? 1 : 0);
       const s = (keys.has('KeyD') ? 1 : 0) - (keys.has('KeyA') ? 1 : 0), turn = (keys.has('ArrowLeft') ? 1 : 0) - (keys.has('ArrowRight') ? 1 : 0);
       if (turn) { ctl.yaw += turn * SPEED.turn * dt; ctl.apply(); }
       if ((f || s || auto) && avatar && (avatar.offset.x || avatar.offset.z)) foldOffset();
+      stick.run = false;
       if (f || s) {
         const sy = Math.sin(ctl.yaw), cy = Math.cos(ctl.yaw), l = Math.hypot(f, s);
         speed = keys.has('Shift') ? SPEED.run : SPEED.walk;
         vx = ((-sy) * f + cy * s) / l; vz = ((-cy) * f + (-sy) * s) / l;
+      } else if (driving && Math.hypot(stick.x, stick.y) > 0.15) {
+        // the push is measured against ref (see stick); the pace follows the push: a stroll, a walk, then a run at full push
+        auto = null; stick.ref += wrap(ctl.yaw - stick.yaw);   // a look drag (or a turn key) moves the frame with the view
+        const sy = Math.sin(stick.ref), cy = Math.cos(stick.ref), fw = -stick.y, sd = stick.x, m = Math.hypot(fw, sd), u = clamp((Math.min(m, 1) - 0.2) / 0.8, 0, 1);
+        vx = ((-sy) * fw + cy * sd) / m; vz = ((-cy) * fw + (-sy) * sd) / m;
+        speed = u < 0.7 ? lerp(0.25, 1, u / 0.7) * SPEED.walk : lerp(SPEED.walk, SPEED.run, (u - 0.7) / 0.3); stick.run = u > 0.9;
+        // the view eases in behind the travel (not while the right thumb drags, not for a push back towards the camera); reduced motion cuts behind once, as the push starts
+        const ty = Math.atan2(-vx, -vz), w = 1 - smooth01(1.75, 2.6, Math.abs(wrap(ty - stick.ref)));
+        if (!ctl.dragging && w > 0 && (!reducedMotion() || stick.fresh)) { ctl.yaw = reducedMotion() ? ty : lerpAngle(ctl.yaw, ty, (1 - Math.exp(-2.4 * dt)) * w); ctl.apply(); }
+        stick.fresh = false;
       } else if (auto) {
         const dx = auto.x - P.x, dz = auto.z - P.z, d = Math.hypot(dx, dz);
         if (d <= auto.within) { const a = auto; auto = null; moving = 0; place(); a.onArrive?.(); return; }
         speed = Math.min(auto.speed, d / Math.max(dt, 1e-3)); vx = dx / d; vz = dz / d;
-        const ty = Math.atan2(-vx, -vz); ctl.yaw = lerpAngle(ctl.yaw, ty, 1 - Math.exp(-7 * dt)); ctl.pitch = lerp(ctl.pitch, -0.06, 1 - Math.exp(-4 * dt)); ctl.apply();
+        if (!ctl.dragging) { const ty = Math.atan2(-vx, -vz); ctl.yaw = lerpAngle(ctl.yaw, ty, 1 - Math.exp(-7 * dt)); ctl.pitch = lerp(ctl.pitch, -0.06, 1 - Math.exp(-4 * dt)); ctl.apply(); }   // a look drag wins over the walk's own turn
       }
+      stick.yaw = ctl.yaw;
       if (speed > 0) {
-        const moved = moveBy(vx * speed * dt, vz * speed * dt);
+        const moved = moveBy(vx * speed * dt, vz * speed * dt, driving || !!auto);
         moving = Math.min(1, moving + dt * 4);
         if (auto) { auto.stall = moved < speed * dt * 0.2 ? auto.stall + dt : 0; if (auto.stall > 0.6) { const a = auto; auto = null; a.onArrive?.({ stuck: true }); } }
         if (moved > 0) onMove?.(moved);
@@ -282,7 +332,7 @@ export function createRoam(world, { tl, signal, avatar = null, canMove = () => t
       place();
     },
     state: () => ({ x: +P.x.toFixed(3), z: +P.z.toFixed(3), yaw: +ctl.yaw.toFixed(4), pitch: +ctl.pitch.toFixed(4), walking: !!auto, gliding: !!cam && tl.has(cam), detached, held, zones: { ...zones }, boom: { ...boom } }),
-    reset() { tl.cancel(cam); cam = null; camCine = false; auto = null; keys.clear(); detached = false; held = false; moving = 0; lag.set(0, 0, 0); Object.assign(boom, BOOM); setZones({}); avatar?.reset(); },
+    reset() { tl.cancel(cam); cam = null; camCine = false; auto = null; keys.clear(); endStick(); detached = false; held = false; moving = 0; lag.set(0, 0, 0); Object.assign(boom, BOOM); setZones({}); avatar?.reset(); },
   };
   avatar?.bind({ pos: P, move: (x, z) => api.moveTo(x, z) });
   return api;

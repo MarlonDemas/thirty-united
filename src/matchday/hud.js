@@ -19,7 +19,14 @@ export function createHud({ audio, tl }) {
   const fast = h('button', { id: 'fastlink', class: 'glass', type: 'button', hidden: true, text: 'Just reply' });
   const muteBtn = h('button', { id: 'mute', class: 'glass', type: 'button', 'aria-label': 'Mute sound', 'aria-pressed': 'false', onclick: () => { audio.unlock(); audio.toggleMute(); } }, svgIcon(false));
   audio.onMute((m) => { muteBtn.setAttribute('aria-pressed', String(m)); muteBtn.replaceChildren(svgIcon(m)); });   // one fixed label; aria-pressed carries the state
-  ui.append(card, toastEl, hintEl, chal, walk, skipEl, liveEl, fast, muteBtn);
+  // the floating stick (roam.js sends 'stick' events): a ring where the thumb landed and a knob that follows it; drawn only. The first push ends the walking hint.
+  const knob = h('i', {}), stickEl = h('div', { id: 'stick', 'aria-hidden': 'true', hidden: true }, knob);
+  ui.append(card, toastEl, hintEl, chal, walk, skipEl, liveEl, fast, muteBtn, stickEl);
+  ui.addEventListener('stick', (ev) => {
+    const d = ev.detail; stickEl.hidden = !d.on; if (!d.on) return;
+    stickEl.style.transform = `translate(${d.ox}px, ${d.oy}px)`; knob.style.transform = `translate(${d.kx}px, ${d.ky}px)`;
+    if (!hintEl.hidden) hud.hideHint();
+  });
 
   let toastTimer = null, hintTimer = null, onSkip = null, onWalk = null, onFast = null;
   chipSkip.addEventListener('click', () => onSkip?.());
