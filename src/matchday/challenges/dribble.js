@@ -11,6 +11,7 @@ import * as THREE from 'three';
 import { clamp, easeOut, smoother, anglesFor, reducedMotion } from '../util.js';
 import { buildKeeper, buildBall } from '../people.js';
 import { pose } from '../teammates.js';
+import { CONTACT } from '../avatar.js';
 
 // The course, in world metres: from S toward the south goal's centre; cones on the axis at s metres; shooting opens at shootFrom; len is the end of the
 // drill course (play() stops there). The run itself carries on past it and brakes (brake m/s^2) to a stop at cap, 12 m from the goal's
@@ -86,6 +87,7 @@ export function createDribble(world, { tl, hud, roam, audio, cine, teammates, si
   // ---- state + input ------------------------------------------------------------------------------------------------------------------------------
   let on = false, stage = 'idle', s = 0, lat = 0, latV = 0, speed = 0, slowT = 0, roll = 0, fails = 0, shots = 0, last = null, onResult = null, onSkip = null;
   let drag = null, dragSteer = 0, passT = null, kickU = 1, said = '', framed = false, from = null;   // from: where the last shot was struck (the retake)
+  let strike = null;   // a shot struck on the run: { contact } - the guest keeps running through the strike and eases out after it
   let swingA = null, swingT = null;   // swingA: the held camera at the strike { p, yaw, B: the ball, T: the point it keeps aimed at, u: the swing so far }
   const keys = new Set();
   const STEER_L = new Set(['ArrowLeft', 'KeyA']), STEER_R = new Set(['ArrowRight', 'KeyD']), FAST = new Set(['ArrowUp', 'KeyW']), EASY = new Set(['ArrowDown', 'KeyS']);
@@ -113,13 +115,17 @@ export function createDribble(world, { tl, hud, roam, audio, cine, teammates, si
   // and the guest closes on it again before the next touch.
   const guest = () => at(s, lat);
   const goalYaw = (g) => anglesFor([g.x, roam.EYE, g.z], [0, roam.EYE, GOAL_Z]).yaw;
-  function place(dt = 0) {
+  function place(dt = 0, still = false) {   // still: a held camera (the strike): move the feet only, leave the look alone
     const g = guest(), yaw = goalYaw(g);
-    roam.moveTo(g.x, g.z, { yaw: yaw - latV * 0.012, pitch: PITCH });
+    roam.moveTo(g.x, g.z, still ? {} : { yaw: yaw - latV * 0.012, pitch: PITCH });
+    if (strike?.contact) return;   // the ball track owns the ball
     const ph = roam.avatar ? roam.avatar.phase / (2 * Math.PI) : roll / 2.2, c2 = ((ph + 0.5) % 2) / 2;   // 0 at a right-foot landing, two steps per touch
     const fx = -Math.sin(yaw), fz = -Math.cos(yaw), d = BALL.ahead + (speed > 0.1 ? BALL.push * Math.sin(Math.PI * c2) : 0), sd = BALL.side + latV * 0.05;
     const px = ball.position.x, pz = ball.position.z;
-    ball.position.set(g.x + fx * d + right.x * sd, 0.11, g.z + fz * d + right.y * sd);
+    let bx = g.x + fx * d + right.x * sd, bz = g.z + fz * d + right.y * sd;
+    const w = strike && roam.avatar ? roam.avatar.strikeU : -1;   // closing on the boot: the ball settles where the right boot meets it at contact
+    if (w > 0) { const h = roam.avatar.heading, e = smoother(w); bx += (g.x + Math.sin(h) * CONTACT.fwd - Math.cos(h) * CONTACT.right - bx) * e; bz += (g.z + Math.cos(h) * CONTACT.fwd + Math.sin(h) * CONTACT.right - bz) * e; }
+    ball.position.set(bx, 0.11, bz);
     const mx = ball.position.x - px, mz = ball.position.z - pz, ml = Math.hypot(mx, mz);
     if (dt > 0 && ml > 1e-4 && ml < 1) { ax.set(mz, 0, -mx).normalize(); ball.rotateOnWorldAxis(ax, ml / 0.11); }
   }
@@ -134,6 +140,12 @@ export function createDribble(world, { tl, hud, roam, audio, cine, teammates, si
   function step(dt) {
     if (keeper.pose === 'idle') keeper.setPose('idle', sim.t + 1.7);
     if (!on) return;
+    if (strike) {   // the strike on the run: keep running to contact, then ease out over a follow-through step
+      if (strike.contact) speed = Math.min(speed * Math.exp(-2.6 * dt), Math.sqrt(2 * COURSE.brake * Math.max(0, COURSE.cap + 1.5 - s)));
+      latV *= Math.exp(-8 * dt); s = Math.min(COURSE.cap + 1.5, s + speed * dt); lat = clamp(lat + latV * dt, -COURSE.laneHalf, COURSE.laneHalf);
+      place(dt, true); if (swingA && !strike.contact) swingA.B = ball.position.toArray();
+      if (strike.contact && speed < 0.05) { speed = 0; strike = null; }
+    }
     if (stage === 'run') {
       const thr = ([...keys].some((k) => FAST.has(k)) ? 1 : 0) - ([...keys].some((k) => EASY.has(k)) ? 1 : 0);
       slowT = Math.max(0, slowT - dt);
@@ -182,15 +194,18 @@ export function createDribble(world, { tl, hud, roam, audio, cine, teammates, si
     let outcome = force || (near ? (side === near ? 'save' : 'goal') : (side === kSide0 ? 'save' : 'goal'));
     if (mercy) { outcome = 'goal'; if (near && side === near) side = -near; }   // after one failure the next one scores: it goes across the keeper
     const kSide = outcome === 'save' ? side : outcome === 'goal' ? -side : (near || kSide0);
-    const wasRun = stage === 'run'; stage = 'flight'; hud.hideChip(); keys.clear(); dragSteer = 0; drag = null;
+    const wasRun = stage === 'run', onRun = wasRun && speed >= 1.5 && !!roam.avatar; stage = onRun ? 'strike' : 'flight'; hud.hideChip(); keys.clear(); dragSteer = 0; drag = null;
     const wx = (m) => -side * m;   // screen side -> world x
     const E = outcome === 'save' ? V3(wx(1.9), 0.85, GOAL_Z - 0.6) : outcome === 'miss' ? V3(wx(HALF_W + 0.9), 0.7, GOAL_Z + 0.2) : V3(wx(HALF_W - 0.75), 0.75, GOAL_Z + 0.05);
-    from = { s, lat, running: wasRun };
+    from = { s, lat, running: wasRun, moved: onRun };
     last = { outcome, side: side < 0 ? 'left' : 'right', near: near < 0 ? 'left' : near > 0 ? 'right' : 'none', mercy, forced: !!force && !mercy, from: { s: +s.toFixed(2), lat: +lat.toFixed(2), running: from.running } }; shots++;
-    const B = ball.position.clone(), dist = B.distanceTo(E), pose_ = kSide < 0 ? 'diveLeft' : 'diveRight';
+    const pose_ = kSide < 0 ? 'diveLeft' : 'diveRight';
     // the avatar strikes it from its feet; the keeper's dive, the teammate's run and the slow-mo beat are timed from the boot's contact, not the key press
     const launch = () => {
       if (!on) return;
+      const B = ball.position.clone(), dist = B.distanceTo(E);   // where the boot met it (on the run, a metre or so on from where the key went down)
+      if (strike) strike.contact = true;
+      if (swingA) swingA.B = [B.x, B.y, B.z];
       tl.after(PACE.diveDelay, () => tl.tween(PACE.dive, (v) => keeper.setPose(pose_, v)));
       if (outcome === 'goal') { tl.after(PACE.flight * 0.5, () => { if (on) celebrate(); }); cine?.goal(ball, PACE.flight, { fov: 54 }); }   // he reads it as it leaves the boot; the camera tracks it in, in slow motion at the net
       tl.tween(PACE.flight, (v) => { ball.position.lerpVectors(B, E, 1 - (1 - v) ** 1.5); ball.position.y += 0.9 * Math.sin(Math.PI * v) * Math.min(1, dist / 18); ball.rotation.x += 0.45; }, () => {
@@ -200,8 +215,9 @@ export function createDribble(world, { tl, hud, roam, audio, cine, teammates, si
       });
     };
     roam.hold(true);   // the camera stays put through the strike and the flight (the track only turns it)
-    { const p = camera.position, d = Math.hypot(p.x, GOAL_Z - p.z);  swingA = { p: p.clone(), yaw: ctl.yaw, u: 0, B: [B.x, B.y, B.z], T: [0, p.y + Math.tan(PITCH) * d, GOAL_Z] }; swingCam(1, SWING.in); }
-    if (roam.avatar) roam.avatar.kickAt({ x: B.x, z: B.z }, { onContact: launch }); else launch();
+    { const B = ball.position, p = camera.position, d = Math.hypot(p.x, GOAL_Z - p.z);  swingA = { p: p.clone(), yaw: ctl.yaw, u: 0, B: [B.x, B.y, B.z], T: [0, p.y + Math.tan(PITCH) * d, GOAL_Z] }; swingCam(1, SWING.in); }
+    if (onRun) { strike = { contact: false }; roam.avatar.strike({ onContact: launch }); }
+    else if (roam.avatar) roam.avatar.kickAt({ x: ball.position.x, z: ball.position.z }, { onContact: launch }); else launch();
     return true;
   }
   function onGoal(E) {
@@ -225,7 +241,7 @@ export function createDribble(world, { tl, hud, roam, audio, cine, teammates, si
   // the retake starts where the shot was struck: a shot on the move restarts the run from there (it rolls on at half a jog), a standing one stands
   function retake() {
     if (!on) return; keeper.setPose('idle', sim.t); latV = 0;
-    if (from) { s = from.s; lat = from.lat; }
+    strike = null; if (from && !from.moved) { s = from.s; lat = from.lat; }   // a strike on the run carried the guest on: take it again from where they ended
     if (from?.running) { stage = 'run'; speed = SPEED.jog * 0.5; slowT = 0; } else { stage = 'ready'; speed = 0; }
     const A = roam.avatar; if (A && (A.offset.x || A.offset.z)) A.clearOffset();
     swingEnd(); roam.hold(false); place(); A?.face(faceGoal()); chipShoot();
@@ -276,14 +292,14 @@ export function createDribble(world, { tl, hud, roam, audio, cine, teammates, si
     },
     start({ onResult: cb, onSkip: sk }) {
       if (passT) tl.finish(passT);
-      on = true; onResult = cb; onSkip = sk; fails = 0; shots = 0; last = null; from = null; s = 0; lat = 0; latV = 0; speed = SPEED.jog * 0.5; slowT = 0; roll = 0; said = ''; keys.clear(); dragSteer = 0;
+      on = true; onResult = cb; onSkip = sk; fails = 0; shots = 0; last = null; from = null; strike = null; s = 0; lat = 0; latV = 0; speed = SPEED.jog * 0.5; slowT = 0; roll = 0; said = ''; keys.clear(); dragSteer = 0;
       resetCones(); keeper.setPose('idle', sim.t); stage = 'run'; roam.setBoom(BOOM); framed = true; roam.hold(false); place(); chipRun();
       teammates.addAgent('keeperSouth', agentKeeper); teammates.addAgent('dribbleBall', agentBall);
     },
     stop() {
       const wasGoal = stage === 'done' || stage === 'goal';
       on = false; stage = 'idle'; drag = null; dragSteer = 0; keys.clear(); onResult = null; onSkip = null; cine?.stopTrack();
-      swingEnd(); roam.hold(false); if (framed) { framed = false; roam.resetBoom(); }
+      strike = null; swingEnd(); roam.hold(false); if (framed) { framed = false; roam.resetBoom(); }
       teammates.removeAgent('keeperSouth'); teammates.removeAgent('dribbleBall'); keeper.setPose('idle', sim.t);
       if (passT) { tl.cancel(passT); passT = null; kickU = 1; }
       if (!wasGoal) resetBall();   // a goal stays in the net; anything else goes back to the passer

@@ -202,6 +202,21 @@ export function createAvatar(world, { tl }) {
   function moveFigure(carry, x, z) { if (carry) mover?.(x, z); else { offset.x = x; offset.z = z; } }
   function endAct(a) { if (S.act !== a) return; tl.cancel(a.tw); S.act = null; S.mode = 'auto'; }
 
+  // A strike on the run (strike()): the body keeps moving (the caller moves the feet point). The swing starts when the left (plant) foot will be mid-stance at
+  // contact, so it is down as the right boot meets the ball; it then runs KICK.swing to contact and on through a follow-through step (k to 1.5).
+  function advanceStrike(a, dt) {
+    if (a.wait) {
+      a.w += dt;
+      const Lc = cycle(S.speed), SH = Math.min(GAIT.stance, Lc * 0.26), duty = clamp(2 * SH / Lc, 0.15, 0.6);
+      const q = ((S.phase + S.speed * KICK.swing * KICK_CONTACT / Lc * TAU) / TAU) % 1, e = ((q - duty / 2 + 1.5) % 1) - 0.5;   // the left foot's cycle position at contact, off mid-stance
+      if ((a.e !== null && a.e < 0 && e >= 0 && e - a.e < 0.5) || a.w > 1) a.wait = false;
+      a.e = e; return;
+    }
+    a.t += dt; a.k = a.t / KICK.swing;
+    if (!a.contacted && a.k >= KICK_CONTACT) { a.contacted = true; a.onContact?.(); }
+    if (a.k >= 1.5) { if (S.act === a) { S.act = null; S.mode = 'auto'; } a.onDone?.(); }
+  }
+
   function step(dt) {
     const t = world.sim.t, x = anchor.x + offset.x, z = anchor.z + offset.z, cut = S.cut;
     if (S.lx === null || cut) { S.lx = x; S.lz = z; S.cut = false; if (cut) unpin(); }   // a cut: re-plant here, keep the stride speed
@@ -229,7 +244,12 @@ export function createAvatar(world, { tl }) {
     const g = smooth01(0.03, 0.4, S.speed + S.turnV);   // the IK gait takes over early: a blend with the idle slides the planted feet
     if (g > 0) { save(bufA); neutral(); gaitPose(S.phase, S.speed, S.rho); mixFrom(bufA, g); } else unpin();
     const a = S.act;
-    if (a && a.kind === 'kick' && a.k > 0) { save(bufA); neutral(); kickPose(J, a.k); mixFrom(bufA, smooth01(0, 0.12, a.k) * (1 - smooth01(0.92, 1, a.k) * 0.6)); }
+    if (a?.run) advanceStrike(a, dt);
+    if (a && a.kind === 'kick' && a.k > 0 && a.run) {   // a strike on the run: the right leg and the upper body swing, the left leg keeps running (the plant foot) and the hips keep the gait's height
+      save(bufA); neutral(); kickPose(J, a.k); mixFrom(bufA, smooth01(0, 0.25, a.k) * (1 - smooth01(0.85, 1.5, a.k)));
+      for (const k of ['hipL', 'kneeL', 'footL']) { const i = JN.indexOf(k); J[k].rotation.set(bufA[3 * i], bufA[3 * i + 1], bufA[3 * i + 2]); }
+      J.hips.position.y = bufA[NB - 1];
+    } else if (a && a.kind === 'kick' && a.k > 0) { save(bufA); neutral(); kickPose(J, a.k); mixFrom(bufA, smooth01(0, 0.12, a.k) * (1 - smooth01(0.92, 1, a.k) * 0.6)); }
     if (a && a.kind === 'celebrate') {
       const w = smooth01(0, 0.15, a.u) * (1 - smooth01(0.85, 1, a.u)); save(bufB);
       J.shL.rotation.set(-0.25, 0, 1.35 + 0.1 * Math.sin(t * 9)); J.shR.rotation.set(-0.25, 0, -1.35 - 0.1 * Math.sin(t * 9)); J.elL.rotation.set(-0.1, 0, 0); J.elR.rotation.set(-0.1, 0, 0);
@@ -273,6 +293,14 @@ export function createAvatar(world, { tl }) {
       S.h = Math.atan2(ux, uz) + Math.atan2(CONTACT.right, f); S.faceTo = null;   // the ball ends up CONTACT.right to the figure's right
       return api.kick({ ...o, runUp: Math.max(0, f - CONTACT.fwd) });
     },
+    // a strike on the move: the caller keeps moving the feet point; the swing waits for the plant foot, then contacts ~0.29 s later
+    strike({ onContact, onDone } = {}) {
+      if (S.act) endAct(S.act); tl.cancel(backT); backT = null;
+      const a = { kind: 'kick', run: true, wait: true, k: 0, t: 0, w: 0, e: null, contacted: false, onContact, onDone };
+      S.act = a; S.mode = 'kick'; return a;
+    },
+    // 0..1 = how far a strike on the run is to contact (1 from contact on); -1 = none, or still waiting for the plant foot
+    get strikeU() { const a = S.act; return a?.run && !a.wait ? Math.min(1, a.k / KICK_CONTACT) : -1; },
     kick({ runUp = 0, carry = false, onContact, onDone } = {}) {
       if (S.act) endAct(S.act); tl.cancel(backT); backT = null;
       const h = S.h, [fx, fz] = fwd(h), base = carry ? [anchor.x, anchor.z] : [offset.x, offset.z];
