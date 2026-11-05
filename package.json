@@ -20,7 +20,11 @@
     "rsvps:summary": "convex run admin:summary",
     "rsvps:get": "convex run admin:getGuest",
     "rsvps:delete": "convex run admin:deleteGuest",
-    "rsvps:csv": "convex run admin:listRsvps | node scripts/export-rsvps.mjs"
+    "rsvps:csv": "convex run admin:listRsvps | node scripts/export-rsvps.mjs",
+    "rsvps:declines-csv": "convex run admin:listDeclines | node scripts/export-declines.mjs",
+    "rsvps:get-decline": "convex run admin:getDecline",
+    "rsvps:delete-decline": "convex run admin:deleteDecline",
+    "rsvps:reset-decline-limits": "convex run admin:resetDeclineLimits"
   },
   "dependencies": {
     "@convex-dev/rate-limiter": "^0.4.2",

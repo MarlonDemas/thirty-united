@@ -33,6 +33,17 @@ export const guestFields = {
     updatedAt: v.number(),
 };
 
+/** Name-only declines: self-reported and unverified. Never joined to `guests`. */
+export const declineFields = {
+  firstName: v.string(),
+  surname: v.string(),
+  nameKey: v.string(), // normalised "first|surname", unique by logic
+  reason: v.optional(v.string()),
+  noticeVersion: v.string(),
+  createdAt: v.number(),
+  updatedAt: v.number(),
+};
+
 export default defineSchema({
   guests: defineTable(guestFields).index("by_email", ["email"]),
 
@@ -45,6 +56,8 @@ export default defineSchema({
   })
     .index("by_email", ["email"])
     .index("by_expiresAt", ["expiresAt"]),
+
+  declines: defineTable(declineFields).index("by_nameKey", ["nameKey"]),
 
   counters: defineTable({
     name: v.string(),

@@ -2,8 +2,9 @@ import { v } from "convex/values";
 import { internalMutation, internalQuery, type MutationCtx } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { limiterKey, normalizeEmail } from "./lib/otp";
-import { rateLimiter } from "./lib/limits";
-import { guestFields } from "./schema";
+import { MAX_DECLINES, rateLimiter } from "./lib/limits";
+import { declineLimiterKey, declineNameKey } from "./lib/declineValidation";
+import { declineFields, guestFields } from "./schema";
 
 // Host-only tools, run with `npx convex run admin:summary` / `admin:listRsvps`.
 // The guest list is small (bounded by the OTP rate limits), so reading all rows is fine.
@@ -17,6 +18,8 @@ export const summary = internalQuery({
     no: v.number(),
     plusOnes: v.number(),
     expectedHeadcount: v.number(),
+    // Name-only declines, self-reported and unverified. Never folded into `no` or the headcount.
+    declinesUnverified: v.number(),
     teams: v.array(v.object({ team: v.string(), count: v.number() })),
   }),
   handler: async (ctx) => {
@@ -42,6 +45,9 @@ export const summary = internalQuery({
       }
     }
 
+    // Capped at MAX_DECLINES by declines.record, so this read is bounded.
+    const declines = await ctx.db.query("declines").take(MAX_DECLINES);
+
     return {
       total: guests.length,
       yes,
@@ -49,6 +55,7 @@ export const summary = internalQuery({
       no,
       plusOnes,
       expectedHeadcount: yes + yesWithPlusOne,
+      declinesUnverified: declines.length,
       teams: [...teams.values()].sort(
         (a, b) => b.count - a.count || a.team.localeCompare(b.team),
       ),
@@ -101,6 +108,64 @@ export const getGuest = internalQuery({
       .query("guests")
       .withIndex("by_email", (q) => q.eq("email", normalizeEmail(args.email)))
       .unique();
+  },
+});
+
+const declineDocValidator = v.object({
+  ...declineFields,
+  _id: v.id("declines"),
+  _creationTime: v.number(),
+});
+
+/** Host-only: name-only declines (self-reported, unverified), oldest first. Bounded by MAX_DECLINES. */
+export const listDeclines = internalQuery({
+  args: {},
+  returns: v.array(declineDocValidator),
+  handler: async (ctx) => {
+    return await ctx.db.query("declines").withIndex("by_creation_time").take(MAX_DECLINES);
+  },
+});
+
+/** Host-only: resets the global decline bucket. `npx convex run admin:resetDeclineLimits`. */
+export const resetDeclineLimits = internalMutation({
+  args: {},
+  returns: v.object({ global: v.literal(true) }),
+  handler: async (ctx) => {
+    await rateLimiter.reset(ctx, "declineDailyGlobal");
+    return { global: true as const };
+  },
+});
+
+/** Host-only: one decline by name, or null. `npx convex run admin:getDecline '{"firstName":"Ada","surname":"Lovelace"}'`. */
+export const getDecline = internalQuery({
+  args: { firstName: v.string(), surname: v.string() },
+  returns: v.union(declineDocValidator, v.null()),
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("declines")
+      .withIndex("by_nameKey", (q) => q.eq("nameKey", declineNameKey(args.firstName, args.surname)))
+      .first();
+  },
+});
+
+/**
+ * Host-only erasure of one decline (POPIA request): the matching rows and the name's limiter
+ * bucket. Returns counts only. `npx convex run admin:deleteDecline '{"firstName":"Ada","surname":"Lovelace"}'`.
+ */
+export const deleteDecline = internalMutation({
+  args: { firstName: v.string(), surname: v.string() },
+  returns: v.object({ declines: v.number(), limitersReset: v.boolean() }),
+  handler: async (ctx, args) => {
+    const pepper = process.env.OTP_PEPPER;
+    if (!pepper) throw new Error("OTP_PEPPER is not set; cannot derive the per-name key");
+    const nameKey = declineNameKey(args.firstName, args.surname);
+    const rows = await ctx.db
+      .query("declines")
+      .withIndex("by_nameKey", (q) => q.eq("nameKey", nameKey))
+      .collect();
+    for (const row of rows) await ctx.db.delete(row._id);
+    await rateLimiter.reset(ctx, "declinePerName", { key: await declineLimiterKey(nameKey, pepper) });
+    return { declines: rows.length, limitersReset: true };
   },
 });
 
@@ -159,12 +224,13 @@ const purgeResultValidator = v.object({
   ),
   guests: v.number(),
   challenges: v.number(),
+  declines: v.number(),
   floor: v.number(),
 });
 
 /**
  * Host-only, manual only (no cron). Deletes ALL guests plus their challenges and limiter
- * buckets once the retention floor has passed. `dryRun` defaults to true and only counts.
+ * buckets, then all declines and their limiter buckets once the retention floor has passed. `dryRun` defaults to true and only counts.
  * Before the floor nothing is deleted (status "before_floor"; counts shown are what a later
  * run would cover). Deletion runs in self-rescheduling batches of 200.
  * `npx convex run admin:purgeGuests '{"confirm":"PURGE-GUESTS","dryRun":false}'`.
@@ -187,10 +253,12 @@ export const purgeGuests = internalMutation({
           .collect();
         challenges += rows.length;
       }
+      const declines = await ctx.db.query("declines").take(MAX_DECLINES);
       return {
         status: beforeFloor ? ("before_floor" as const) : ("dry_run" as const),
         guests: guests.length,
         challenges,
+        declines: declines.length,
         floor,
       };
     }
@@ -203,7 +271,21 @@ export const purgeGuests = internalMutation({
       challenges += await wipeEmailTraces(ctx, g.email, pepper);
       await ctx.db.delete(g._id);
     }
-    const more = batch.length === PURGE_BATCH;
+    // Declines go only after guests are done (a short or empty guest batch).
+    let declines = 0;
+    let declinesMore = false;
+    if (batch.length < PURGE_BATCH) {
+      const rows = await ctx.db.query("declines").take(PURGE_BATCH);
+      for (const row of rows) {
+        await rateLimiter.reset(ctx, "declinePerName", {
+          key: await declineLimiterKey(row.nameKey, pepper),
+        });
+        await ctx.db.delete(row._id);
+      }
+      declines = rows.length;
+      declinesMore = rows.length === PURGE_BATCH;
+    }
+    const more = batch.length === PURGE_BATCH || declinesMore;
     if (more) {
       await ctx.scheduler.runAfter(0, internal.admin.purgeGuests, {
         confirm: "PURGE-GUESTS",
@@ -214,6 +296,7 @@ export const purgeGuests = internalMutation({
       status: more ? ("continuing" as const) : ("purged" as const),
       guests: batch.length,
       challenges,
+      declines,
       floor,
     };
   },

@@ -31,7 +31,7 @@ export type ValidationResult =
   | { ok: true; value: CleanRsvp }
   | { ok: false; errors: Record<string, string> };
 
-const LIMITS = {
+export const LIMITS = {
   name: 100,
   team: 150,
   otherSport: 60,
@@ -39,7 +39,7 @@ const LIMITS = {
   whatsapp: 30,
 } as const;
 
-const NOTICE_VERSION_RE = /^[a-z0-9.-]{1,32}$/;
+export const NOTICE_VERSION_RE = /^[a-z0-9.-]{1,32}$/;
 
 // Newlines/tabs become spaces; other control chars, bidi overrides/isolates and
 // zero-width characters are removed (they enable spoofing and CSV/log trickery).
@@ -48,7 +48,7 @@ const WS_CONTROLS = /[\t\n\r\u2028\u2029]/g;
 const STRIP = /[\u0000-\u001F\u007F-\u009F\u200B-\u200D\u2060\uFEFF\u202A-\u202E\u2066-\u2069]/g;
 
 /** Strips hostile characters, trims; empty string becomes undefined. */
-function clean(s: string | undefined): string | undefined {
+export function clean(s: string | undefined): string | undefined {
   const t = s?.replace(WS_CONTROLS, " ").replace(STRIP, "").trim();
   return t ? t : undefined;
 }

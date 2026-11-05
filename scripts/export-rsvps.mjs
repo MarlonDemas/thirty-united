@@ -23,7 +23,7 @@ const COLUMNS = [
 ];
 const DATE_COLUMNS = new Set(["createdAt", "updatedAt"]);
 
-function cell(key, value) {
+export function cell(key, value) {
   if (value === undefined || value === null) return "";
   let s = DATE_COLUMNS.has(key) ? new Date(value).toISOString() : String(value);
   // Neutralise spreadsheet formulas. Only a single plain number (e.g. -5, 3.14) is exempt
@@ -40,7 +40,7 @@ export function toCsv(rows) {
   return lines.join("\n") + "\n";
 }
 
-function parseInput(text) {
+export function parseInput(text) {
   const trimmed = text.trim();
   try {
     return JSON.parse(trimmed);
