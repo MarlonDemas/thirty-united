@@ -48,7 +48,7 @@ export function buildFootballer({ shirt, shorts, socks, skin = 0xc68a62, hair = 
     joints[s < 0 ? 'hipR' : 'hipL'] = hp; joints[s < 0 ? 'kneeR' : 'kneeL'] = kn;
   }
   root.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
-  return { root, joints };
+  return { root, joints, mats: { shirt: mShirt, shorts: mShorts, socks: mSocks } };   // the kit materials: avatar.js recolours them in place (setKit)
 }
 
 const rot = (o, x = 0, y = 0, z = 0) => o.rotation.set(x, y, z);

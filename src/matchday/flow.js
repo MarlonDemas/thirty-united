@@ -166,7 +166,7 @@ export function createFlow(world, { audio, fx, teammates }) {
     if (!r.skipped && s.id === 1) haptic(HAPTICS.stamp);   // the ticket is handed in
     else if (!r.skipped && r.outcome === 'goal') haptic(HAPTICS.strike);   // a goal. No buzz for a skip, a save or a miss
     if (s.id === 1) {
-      S.side = s.side; S.stage = 'cine'; hud.hideHint();
+      S.side = s.side; S.stage = 'cine'; hud.hideHint(); if (s.side === 'away') avatar.setKit('away');   // the guest changes into the away strip
       roam.setZones({ [s.side === 'home' ? 'laneHome' : 'laneAway']: true, inside: true, pitch: true });
       openGate(s.side); if (s.side === 'home') { squadBoard(); shirt.draw(shirtName()); avatar.setName(shirtName()); }
       tl.after(PACE.gate, () => walkOut(s.side), { skip: true });

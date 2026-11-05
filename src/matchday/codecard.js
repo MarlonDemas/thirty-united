@@ -129,7 +129,7 @@ export function declineCard({ getValues, onSaved, onFix, onClosed, id = 'dc' }) 
       case 'closed': onClosed(); return;
       case 'invalid_payload': case 'invalid_answers': errors = r.errors ?? {}; say('err', 'A few answers need another look.'); fix.hidden = false; fix.focus({ preventScroll: true }); return;
       case 'rate_limited': say('warn', 'A lot of replies are coming in right now. Please try again in a little while.'); break;
-      case 'service_unavailable': say('err', "Replying with just your name isn't open right now. Choose Check my answers, answer Yes, and I'll send a code to your email instead."); fix.hidden = false; break;   // the way out: the form, where the answer can switch
+      case 'service_unavailable': say('err', "Replying with just your name isn't open right now. Choose Check my answers, pick Yes, use my email, and I'll send you a code instead."); fix.hidden = false; break;   // the way out: the form, where the answer can switch
       default: say('err', SEND_FAILED);
     }
     retry.hidden = false; retry.focus({ preventScroll: true });

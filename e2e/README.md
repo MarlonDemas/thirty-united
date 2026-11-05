@@ -20,7 +20,7 @@ The codes come from `[mail:mock] code for <email>: <code>` lines in `npx convex 
 | File | Covers |
 | --- | --- |
 | `world-yes-maybe.spec.ts` | new YES via JUST REPLY (SIGNED, seat, poster dialog image, .ics `DTSTART;VALUE=DATE:20261221` + `SUMMARY:Makes turns 30`); same email as MAYBE (Welcome back, same seat) |
-| `world-decline.spec.ts` | "Can't make it" asks "Have you replied before?". **No** (fast lane): name-only notice wording, no email field, "Noted, <first>" / "You'll be missed..." with no seat, poster or calendar, and the row exists (`admin:getDecline`). **Yes**: email + code, "Noted, <first>". **AWAY END kiosk, name-only**: flow stage `awayEnd`, lights 0.45, `dejected` pose, then the confirmation. A reason with a link: inline message, zero `declines:submitDecline` calls. Failure copy (`rate_limited`, `service_unavailable`, "Try again"), with the action response mocked because the real limits can't be triggered safely. WebGL blocked: the fallback page completes a name-only decline |
+| `world-decline.spec.ts` | "Can't make it" asks "Have you replied before?". **No, first time** (fast lane): name-only notice wording, no email field, "Noted, <first>" / "You'll be missed..." with no seat, poster or calendar, and the row exists (`admin:getDecline`). **Yes, use my email**: email + code, "Noted, <first>". **AWAY END kiosk, name-only**: flow stage `awayEnd`, lights 0.45, `dejected` pose, then the confirmation. A reason with a link: inline message, zero `declines:submitDecline` calls. Failure copy (`rate_limited`, `service_unavailable`, "Try again"), with the action response mocked because the real limits can't be triggered safely. WebGL blocked: the fallback page completes a name-only decline |
 | `world-invite-key.spec.ts` | missing `?k=` (closed intro); wrong `?k=` (closed after the code request) |
 | `world-code-card.spec.ts` | wrong code then right code; resend cooldown (client countdown and server "A code went out a moment ago") |
 | `world-validation.spec.ts` | YES without team / surname: inline message, zero Convex calls |
@@ -31,7 +31,7 @@ The codes come from `[mail:mock] code for <email>: <code>` lines in `npx convex 
 ## Notes
 
 - Decline tests use a letters-only unique surname each (`uniqueSurname` in `helpers.ts`) and, in `afterEach`, call `admin:deleteDecline` (row plus that name's limiter bucket) and `admin:resetDeclineLimits` (global bucket), via the helpers in `mail-code.ts`. The backend allows 2 declines per name per 24h (further ones silently write nothing), 50 per day and 200 rows, so skipping the cleanup makes later runs fail.
-- The fast lane has two radiogroups with a "Yes" button ("Can you make it?" and "Have you replied before?"): scope clicks by the radiogroup's accessible name (`fillFastLane` does).
+- The fast lane has two radiogroups with a "Yes" option ("Can you make it?" is "Yes"; "Have you replied before?" is "Yes, use my email"): scope clicks by the radiogroup's accessible name (`fillFastLane` does).
 - Fields hidden by the form stay in the DOM: assert `toBeHidden()`, not `toHaveCount(0)`.
 - Mobile viewport 390x844 with touch. Every test uses its own `e2e+<timestamp>-<pid>-<n>-<tag>@example.com`; tests that request codes reset that email's limits in `afterEach`/`afterAll`.
 - `helpers.ts` passes the GPU flags `scripts/capture.mjs` uses (`--use-angle=metal ...`). Without them headless Chromium renders the world with software GL at about 1 fps and clicks time out. Off macOS, Chromium falls back to SwiftShader and the specs will be slower.

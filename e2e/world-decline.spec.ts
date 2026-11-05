@@ -49,7 +49,7 @@ async function expectNoKeepsake(page: Page) {
   await expect(card.getByRole("link", { name: "Google Calendar" })).toHaveCount(0);
 }
 
-type FlowDbg = { __dbg: { flow: { state(): { stage: string; open: string | null; lights: number; crowd: { hush: number }; squad: { drooped: boolean }; avatar: { pose: string | null } }; skip(s: number): void; goto(w: string): unknown } } };
+type FlowDbg = { __dbg: { flow: { state(): { stage: string; open: string | null; lights: number; crowd: { hush: number }; squad: { drooped: boolean }; avatar: { pose: string | null; kit: string }; }; skip(s: number): void; goto(w: string): unknown } } };
 const flowState = (page: Page) => page.evaluate(() => (window as unknown as FlowDbg).__dbg.flow.state());
 
 /** Same sim-clock stepping as world-walk.spec.ts: never real-time sleeps. */
@@ -108,7 +108,7 @@ test("AWAY END kiosk, name-only: losing-out ending, then the decline confirmatio
   await page.getByRole("button", { name: /AWAY END/ }).click();
   await advanceUntil(page, "station 1 card opens at the AWAY END kiosk", (s) => s.open === "1:away");
 
-  await card.getByRole("radiogroup", { name: "Have you replied before?" }).getByRole("radio", { name: "No", exact: true }).click();
+  await card.getByRole("radiogroup", { name: "Have you replied before?" }).getByRole("radio", { name: "No, first time", exact: true }).click();
   await expect(card.getByLabel("Email", { exact: true })).toBeHidden(); // hidden fields stay in the DOM
   await card.getByLabel("First name").fill(g.firstName);
   await card.getByLabel("Surname").fill(g.surname);
@@ -123,6 +123,7 @@ test("AWAY END kiosk, name-only: losing-out ending, then the decline confirmatio
     return s.stage === "awayEnd";
   });
   expect(ending!.avatar.pose).toBe("dejected");
+  expect(ending!.avatar.kit).toBe("away"); // the guest changed into the away strip at the AWAY END kiosk
   expect(ending!.squad.drooped).toBe(true);
   expect(ending!.lights).toBeGreaterThan(0.45 + 1e-6); // the dim is still to play
   await advanceUntil(page, "the lights have dimmed to 0.45", (s) => s.lights <= 0.45 + 1e-6);
@@ -131,6 +132,10 @@ test("AWAY END kiosk, name-only: losing-out ending, then the decline confirmatio
   await advanceUntil(page, "the decline card replaces the ending", (s) => s.stage === "code");
   await expectDeclineConfirmation(page, g.firstName);
   expect(await getDecline(g)).toMatchObject({ firstName: g.firstName, surname: g.surname, reason: "Travelling" });
+
+  // a replay (goto resets the flow) puts the guest back in the home kit
+  await page.evaluate(() => (window as unknown as FlowDbg).__dbg.flow.goto("gates"));
+  expect((await flowState(page)).avatar.kit).toBe("home");
 });
 
 test("replay after reset has no hush: crowd and squad are back to normal", async ({ page }) => {
@@ -138,7 +143,7 @@ test("replay after reset has no hush: crowd and squad are back to normal", async
   await page.getByRole("button", { name: /AWAY END/ }).click();
   await advanceUntil(page, "station 1 card opens at the AWAY END kiosk", (s) => s.open === "1:away");
   const card = page.locator("#card");
-  await card.getByRole("radiogroup", { name: "Have you replied before?" }).getByRole("radio", { name: "No", exact: true }).click();
+  await card.getByRole("radiogroup", { name: "Have you replied before?" }).getByRole("radio", { name: "No, first time", exact: true }).click();
   await card.getByLabel("First name").fill("Hedy");
   await card.getByLabel("Surname").fill("Lamarr");
   await card.getByRole("button", { name: "Skip the ticket" }).click();
@@ -186,7 +191,7 @@ test("decline failures show plain lines and Try again retries", async ({ page })
   const card = page.locator("#card");
   await expect(card.getByText("A lot of replies are coming in right now. Please try again in a little while.")).toBeVisible();
   await card.getByRole("button", { name: "Try again" }).click();
-  await expect(card.getByText("Replying with just your name isn't open right now. Choose Check my answers, answer Yes, and I'll send a code to your email instead.")).toBeVisible();
+  await expect(card.getByText("Replying with just your name isn't open right now. Choose Check my answers, pick Yes, use my email, and I'll send you a code instead.")).toBeVisible();
   await expect(card.getByRole("button", { name: "Check my answers" })).toBeVisible();
   await card.getByRole("button", { name: "Try again" }).click();
   await expectDeclineConfirmation(page, "Mary");
@@ -205,10 +210,10 @@ test("kill switch: Check my answers, answer Yes, and the Email field is the way 
   await submitFastLane(page);
 
   const card = page.locator("#card");
-  await expect(card.getByText("Replying with just your name isn't open right now. Choose Check my answers, answer Yes, and I'll send a code to your email instead.")).toBeVisible();
+  await expect(card.getByText("Replying with just your name isn't open right now. Choose Check my answers, pick Yes, use my email, and I'll send you a code instead.")).toBeVisible();
   await card.getByRole("button", { name: "Check my answers" }).click();
   const form = page.locator("#fast-form");
-  await form.getByRole("radiogroup", { name: "Have you replied before?" }).getByRole("radio", { name: "Yes", exact: true }).click();
+  await form.getByRole("radiogroup", { name: "Have you replied before?" }).getByRole("radio", { name: "Yes, use my email", exact: true }).click();
   await expect(form.getByLabel("Email", { exact: true })).toBeVisible();
 });
 

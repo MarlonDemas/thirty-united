@@ -60,7 +60,7 @@ export async function fillFastLane(page: Page, a: Answers) {
     // The fast lane has two radiogroups with a "Yes" button: scope by the group's accessible name.
     const replied = form.getByRole("radiogroup", { name: "Have you replied before?" });
     const nameOnly = a.repliedBefore === "no";
-    await replied.getByRole("radio", { name: nameOnly ? "No" : "Yes", exact: true }).click();
+    await replied.getByRole("radio", { name: nameOnly ? "No, first time" : "Yes, use my email", exact: true }).click();
     if (nameOnly) {
       await expect(form.getByLabel("Email", { exact: true })).toBeHidden(); // hidden fields stay in the DOM
       if (a.reason !== undefined) await form.getByLabel("Reason (optional)").fill(a.reason);

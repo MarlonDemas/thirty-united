@@ -1,4 +1,4 @@
-// matchday-rsvp: the guest's own footballer (third person). A HOME-kit figure (buildFootballer, the taker's look) that stands on roam's feet point and is
+// matchday-rsvp: the guest's own footballer (third person). A figure (buildFootballer, the taker's look) in the HOME kit, or the AWAY kit once the guest's side is AWAY (setKit) that stands on roam's feet point and is
 // seen from roam's follow boom. Every pose is driven by the sim step (flow.step -> avatar.step(dt)) and the flow's sim-clock timeline, so
 // window.__dbg.simStep(dt) stays deterministic. The avatar is never in a raycast (roam's tap pickables, the ticket and the aim drags are whitelists) and is
 // not a smoke agent (it is the guest).
@@ -27,6 +27,7 @@
 //   cut()                            the next step re-plants the feet where the figure now stands without dropping the stride speed (a cinematic cut)
 //   setPose('huddle' | 'siuuu' | 'dejected' | null)   an upper-body hold that eases in while the guest stands (null = back to idle / gait); one hold
 //                                    cross-fades into the next
+//   setKit('home' | 'away')          recolours the shirt, shorts and socks in place (flow: AWAY from station 1's lock); reset() returns to home
 //   setName(name, number = '30')     the shirt back: the name over the seat number (the placeholder 30 until the reply is saved) (canvas fillText only); '' hides it
 //   reset(), state(), object (the root group), joints
 import * as THREE from 'three';
@@ -58,8 +59,10 @@ const JN = ['hips', 'spine', 'head', 'shL', 'shR', 'elL', 'elR', 'hipL', 'hipR',
 const TAU = Math.PI * 2;
 
 export function createAvatar(world, { tl }) {
-  const fig = buildFootballer({ shirt: KIT_HEX.home, shorts: 0xf2f2f2, socks: KIT_HEX.home, boots: 0xf0f0f0, skin: 0xd9a477, hair: 0x2a1a10, name: 'avatar' });
+  const KITS = { home: { shirt: KIT_HEX.home, shorts: 0xf2f2f2, socks: KIT_HEX.home }, away: { shirt: KIT_HEX.away, shorts: KIT_HEX.awayLight, socks: KIT_HEX.away } };   // away: dark shirt and socks, moonlight shorts (EVENT.kits)
+  const fig = buildFootballer({ ...KITS.home, boots: 0xf0f0f0, skin: 0xd9a477, hair: 0x2a1a10, name: 'avatar' });
   const J = { ...fig.joints }, root = fig.root;
+  let kit = 'home';
   J.footL = J.kneeL.children.find((o) => o.isGroup); J.footR = J.kneeR.children.find((o) => o.isGroup);   // the ankles: kept level in stance
   root.userData.avatar = true;
   world.scene.add(root);
@@ -364,12 +367,14 @@ export function createAvatar(world, { tl }) {
     // fold the figure's offset into the feet point (roam calls this before it moves the guest); returns the offset that was folded
     takeOffset() { tl.cancel(backT); backT = null; const o = { x: offset.x, z: offset.z }; offset.x = 0; offset.z = 0; return o; },
     clearOffset() { tl.cancel(backT); backT = null; offset.x = 0; offset.z = 0; S.lx = null; },
+    // 'home' | 'away': recolours the shirt, shorts and socks materials in place (no rebuild); reset() returns to home
+    setKit(k) { if (!KITS[k]) return; kit = k; for (const part of ['shirt', 'shorts', 'socks']) fig.mats[part].color.setHex(KITS[k][part]); },
     reset() {
-      if (S.act) endAct(S.act); tl.cancel(backT); backT = null;
+      api.setKit('home'); if (S.act) endAct(S.act); tl.cancel(backT); backT = null;
       S.act = null; S.mode = 'auto'; S.hold = false; S.holdW = 0; S.holdName = null; S.prevHold = null; S.xf = 1; S.cut = false; S.faceTo = null; S.speed = 0; S.turnV = 0; S.rho = 1; S.phase = 0; S.lx = null; unpin();
       offset.x = 0; offset.z = 0; setName('');
     },
-    state: () => ({ x: +root.position.x.toFixed(3), z: +root.position.z.toFixed(3), heading: +S.h.toFixed(4), speed: +S.speed.toFixed(3), phase: +S.phase.toFixed(4), mode: S.mode, pose: S.hold ? S.holdName : null, siuuu: S.act?.kind === 'siuuu' ? S.act.ph : null, air: +(root.position.y - GAIT.lift).toFixed(3), name: shown, offset: [+offset.x.toFixed(3), +offset.z.toFixed(3)] }),
+    state: () => ({ x: +root.position.x.toFixed(3), z: +root.position.z.toFixed(3), heading: +S.h.toFixed(4), speed: +S.speed.toFixed(3), phase: +S.phase.toFixed(4), mode: S.mode, pose: S.hold ? S.holdName : null, siuuu: S.act?.kind === 'siuuu' ? S.act.ph : null, air: +(root.position.y - GAIT.lift).toFixed(3), name: shown, kit, offset: [+offset.x.toFixed(3), +offset.z.toFixed(3)] }),
   };
   setName('');
   return api;
