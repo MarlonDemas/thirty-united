@@ -175,14 +175,15 @@ export function createFlow(world, { audio, fx, teammates }) {
     if (stations.remaining() === 0) { if (!r.skipped && r.outcome === 'goal') siuuu(); else finale(); return; }   // the last station scored: the Siuuu
     S.stage = 'roam';
   }
-  // director's addition: before the whistle, four teammates jog in and huddle round the guest (their back to the scoreboard, so full time turns to it).
-  // The camera swings round behind the guest's avatar on the boom (it stays put); the arc closes 1.15 m out, so a 0.45 m teammate clears its 0.35 m body.
+  // director's addition: before the whistle, four teammates jog in and form a half circle facing the guest, who turns to face its centre and closes the open
+  // side (the ring sits ahead of the guest, away from the scoreboard, so full time turns to it). The camera swings round behind the guest's avatar on the boom
+  // (it stays put); the ring is 1.1 m in radius, so a 0.45 m teammate clears its neighbours and the 0.35 m guest.
   const onPitch = (x, z) => Math.abs(x) <= 38.5 && Math.abs(z) <= 57;
   const guestAt = () => V3(roam.pos.x, roam.EYE, roam.pos.z);   // the guest's eye line over their feet (roam.pos)
   function finale() {
     S.stage = 'cine'; hud.hideHint(); teammates.settle(); waveSync(null);
     const p = guestAt(), yaw = anglesFor(p.toArray(), SCOREBOARD).yaw + Math.PI;
-    teammates.huddle(p.x, p.z, yaw, { run: 1.1, inside: onPitch });
+    teammates.huddle(p.x, p.z, yaw, { run: 1.1, inside: onPitch }); avatar.face(Math.atan2(-Math.sin(yaw), -Math.cos(yaw)));   // the guest turns to the ring's centre
     tl.after(1.1, () => avatar.setPose('huddle'));
     roam.glide({ yaw, pitch: -0.18, fov: 70, dur: PACE.huddle, cine: true, say: 'Your teammates huddle round you before the whistle' });
     tl.after(PACE.huddle, fullTime, { skip: true });
@@ -215,7 +216,7 @@ export function createFlow(world, { audio, fx, teammates }) {
     const mine = S; S.siuuu = { corner: F, land: [+L.x.toFixed(2), +L.z.toFixed(2)], cut: T.cut, take: +T.take.toFixed(2), landed: false, mob: false };
     avatar.siuuu({ take: T.take, air: SIU.air, hold: SIUUU.hold, face, turn, onLand: () => { if (S !== mine) return; S.siuuu.landed = true; audio.siuuu(); crowd.cheer(0); hud.say('Siuuu!'); } });
     const t0 = sim.t, mobT = T.land + SIUUU.mobAt;   // a skip fires the mob early: the teammates are then already round the guest (no jog-in after the skip)
-    const mob = () => { if (S !== mine || S.siuuu.mob) return; S.siuuu.mob = true; teammates.huddle(L.x, L.z, Math.atan2(-app[0], -app[1]), { run: !reducedMotion() && sim.t < t0 + mobT - 1e-6 ? 1e-3 : 1.1, inside: onPitch }); };   // the arc closes on the corner side, behind the guest (the low camera stays clear)
+    const mob = () => { if (S !== mine || S.siuuu.mob) return; S.siuuu.mob = true; teammates.huddle(L.x, L.z, Math.atan2(app[0], app[1]), { run: !reducedMotion() && sim.t < t0 + mobT - 1e-6 ? 1e-3 : 1.1, inside: onPitch }); };   // the ring forms on the pitch side, ahead of the guest who landed facing back down the run (the low camera stays clear)
     tl.after(mobT, mob, { skip: true });
     tl.after(T.land + SIUUU.huddleAt, () => { if (S === mine) avatar.setPose('huddle'); }, { skip: true });
     roam.glide({ rig: cine.siuuuRig({ curve, T, nIn, onCut: () => avatar.cut() }), dur: T.total, cine: true, free: true, say: 'Last goal. You sprint to the corner flag for the Siuuu',

@@ -9,6 +9,8 @@ import { buildFootballer, buildBall } from './people.js';
 import { KIT_HEX } from './config.js';
 import { mulberry32, lerpAngle } from './util.js';
 
+// the full-time huddle ring: radius (m) and the four teammates' bearings from the guest's facing, measured round the centre (a half circle, the guest closes the back)
+const HUDDLE = { r: 1.1, at: [-Math.PI / 2, -Math.PI / 6, Math.PI / 6, Math.PI / 2] };
 const HOME_KIT = { shirt: KIT_HEX.home, shorts: 0xf2f2f2, socks: KIT_HEX.home, boots: 0x111111 };
 const SKIN = [0x8d5a3b, 0xd9a477, 0x6b4128, 0xc68a62, 0xa87050, 0xe0b48c, 0x5a3622];
 const HAIR = [0x15100c, 0x2a1a10, 0x0d0b0a, 0x4a3020, 0x1b1410];
@@ -112,12 +114,14 @@ export function createTeammates(world) {
     drive(id, fn) { const I = idle.find((i) => i.id === id); if (I) { I.drive = fn; I.wave = false; } return I; },
     // settle every driven teammate where it is now (its new idle spot): used before the huddle so nobody is mid-run
     settle() { for (const I of idle) if (I.drive) { I.drive = null; I.agent = false; I.related = []; I.faceTo = [I.x + Math.sin(I.ry), I.z + Math.cos(I.ry)]; } },
-    // the huddle: an arc of four in front of (cx, cz) facing yaw (camera convention: forward = (-sin yaw, -cos yaw)), jogging in from about 5 m over `run` s
-    huddle(cx, cz, yaw, { run = 1.1, inside = () => true } = {}) {
-      const fx = -Math.sin(yaw), fz = -Math.cos(yaw);
+    // the huddle: a half circle of four, facing in, round a centre HUDDLE.r ahead of the guest at (gx, gz); the guest stands in the open side (back to it, facing the
+    // centre) so five figures read as one ring. yaw is the camera convention (forward = (-sin yaw, -cos yaw)) and is the way the guest faces. The four jog in
+    // from about 5 m beyond their spots over `run` s
+    huddle(gx, gz, yaw, { run = 1.1, inside = () => true } = {}) {
+      const fx = -Math.sin(yaw), fz = -Math.cos(yaw), R = HUDDLE.r, cx = gx + fx * R, cz = gz + fz * R;
       huddlers.forEach((H, i) => {
-        const a = [-1.05, -0.36, 0.36, 1.05][i], dx = fx * Math.cos(a) - fz * Math.sin(a), dz = fx * Math.sin(a) + fz * Math.cos(a);
-        H.to = [cx + dx * 1.15, cz + dz * 1.15]; let r = 5.2; while (r > 2.4 && !inside(cx + dx * r, cz + dz * r)) r -= 0.2; H.from = [cx + dx * r, cz + dz * r];
+        const a = HUDDLE.at[i], dx = fx * Math.cos(a) - fz * Math.sin(a), dz = fx * Math.sin(a) + fz * Math.cos(a);
+        H.to = [cx + dx * R, cz + dz * R]; let r = R + 4.1; while (r > R + 1.3 && !inside(cx + dx * r, cz + dz * r)) r -= 0.2; H.from = [cx + dx * r, cz + dz * r];
         H.fig.root.visible = true;
       });
       hud = { t0: sim(), run, cx, cz }; step(sim());
