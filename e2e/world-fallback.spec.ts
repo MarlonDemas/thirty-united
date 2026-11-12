@@ -10,7 +10,7 @@ test.afterAll(async () => {
   await resetLimits(email);
 });
 
-test("with WebGL blocked the plain fallback page completes a YES end to end", async ({ page }) => {
+test("with WebGL blocked, Play shows the failure line and the plain page completes a YES end to end", async ({ page }) => {
   await page.addInitScript(() => {
     const orig = HTMLCanvasElement.prototype.getContext;
     HTMLCanvasElement.prototype.getContext = function (this: HTMLCanvasElement, type: string, ...rest: unknown[]) {
@@ -20,7 +20,8 @@ test("with WebGL blocked the plain fallback page completes a YES end to end", as
   });
   await openWorld(page);
   expect(await page.evaluate(() => (window as unknown as { __fallback: boolean }).__fallback)).toBe(true);
-  await expect(page.locator("body")).toHaveAttribute("data-fallback", "no-webgl");
+  await expect(page.locator("body")).toHaveAttribute("data-fallback", "load-failed");
+  await expect(page.getByText("The game didn't load. You can reply here instead.")).toBeVisible();
   await expect(page.locator("canvas")).toHaveCount(0);
 
   await fillFastLane(page, { attending: "yes", first: "Edith", surname: "Clarke", email, team: "Neutral" });

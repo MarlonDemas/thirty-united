@@ -27,9 +27,16 @@ export function uniqueSurname(): string {
 
 export const worldUrl = (key: string | null = INVITE_KEY) => (key === null ? "/" : `/?k=${encodeURIComponent(key)}`);
 
-/** Opens the world and waits for the world contract's `__ready` flag (game or fallback page). */
-export async function openWorld(page: Page, key: string | null = INVITE_KEY) {
+/** Opens the plain invitation (the start page every guest lands on) and waits for its `__start` flag. `__ready` stays false until the game or the fallback page is up. */
+export async function openInvite(page: Page, key: string | null = INVITE_KEY) {
   await page.goto(worldUrl(key));
+  await page.waitForFunction(() => (window as unknown as { __start?: boolean }).__start === true);
+}
+
+/** Opens the world: the invitation, then "Play the match", then waits for the world contract's `__ready` flag (the game, or the fallback page when the load fails). */
+export async function openWorld(page: Page, key: string | null = INVITE_KEY) {
+  await openInvite(page, key);
+  await page.getByRole("button", { name: "Play the match" }).click();
   await page.waitForFunction(() => (window as unknown as { __ready?: boolean }).__ready === true);
 }
 

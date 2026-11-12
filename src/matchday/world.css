@@ -8,7 +8,7 @@
   --radius-2:8px;--radius-3:12px;--radius-pill:999px;--radius-1:4px;
   --font:"Inter Tight","Segoe UI",system-ui,-apple-system,Arial,sans-serif;
   --fs-caption:11px;--lh-caption:16px;--fw-caption:600;--fs-body-sm:13px;--lh-body-sm:18px;--fw-body-sm:500;--fs-body:15px;--lh-body:22px;--fw-body:450;
-  --fs-label:15px;--lh-label:20px;--fw-label:600;--fs-input:16px;--lh-input:22px;--fw-input:500;--fs-title:20px;--lh-title:26px;--fw-title:700;--fs-display:28px;--lh-display:32px;--fw-display:800;
+  --fs-label:15px;--lh-label:20px;--fw-label:600;--fs-input:16px;--lh-input:22px;--fw-input:500;--fs-title:20px;--lh-title:26px;--fw-title:700;--fs-display:28px;--lh-display:32px;--fw-display:800;--fs-hero:32px;--lh-hero:34px;--fw-hero:800;
   --dur-fast:120ms;--dur-base:200ms;--dur-settle:240ms;--ease-out:cubic-bezier(.2,0,0,1);--focus-ring-width:2px;--focus-ring-offset:2px}
 @media (prefers-reduced-motion:reduce){:root{--dur-fast:0ms;--dur-base:0ms;--dur-settle:0ms}}
 html,body{margin:0;height:100%;overflow:hidden;background:var(--ink-950)}canvas{display:block}
@@ -26,9 +26,9 @@ html,body{margin:0;height:100%;overflow:hidden;background:var(--ink-950)}canvas{
 #card[hidden]{display:none}
 #card:focus{outline:none}
 @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-#card h2{margin:0 0 4px;font-size:var(--fs-title);line-height:var(--lh-title);font-weight:var(--fw-title);letter-spacing:-.01em}
-#card h2.display{font-size:var(--fs-display);line-height:var(--lh-display);font-weight:var(--fw-display);letter-spacing:-.02em}
-#card h2:focus{outline:none}
+#card h2,#card h1{margin:0 0 4px;font-size:var(--fs-title);line-height:var(--lh-title);font-weight:var(--fw-title);letter-spacing:-.01em}
+#card h2.display,#card h1.display{font-size:var(--fs-display);line-height:var(--lh-display);font-weight:var(--fw-display);letter-spacing:-.02em}
+#card h2:focus,#card h1:focus{outline:none}
 #card .kicker{margin:0 0 6px;font-size:var(--fs-caption);line-height:var(--lh-caption);font-weight:var(--fw-caption);letter-spacing:.14em;text-transform:uppercase;color:var(--text-muted)}
 #card p{margin:0 0 10px;font-size:var(--fs-body);line-height:var(--lh-body);font-weight:var(--fw-body);color:var(--text-muted)}
 #card label,#card .label{display:block;margin:0 0 6px;font-size:var(--fs-label);line-height:var(--lh-label);font-weight:var(--fw-label)}
@@ -150,11 +150,11 @@ button:disabled{opacity:.45;cursor:default}
 #card.fast h2{margin-bottom:10px}
 #fb{position:fixed;inset:0;overflow:auto;box-sizing:border-box;padding:24px 16px 32px;background:var(--ink-950)}
 #card.fb{position:static;translate:none;width:min(480px,100%);max-height:none;overflow:visible;margin:0 auto;animation:none}
-#card.fb h2.display{margin-bottom:12px}
+#card.fb h1.display,#card.fb h2.display{margin-bottom:12px}
 #card.fb .kicker:not(:first-child){margin-top:14px}
 /* no-WebGL page identity: a kit-red left rule (3px) and a paper strip behind the facts. */
 #card.fb{border-left:3px solid var(--kit-home)}
-#card.fb h2.display{font-size:26px;line-height:30px;letter-spacing:-.01em}
+#card.fb h1.display,#card.fb h2.display{font-size:26px;line-height:30px;letter-spacing:-.01em}
 #card.fb dl{margin:10px 0 6px;padding:2px 14px;background:var(--paper-100);border-radius:var(--radius-2)}
 #card.fb dt,#card.fb dd{border-top-color:var(--paper-rule)}
 #card.fb dt{color:var(--paper-muted)}
@@ -188,3 +188,35 @@ dialog.poster .poster-img{display:block;width:100%;height:100%;object-fit:contai
 dialog.poster .hint-text,dialog.poster .note{margin:0 0 8px;font-size:var(--fs-body-sm);line-height:var(--lh-body-sm);color:var(--text-muted)}
 dialog.poster .row{display:flex;gap:10px;flex-wrap:wrap}
 dialog.poster .err{margin:6px 0 0;font-size:var(--fs-body-sm);color:var(--danger-300)}
+
+/* plain invitation (invite.js): the start page. Fixed page on ink-950 like #fb; one centred column. Existing tokens only (hero is the one new type entry). */
+#inv{position:fixed;inset:0;overflow:auto;box-sizing:border-box;padding:calc(24px + env(safe-area-inset-top)) calc(24px + env(safe-area-inset-right)) calc(48px + env(safe-area-inset-bottom)) calc(24px + env(safe-area-inset-left));background:var(--ink-950);color:var(--text)}
+.inv-col{width:min(480px,100%);margin:0 auto}
+.inv-hero{min-height:56svh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center}
+.inv-hero h1{margin:0;font-size:var(--fs-hero);line-height:var(--lh-hero);font-weight:var(--fw-hero);letter-spacing:-.02em;text-wrap:balance}
+.inv-date{margin:0;font-size:var(--fs-caption);line-height:var(--lh-caption);font-weight:var(--fw-caption);letter-spacing:.14em;text-transform:uppercase;color:var(--text-muted)}
+.inv-card{margin-top:24px;padding:4px 16px;background:var(--paper-100);color:var(--paper-ink);border-radius:var(--radius-2)}
+.inv-card dl{display:grid;grid-template-columns:88px 1fr;margin:0}
+.inv-card dt,.inv-card dd{margin:0;padding:12px 0;border-top:1px solid var(--paper-rule)}
+.inv-card dt{font-size:var(--fs-body-sm);line-height:var(--lh-body-sm);font-weight:var(--fw-body-sm);color:var(--paper-muted)}
+.inv-card dd{display:flex;align-items:flex-start;gap:8px;font-size:var(--fs-label);line-height:var(--lh-label);font-weight:var(--fw-label)}
+.inv-card dl>:nth-child(-n+2){border-top:0}
+.inv-card .pin{flex:none}
+.inv-kicker{margin:24px 0 8px;font-size:var(--fs-caption);line-height:var(--lh-caption);font-weight:var(--fw-caption);letter-spacing:.14em;text-transform:uppercase;color:var(--text-muted)}
+.inv-capw{container-type:inline-size;font-size:var(--fs-label)}
+.inv-cap{display:flex;border:2px solid var(--fog-300);border-radius:var(--radius-pill);overflow:visible}
+.inv-half{position:relative;flex:1 1 0;min-height:56px;box-sizing:border-box;margin:0;padding:8px 16px;border:0;background:var(--primary);color:#fff;font:inherit;font-size:var(--fs-label);line-height:var(--lh-label);font-weight:var(--fw-label);cursor:pointer;transition:background-color var(--dur-fast) var(--ease-out)}
+.inv-half:first-child{border-radius:var(--radius-pill) 0 0 var(--radius-pill);border-right:1px solid transparent}   /* transparent twin of the divider keeps both halves the same outer size */
+.inv-half:last-child{border-radius:0 var(--radius-pill) var(--radius-pill) 0;border-left:1px solid var(--fog-300)}
+.inv-half:hover{background:var(--primary-hover)}
+.inv-half:active{background:var(--primary-pressed)}
+.inv-half:focus-visible{z-index:1}
+.inv-half[aria-disabled=true]{cursor:progress}
+@media (min-width:768px){.inv-hero h1{font-size:44px;line-height:46px}}
+@media (min-width:1024px){.inv-hero{min-height:40svh}}
+@media (max-width:360px){#inv{padding-left:calc(20px + env(safe-area-inset-left));padding-right:calc(20px + env(safe-area-inset-right))}}
+/* narrow or zoomed: the halves stack, each full width */
+@media (max-width:359px){.inv-cap{flex-direction:column;border-radius:var(--radius-3)}.inv-half:first-child,.inv-half:last-child{border-radius:var(--radius-3)}.inv-half:first-child{border-right:0;border-bottom:1px solid transparent}.inv-half:last-child{border-left:0;border-top:1px solid var(--fog-300)}}
+/* 200% text: the container's em is the label size, so this is "the longest label would wrap to three lines" (each half needs about 5.5em of text width: "Opening the" is 5.5em, "the gates…" 5em; plus 33px padding and border, two halves and the 4px capsule edge) */
+@container (width < calc(11em + 70px)){.inv-cap{flex-direction:column;border-radius:var(--radius-3)}.inv-half:first-child,.inv-half:last-child{border-radius:var(--radius-3)}.inv-half:first-child{border-right:0;border-bottom:1px solid transparent}.inv-half:last-child{border-left:0;border-top:1px solid var(--fog-300)}}
+@media (forced-colors:active){.inv-cap{border-color:ButtonText}.inv-half{background:ButtonFace;color:ButtonText}.inv-half:first-child,.inv-half:last-child{border:1px solid ButtonText}.inv-card{background:Canvas;color:CanvasText;border:1px solid CanvasText}.inv-card dt,.inv-card dd{border-color:CanvasText;color:CanvasText}}

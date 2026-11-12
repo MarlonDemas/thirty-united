@@ -10,7 +10,7 @@ import { requestCode, verifyAndSave, submitDecline, hasCodeFor, getSent, getStat
 const CODE_LEN = 6;
 const tries = (n) => `${n} ${n === 1 ? 'try' : 'tries'} left`;
 
-export function codeCard({ side, getValues, setEmail, onSaved, onFix, onClosed, id = 'cc' }) {
+export function codeCard({ side, getValues, setEmail, onSaved, onFix, onClosed, id = 'cc', level = 'h2' }) {
   let busy = false, needNew = false, dailyCap = false, coolUntil = 0, timer = 0, disposed = false, started = false;
   const email = () => getValues().email;
   const emailText = h('b', { class: 'mono' });
@@ -27,7 +27,7 @@ export function codeCard({ side, getValues, setEmail, onSaved, onFix, onClosed, 
   const emailGo = h('button', { class: 'btn ghost', type: 'submit', text: 'Send a code to this email' });
   const emailForm = h('form', { class: 'ce', novalidate: true, hidden: true }, h('label', { for: id + '-email', text: 'Email' }), emailIn, emailErr, h('div', { class: 'row' }, emailGo));
   const form = h('form', { novalidate: true, autocomplete: 'off' }, label, input, slot, h('div', { class: 'row' }, confirm, resend), h('div', { class: 'row' }, fix, change));
-  const heading = h('h2', { id: id + '-h', tabindex: '-1', text: 'Check your inbox' });
+  const heading = h(level, { id: id + '-h', tabindex: '-1', text: 'Check your inbox' });
   const nodes = [h('p', { class: 'kicker', id: id + '-k', text: 'VAR check' }), heading, intro, form, emailForm];
 
   const say = (tone, text) => slot.replaceChildren(statusLine(tone, text));
@@ -111,12 +111,12 @@ export function codeCard({ side, getValues, setEmail, onSaved, onFix, onClosed, 
 
 // The name-only decline's send step (no email, no code): saves on open, and a failure stays here with a plain line and "Try again" (never a silent retry).
 // Same shape as codeCard: { nodes, start(), dispose() }; the owner reacts to onSaved / onFix / onClosed. The guest's answers only travel through submit.js.
-export function declineCard({ getValues, onSaved, onFix, onClosed, id = 'dc' }) {
+export function declineCard({ getValues, onSaved, onFix, onClosed, id = 'dc', level = 'h2' }) {
   let busy = false, disposed = false, started = false, errors = {};
   const slot = h('div', { id: id + '-st', class: 'slot' });
   const retry = h('button', { class: 'btn', type: 'button', hidden: true, text: 'Try again' });
   const fix = h('button', { class: 'btn ghost', type: 'button', hidden: true, text: 'Check my answers' });
-  const nodes = [h('p', { class: 'kicker', id: id + '-k', text: 'Your reply' }), h('h2', { id: id + '-h', tabindex: '-1', text: 'Sending your reply' }), slot, h('div', { class: 'row' }, retry, fix)];
+  const nodes = [h('p', { class: 'kicker', id: id + '-k', text: 'Your reply' }), h(level, { id: id + '-h', tabindex: '-1', text: 'Sending your reply' }), slot, h('div', { class: 'row' }, retry, fix)];
   const say = (tone, text) => slot.replaceChildren(statusLine(tone, text));
 
   async function send() {

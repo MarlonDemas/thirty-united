@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { MOBILE, worldUrl } from "./helpers";
+import { MOBILE, openInvite } from "./helpers";
 
 test.use(MOBILE);
 test.describe.configure({ timeout: 60_000 });
@@ -11,7 +11,8 @@ test("a texture that fails to load drops to the fast-lane page instead of hangin
     if (aborted++ === 0) return route.abort("failed");
     return route.continue();
   });
-  await page.goto(worldUrl());
+  await openInvite(page);
+  await page.getByRole("button", { name: "Play the match" }).click();
   // The load fails fast (the request is aborted), so the fallback must come well before the 20 s overall load timeout.
   await expect(page.locator("body")).toHaveAttribute("data-fallback", "load-failed", { timeout: 10_000 });
   expect(await page.evaluate(() => (window as unknown as { __ready: boolean }).__ready)).toBe(true);

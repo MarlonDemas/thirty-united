@@ -227,7 +227,7 @@ test("fallback page (WebGL blocked): a name-only decline completes", async ({ pa
     } as typeof orig;
   });
   await openWorld(page);
-  await expect(page.locator("body")).toHaveAttribute("data-fallback", "no-webgl");
+  await expect(page.locator("body")).toHaveAttribute("data-fallback", "load-failed");
 
   await fillFastLane(page, { attending: "no", repliedBefore: "no", first: g.firstName, surname: g.surname });
   await expect(page.locator("#fast-form").getByText(NAME_ONLY_NOTICE)).toBeVisible();

@@ -45,7 +45,7 @@ export const THEME = {
   },
   radius: { 0: 0, 1: 4, 2: 8, 3: 12, pill: 999 },
   font: { family: '"Inter Tight"', fallback: '"Segoe UI", system-ui, -apple-system, Arial, sans-serif', weightMin: 400, weightMax: 800, file: '/world/fonts/InterTight-var-latin.woff2' },
-  type: { caption: [11, 16, 600], bodySm: [13, 18, 500], body: [15, 22, 450], label: [15, 20, 600], input: [16, 22, 500], title: [20, 26, 700], display: [28, 32, 800] },   // [px, line px, weight]
+  type: { caption: [11, 16, 600], bodySm: [13, 18, 500], body: [15, 22, 450], label: [15, 20, 600], input: [16, 22, 500], title: [20, 26, 700], display: [28, 32, 800], hero: [32, 34, 800] },   // [px, line px, weight]
   motion: {
     ms: { instant: 0, fast: 120, base: 200, settle: 240, flip: 360 },
     reduced: { instant: 0, fast: 0, base: 0, settle: 0, flip: 0 },
@@ -76,7 +76,7 @@ if (typeof document !== 'undefined') {
   setVar('font', FONT_STACK);
   for (const [k, v] of Object.entries(THEME.motion.ease)) setVar('ease-' + k, v);
   setVar('rule-control-width', THEME.rule.controlWidth + 'px'); setVar('focus-ring-width', THEME.focus.width + 'px'); setVar('focus-ring-offset', THEME.focus.offset + 'px');
-  applyMotion(false);
+  applyMotion(!!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);   // the start page and the fallback form honour the preference too; flow.js keeps it in sync once the game runs
 }
 
 // Canvases (ticket, scoreboard, LED boards, plaza sign) must not bake the fallback face: await this before the first draw. Resolves even if the font fails (fallback stack).

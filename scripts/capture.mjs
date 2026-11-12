@@ -24,6 +24,8 @@ page.on('pageerror', (e) => consoleErrors.push(String(e)));
 const report = { slug, consoleErrors, fps: null, ready: false, views: [], webgl: null };
 try {
   await page.goto(`http://localhost:${port}/?k=capture-dummy-key`, { waitUntil: 'load' });
+  await page.waitForFunction(() => window.__start === true, null, { timeout: 60000 });
+  await page.getByRole('button', { name: 'Play the match' }).click();   // the plain invitation comes first
   await page.waitForFunction(() => window.__ready === true, null, { timeout: 60000 });
   report.ready = true;
   report.webgl = await page.evaluate(() => { const gl = document.createElement('canvas').getContext('webgl2'); const e = gl?.getExtension('WEBGL_debug_renderer_info'); return e ? gl.getParameter(e.UNMASKED_RENDERER_WEBGL) : String(!!gl); });

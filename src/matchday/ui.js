@@ -117,7 +117,7 @@ export function privacyNotice({ capped = true, side = 'home' } = {}) {
 // its firstName is the guest's own typed text (submit.js echoes the payload). Every value here is written with textContent only.
 // "updated" is a returning guest: the same seat, kept. No exclamation marks; a No gets no warm closing line and no poster.
 export const seatNo = formatSeat;   // lib/seat.ts: three digits, 007
-export function confirmCard(r, { id = 'd-h' } = {}) {
+export function confirmCard(r, { id = 'd-h', level = 'h2' } = {}) {
   const back = r.status === 'updated', no = r.attending === 'no', maybe = r.attending === 'maybe';
   const who = r.answers?.preferredName?.trim() || r.firstName;   // the name the shirt and poster carry: preferred, else first
   const kicker = no ? 'Reply saved' : maybe ? 'Pencilled in' : 'Signed';
@@ -127,7 +127,7 @@ export function confirmCard(r, { id = 'd-h' } = {}) {
     : back ? `Your answer is updated and seat ${seatNo(r.ticketNo)} is kept. I'll send the venue and details closer to the day.`
     : maybe ? `Seat ${seatNo(r.ticketNo)} is held while you decide. Use the same email to change your answer. I'll send the venue and details closer to the day.`
     : `I'll send the venue and details closer to the day.`;
-  return [h('p', { class: 'kicker', text: kicker }), h('h2', { id, class: 'display', tabindex: '-1', text: heading }), h('p', { text: body }),
+  return [h('p', { class: 'kicker', text: kicker }), h(level, { id, class: 'display', tabindex: '-1', text: heading }), h('p', { text: body }),
     no ? null : h('p', { class: 'seat', text: `Seat ${seatNo(r.ticketNo)} · Shirt ${r.ticketNo}` }), no ? null : keepsakeRow(r), h('p', { class: 'sign', text: 'Makes' })].filter(Boolean);
 }
 

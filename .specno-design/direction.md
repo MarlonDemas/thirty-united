@@ -350,6 +350,7 @@ The owner accepted this sentence through "defaults" on 2026-10-15; he did not wr
 - Lux → `lux-notes/save-the-date-2026-10-15.md`.
 - Wireframe → `wireframes/save-the-date-signing-2026-10-15/` (the phone frame at each beat).
 - Communication → the plan below.
+- Surface supplement → `direction-plain-invitation.md` (the plain invitation start page, 2026-11-05); it adds to this direction and does not replace it.
 
 ## Communication plan
 
