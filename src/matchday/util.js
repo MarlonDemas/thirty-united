@@ -168,5 +168,10 @@ export const bezier = (x1, y1, x2, y2) => (x) => {   // CSS cubic-bezier easing
   let t = x; for (let i = 0; i < 8; i++) { const u = 1 - t, cx = 3 * x1 * t * u * u + 3 * x2 * t * t * u + t ** 3 - x, d = 3 * x1 * u * u + 6 * (x2 - x1) * t * u + 3 * (1 - x2) * t * t; if (Math.abs(d) < 1e-6) break; t = clamp(t - cx / d, 0, 1); }
   return 3 * y1 * t * (1 - t) ** 2 + 3 * y2 * t * t * (1 - t) + t ** 3;
 };
+// the phone joystick side ('left' | 'right', default left): saved in localStorage, which can throw or be empty (private window), so it falls back to the default
+export const stickSide = (() => {
+  let side = 'left'; try { if (localStorage.getItem('stickSide') === 'right') side = 'right'; } catch {}
+  return { get: () => side, set(s) { side = s === 'right' ? 'right' : 'left'; try { localStorage.setItem('stickSide', side); } catch {} } };
+})();
 export const smooth01 = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
 export const anglesFor = (pos, target) => { const d = V(...target).sub(V(...pos)).normalize(); return { yaw: Math.atan2(-d.x, -d.z), pitch: Math.asin(clamp(d.y, -1, 1)) }; };

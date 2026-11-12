@@ -2,8 +2,8 @@
 // behind and over the right shoulder, along the look (ctl.yaw / ctl.pitch; forward = (-sin yaw, -cos yaw)). Callers still say "the guest at (x, EYE, z)
 // looking at the target" (anglesFor / lookFrom): the boom keeps that look and pulls the camera back from the avatar's shoulder.
 // Desktop: W/S or Up/Down walk along the camera, A/D strafe, Left/Right turn, Shift runs, drag orbits (controls.js); the avatar faces where it moves.
-// Phones: a floating stick under the left thumb (left half of the screen; push distance sets the pace, full push runs; forward is the view, and the view eases in
-// behind the travel while the right thumb is not dragging), a right-side drag looks, a tap on the ground (a sky tap walks that way) or on a station walks there.
+// Phones: a floating stick under the thumb on the chosen side (left half by default, the toggle in hud.js flips it; push distance sets the pace, full push runs; forward is the view, and the view eases in
+// behind the travel while the right thumb is not dragging), a drag on the other half looks, a tap on the ground (a sky tap walks that way) or on a station walks there.
 // Mouse and pointer: a tap (< 8 px, < 250 ms) on the ground walks there; a tap on a station walks to it. Cinematic camera moves (glide) live here too,
 // because they own the same camera. Everything moves on the sim clock: step(dt) is called from the sim step, so window.__dbg.simStep(dt) stays deterministic.
 //
@@ -20,7 +20,7 @@
 //   glide({...}): pts are the AVATAR's ground path (default), free: true = a camera-only move (pts are camera points; the avatar stays), rig = cine.js.
 import * as THREE from 'three';
 import { TAP, STICK_R } from './controls.js';
-import { lerp, lerpAngle, smoother, smooth01, clamp, anglesFor, reducedMotion, mulberry32 } from './util.js';
+import { stickSide, lerp, lerpAngle, smoother, smooth01, clamp, anglesFor, reducedMotion, mulberry32 } from './util.js';
 
 export const EYE = 1.7;                           // the guest's eye line: callers aim from (x, EYE, z)
 const wrap = (a) => (((a + Math.PI) % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI) - Math.PI;   // an angle difference, in -PI..PI
@@ -140,9 +140,9 @@ export function createRoam(world, { tl, signal, avatar = null, canMove = () => t
   let down = null;
   const emit = () => uiEl?.dispatchEvent(new CustomEvent('stick', { detail: { on: stick.on, ox: stick.ox, oy: stick.oy, kx: stick.x * STICK_R, ky: stick.y * STICK_R } }));   // hud.js draws the ring
   const endStick = () => { const was = stick.on; stick.id = null; stick.on = stick.run = false; stick.x = stick.y = 0; if (was) emit(); };
-  // the stick owns a touch that lands in the left half, but not on or just around the "Walk to next station" button: that stays a button
+  // the stick owns a touch that lands on its side of the screen (left half by default), but not on or just around the "Walk to next station" button: that stays a button
   ctl.claim = (ev) => {
-    if (ev.pointerType !== 'touch' || stick.id !== null || !canMove() || cam || detached || ev.clientX > innerWidth / 2) return false;
+    if (ev.pointerType !== 'touch' || stick.id !== null || !canMove() || cam || detached || (ev.clientX > innerWidth / 2) !== (stickSide.get() === 'right')) return false;
     const r = document.getElementById('walk')?.hidden === false && document.getElementById('walk').getBoundingClientRect();
     if (r && ev.clientX > r.left - 16 && ev.clientX < r.right + 16 && ev.clientY > r.top - 16) return false;
     Object.assign(stick, { id: ev.pointerId, ox: ev.clientX, oy: ev.clientY, x: 0, y: 0, on: false, fresh: true, ref: ctl.yaw, yaw: ctl.yaw });

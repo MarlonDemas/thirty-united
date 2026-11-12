@@ -181,3 +181,11 @@ export const svgIcon = (muted) => {
   if (muted) { path('M16 9l5 6'); path('M21 9l-5 6'); [...s.querySelectorAll('path')].slice(-2).forEach((q) => { q.style.stroke = 'var(--text-muted)'; }); } else { path('M16 8.5a5 5 0 0 1 0 7'); path('M18.5 6a8.5 8.5 0 0 1 0 12'); }
   return s;
 };
+// the joystick-side icon: a phone-wide frame with a ring + knob on the side the stick is on
+export const stickIcon = (right) => {
+  const NS = 'http://www.w3.org/2000/svg', s = document.createElementNS(NS, 'svg'); s.setAttribute('viewBox', '0 0 24 24'); s.setAttribute('aria-hidden', 'true');
+  const el = (t, a) => { const e = document.createElementNS(NS, t); for (const k in a) e.setAttribute(k, a[k]); s.append(e); };
+  el('rect', { x: 2, y: 6, width: 20, height: 12, rx: 3, fill: 'none', stroke: 'currentColor', 'stroke-width': 2 });
+  el('circle', { cx: right ? 16.5 : 7.5, cy: 12, r: 2.5, fill: 'currentColor' });
+  return s;
+};

@@ -11,7 +11,7 @@
 // Everything animated runs on the sim clock, so window.__dbg.simStep(dt) is deterministic.
 // User text is only ever written with textContent / text nodes or canvas fillText. No storage; the only network calls are in submit.js.
 import * as THREE from 'three';
-import { mulberry32, reducedMotion, lerp, smoother, bezier, anglesFor } from './util.js';
+import { mulberry32, reducedMotion, lerp, smoother, bezier, anglesFor, stickSide } from './util.js';
 import { EVENT, TITLE_UC, DATE_LINE, THEME, applyMotion, clean } from './config.js';
 import { h, fastLaneForm, confirmCard } from './ui.js';   // three-free builders shared with fallback.js
 import { codeCard, declineCard } from './codecard.js';
@@ -114,7 +114,7 @@ export function createFlow(world, { audio, fx, teammates }) {
     return true;
   }
   const syncSkip = () => hud.setSkipVisible(tl.skippable().some((t) => t.dur >= 1));
-  const exempt = (ev) => !!ev.target.closest?.('#mute, #fastlink');
+  const exempt = (ev) => !!ev.target.closest?.('#mute, #fastlink, #stickside');
   addEventListener('pointerdown', (ev) => { if (!exempt(ev) && skipNow(false)) ev.preventDefault(); }, { capture: true, signal });   // preventDefault: no focus steal, and roam.js never also starts a walk
   addEventListener('click', (ev) => { if (ev.detail === 0 && !exempt(ev)) skipNow(true); }, { capture: true, signal });   // detail 0: keyboard / assistive-tech activation
   addEventListener('keydown', (ev) => { if (!ev.repeat && !ev.ctrlKey && !ev.metaKey && !ev.altKey && (ev.key === ' ' || ev.key === 'Enter' || ev.key === 'Escape') && skippable()) { ev.preventDefault(); skipNow(true); } }, { capture: true, signal });
@@ -301,7 +301,7 @@ export function createFlow(world, { audio, fx, teammates }) {
     if (roam.pos.x * sx < 0.5 && roam.pos.z > 131) roam.walkTo(sx * 1.6, 131.6, { onArrive: () => { if (S.stage === 'roam' && !S.side) stations.walkTo(s); }, within: 0.6 });
     else stations.walkTo(s);
   }
-  function showHint() { if (S.hinted) return; S.hinted = true; hud.hint(hud.isTouch() ? 'Drag the left side to walk' : 'WASD or arrows to walk, Shift to run, drag to look', PACE.hint); }
+  function showHint() { if (S.hinted) return; S.hinted = true; hud.hint(hud.isTouch() ? `Drag the ${stickSide.get()} side to walk` : 'WASD or arrows to walk, Shift to run, drag to look', PACE.hint); }
   function walkToNext() {
     if (!S.side) { showIntro(); return; }
     const nx = stations.next(); if (!nx || S.stage !== 'roam') return;

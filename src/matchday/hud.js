@@ -1,7 +1,8 @@
 // matchday-rsvp: the overlay. The primary card is centred; a challenge shows a slim top-centre chip (instruction + a real Skip button);
-// the guide is the centred "Walk to next station" button; corners hold only secondary controls (mute top-right, "Just reply" top-left).
+// the guide is the centred "Walk to next station" button; corners hold only secondary controls (mute top-right, "Just reply" top-left, and on phones the joystick-side toggle in the bottom corner away from the stick).
 // User text only ever goes in through h() (textContent / text nodes). Timers run on the sim clock (timeline.js).
-import { h, svgIcon } from './ui.js';
+import { h, svgIcon, stickIcon } from './ui.js';
+import { stickSide } from './util.js';
 
 export const isTouch = () => matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window;
 
@@ -19,9 +20,13 @@ export function createHud({ audio, tl }) {
   const fast = h('button', { id: 'fastlink', class: 'glass', type: 'button', hidden: true, text: 'Just reply' });
   const muteBtn = h('button', { id: 'mute', class: 'glass', type: 'button', 'aria-label': 'Mute sound', 'aria-pressed': 'false', onclick: () => { audio.unlock(); audio.toggleMute(); } }, svgIcon(false));
   audio.onMute((m) => { muteBtn.setAttribute('aria-pressed', String(m)); muteBtn.replaceChildren(svgIcon(m)); });   // one fixed label; aria-pressed carries the state
+  // phones: which side the joystick is on (the other half looks). One fixed label; aria-pressed = on the right. Sits in the bottom corner away from the stick, clear of Walk and the hint.
+  const sideBtn = h('button', { id: 'stickside', class: 'glass', type: 'button', hidden: !isTouch(), 'aria-label': 'Joystick on right', 'aria-pressed': String(stickSide.get() === 'right'), onclick: () => syncSide(stickSide.get() === 'right' ? 'left' : 'right') });
+  function syncSide(s) { stickSide.set(s); const r = stickSide.get() === 'right'; sideBtn.setAttribute('aria-pressed', String(r)); sideBtn.dataset.side = r ? 'right' : 'left'; sideBtn.replaceChildren(stickIcon(r)); }
+  syncSide(stickSide.get());
   // the floating stick (roam.js sends 'stick' events): a ring where the thumb landed and a knob that follows it; drawn only. The first push ends the walking hint.
   const knob = h('i', {}), stickEl = h('div', { id: 'stick', 'aria-hidden': 'true', hidden: true }, knob);
-  ui.append(card, toastEl, hintEl, chal, walk, skipEl, liveEl, fast, muteBtn, stickEl);
+  ui.append(card, toastEl, hintEl, chal, walk, skipEl, liveEl, fast, muteBtn, sideBtn, stickEl);
   ui.addEventListener('stick', (ev) => {
     const d = ev.detail; stickEl.hidden = !d.on; if (!d.on) return;
     stickEl.style.transform = `translate(${d.ox}px, ${d.oy}px)`; knob.style.transform = `translate(${d.kx}px, ${d.ky}px)`;

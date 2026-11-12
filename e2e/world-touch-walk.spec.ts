@@ -62,6 +62,30 @@ test("dragging on the right side looks around without moving the guest", async (
   expect(after.z).toBeCloseTo(before.z, 2);
 });
 
+test("with the joystick on the right, the right thumb walks and the left half looks", async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem("stickSide", "right"));
+  await openWorld(page);
+  await page.getByRole("button", { name: /HOME END/ }).click();
+  await page.evaluate(() => (window as unknown as Dbg).__dbg.flow.teleport("start"));
+  await expect(page.locator("#stickside")).toHaveAttribute("aria-pressed", "true");
+  const cdp = await page.context().newCDPSession(page);
+  const drag = async (x: number, y: number, dx: number, dy: number) => {
+    await touch(cdp, "touchStart", x, y);
+    for (let i = 1; i <= 8; i++) await touch(cdp, "touchMove", x + (dx * i) / 8, y + (dy * i) / 8);
+    await page.waitForTimeout(500);
+    await touch(cdp, "touchEnd");
+  };
+  const before = (await state(page)).roam;
+  await drag(100, 420, 48, 0); // left half: looks, does not walk
+  const looked = (await state(page)).roam;
+  expect(Math.abs(looked.yaw - before.yaw)).toBeGreaterThan(0.05);
+  expect(looked.x).toBeCloseTo(before.x, 2);
+  expect(looked.z).toBeCloseTo(before.z, 2);
+  await drag(300, 420, 0, -40); // right half: the stick walks
+  const walked = (await state(page)).roam;
+  expect(Math.hypot(walked.x - looked.x, walked.z - looked.z)).toBeGreaterThan(0.5);
+});
+
 test("a tap with a thumb wobble, and a tap above the horizon, still walk there", async ({ page }) => {
   await openWorld(page);
   await page.getByRole("button", { name: /HOME END/ }).click();
