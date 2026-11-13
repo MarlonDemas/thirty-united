@@ -98,7 +98,7 @@ button:disabled{opacity:.45;cursor:default}
 #stickside{position:fixed;bottom:24px;right:16px;width:44px;height:44px;padding:0;display:grid;place-items:center;color:var(--text);border-radius:var(--radius-pill)}
 #stickside[data-side=right]{right:auto;left:16px}
 #stickside[hidden]{display:none}
-#stickside:hover{background:var(--ink-800)}#stickside:active{background:var(--ink-700)}
+@media (hover:hover){#stickside:hover{background:var(--ink-800)}}#stickside:active{background:var(--ink-700)}
 /* phones: the card spans the width less the 16px gutters; toast and hint never stack over an open card (the toast is still announced) */
 @media (max-width:560px){
   #card,#card.wide{width:calc(100vw - 32px)}

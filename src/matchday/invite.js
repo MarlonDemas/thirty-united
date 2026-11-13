@@ -14,7 +14,7 @@ const pin = (dashed) => {
   s.append(p, c); return s;
 };
 
-// Returns { el, setLoading(bool) }. The caller appends el to #ui.
+// Returns { el, setLoading() }. The caller appends el to #ui.
 export function createInvite({ onPlay, onReply }) {
   const row = (label, ...value) => [h('dt', { text: label }), h('dd', {}, ...value)];
   const card = h('section', { class: 'inv-card' },
@@ -32,10 +32,10 @@ export function createInvite({ onPlay, onReply }) {
       live));
   return {
     el,
-    setLoading(on) {
-      playBtn.textContent = on ? 'Opening the gates…' : 'Play the match';
-      if (on) { playBtn.setAttribute('aria-disabled', 'true'); playBtn.setAttribute('aria-busy', 'true'); } else { playBtn.removeAttribute('aria-disabled'); playBtn.removeAttribute('aria-busy'); }
-      live.textContent = on ? 'Opening the gates…' : '';
+    setLoading() {
+      playBtn.textContent = 'Opening the gates…';
+      playBtn.setAttribute('aria-disabled', 'true'); playBtn.setAttribute('aria-busy', 'true');
+      live.textContent = 'Opening the gates…';
     },
   };
 }

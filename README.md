@@ -1,6 +1,6 @@
 # Thirty United
 
-The invite-only RSVP for Makes's 30th: Monday 21 December 2026, venue TBA. Guests walk through a vanilla three.js stadium world to answer, then confirm with a code sent by email. It replaced the React front end, which is still available for [rollback](#rollback).
+The invite-only RSVP for Makes's 30th: Monday 21 December 2026, venue TBA. Guests land on a plain invitation and either play the match (a vanilla three.js stadium world) or just reply (the form), then confirm with a code sent by email. It replaced the React front end, which is still available for [rollback](#rollback).
 
 Backend: [Convex](convex/), called from the browser with `ConvexHttpClient` (`src/matchday/submit.js`). Hosting: Netlify.
 

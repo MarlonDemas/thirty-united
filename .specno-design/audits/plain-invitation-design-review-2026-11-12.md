@@ -115,6 +115,19 @@ Contract references used: `references/contract-schema.md` (this direction is a s
 7. **Tokens not recorded** (`.specno-design/tokens.md`, `src/matchday/world.css:4`). Add `hero` (32/34/800, 44/46 from 768) and the `paper-*` set to the token files through `/specno-design:design-system`; align the hover and pressed fallbacks at `world.css:4`. Owner of those files is Pixel; not done in this audit.
 8. Low: the corrected "about 6.9" for `paper-muted` (6.77:1) in the direction; a 160px viewport scrolls sideways (`.inv-card dl` 88px column plus `dd` text, `world.css:199`), below the 320px the direction commits to.
 
+## Status after fixes (f53a869)
+
+Added 2026-11-13. The findings above are unchanged. Each line below is read from the code at f53a869; nothing was re-measured in a browser.
+
+1. Focus after "Just reply": fixed at f53a869. `fallback.js:42` calls `focusHead()` after `ui.append(...)`; spec test `world-invite.spec.ts:66` checks focus on `fb-h` after Just reply and after a failed load.
+2. `h1` on the code card, decline card and confirmation: fixed at f53a869. `fallback.js:22,29-31` pass `level: 'h1'` to `confirmCard`, `declineCard` and `codeCard` (`ui.js:120`, `codecard.js:13,114`) and set `fb-h` on the heading. The spec covers the form view only (`:44`, `:66`); the three post-send views are read from source.
+3. First-screen hero height: owner decision. `world.css:195` still has `min-height:56svh`; the direction and the CSS are unchanged.
+4. Just reply focus halo: fixed at f53a869. The divider is a real `border-left:1px solid var(--fog-300)` (`world.css:210`); spec test `:98` compares both halves' focus ring and checks the 1px border with no box-shadow.
+5. Reduced motion: fixed at f53a869. `config.js:79` passes the `prefers-reduced-motion` match to `applyMotion`; spec test `:121` expects `--dur-fast` 0ms and a 0s transition.
+6. Stacking on a three-line label: fixed at f53a869. `.inv-capw` is a size container (`invite.js:31`) and `world.css:221` stacks the halves with a container query; spec test `:128` covers 200% text and the no-stack case at 360.
+7. Tokens not recorded: open. The `hero` type token is in `config.js:48` and `world.css:11` but still waits on the owner; `tokens.md` has no `hero` or `paper-*` rows; `world.css:4` still has `--primary-hover:#850914;--primary-pressed:#6E0710` against `#B3101F` and `#850914` in `config.js:38`.
+8. Low items: open. `direction-plain-invitation.md:96` still says "about 6.9" for `paper-muted`, and `world.css:199` still uses the 88px `dt` column, so the 160px overflow is untouched.
+
 ## Not checked, and why
 
 - Code card, decline card and confirmation rendered live: reaching them means pressing Send, which was ruled out. Heading levels come from source (row 40).
