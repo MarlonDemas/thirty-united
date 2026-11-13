@@ -66,6 +66,7 @@ describe("admin.summary", () => {
       no: 0,
       plusOnes: 0,
       expectedHeadcount: 0,
+      declinesUnverified: 0,
       teams: [],
     });
   });

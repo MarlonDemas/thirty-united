@@ -32,3 +32,4 @@ playwright-report
 !.env.example
 *.tsbuildinfo
 rsvps.csv
+captures/

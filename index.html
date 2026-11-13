@@ -3,7 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <link rel="preload" href="/world/fonts/InterTight-var-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="/src/matchday/world.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
     <title>Thirty United · Makes turns 30 · 21 Dec 2026</title>
     <meta name="description" content="Thirty feels like half time. Come for the oranges. RSVP for Makes' 30th, 21 December 2026." />
     <meta name="robots" content="noindex, nofollow" />
@@ -18,7 +20,9 @@
     <meta name="twitter:image" content="%VITE_SITE_URL%/og.jpg" />
   </head>
   <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <!-- Static loading screen (no JS needed). Carries no event facts, so nothing here can drift from config.js. game.js/fallback.js remove it. -->
+    <div id="boot" role="status"><p class="k">Opening the gates…</p></div>
+    <div id="ui"></div>
+    <script type="module" src="/src/matchday/main.js"></script>
   </body>
 </html>
