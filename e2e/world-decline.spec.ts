@@ -189,7 +189,7 @@ test("decline failures show plain lines and Try again retries", async ({ page })
   await submitFastLane(page);
 
   const card = page.locator("#card");
-  await expect(card.getByText("A lot of replies are coming in right now. Please try again in a little while.")).toBeVisible();
+  await expect(card.getByText("A lot of replies are coming in right now. Choose Check my answers, pick Yes, use my email, and I'll send you a code instead.")).toBeVisible();
   await card.getByRole("button", { name: "Try again" }).click();
   await expect(card.getByText("Replying with just your name isn't open right now. Choose Check my answers, pick Yes, use my email, and I'll send you a code instead.")).toBeVisible();
   await expect(card.getByRole("button", { name: "Check my answers" })).toBeVisible();
