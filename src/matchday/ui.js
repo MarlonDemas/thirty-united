@@ -105,7 +105,7 @@ export function privacyNotice({ capped = true, side = 'home' } = {}) {
   // The wording follows the side: a decline only gives a name and email (or, name-only, a name and an optional reason), so it never claims the rest. setSide(s) swaps it
   // when the guest changes an answer: side is 'home', 'away' (name and email) or 'decline' (name-only, fields.js noticeSide).
   // lead + ' ' + rest is the one notice sentence (NOTICE_VERSION covers it), split so the lead can be the summary; only the lead depends on the side.
-  const WHAT = { decline: 'your first name, surname and, if you give one, a short reason only', away: 'your name and email only', home: 'your name, email, WhatsApp number (if you give one), team and plus-one name only' };
+  const WHAT = { decline: 'your first name, surname and, if you give one, a short reason only', away: 'your name and email only', home: 'your name, shirt name (if you give one), email, sport, team, how you want the details sent (and your WhatsApp number if you pick WhatsApp), and whether you bring a plus-one (and their name if you give it) only' };
   const lead = (s) => `${val('responsibleParty')} uses ${WHAT[s] ?? WHAT.home} to manage RSVPs for this event${s === 'home' || !WHAT[s] ? ' and send you event details' : ''}.`;
   const rest = () => `Replying is optional. I delete your details ${val('retention')}. You can ask to see, correct or delete them at ${val('contact')}.`;
   const t1 = document.createTextNode(lead(side)), t2 = document.createTextNode(rest()), setSide = (s) => { t1.data = lead(s); t2.data = rest(); };

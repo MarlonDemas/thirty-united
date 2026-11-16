@@ -8,12 +8,12 @@ export const EVENT = {
   shortDate: '21 DEC 2026',   // the stub, the LED boards and the scoreboard
   brand: 'THIRTY',            // the one word on the signage
   led: 'MAKES \u00b7 30',
-  // ✎ REQUIRED before go-live: the POPIA short notice shown before any personal field. Placeholders in [brackets] are NOT real values; replace every one.
+  // The POPIA short notice shown before any personal field. Placeholders in [brackets] are NOT real values.
   privacy: {
-    responsibleParty: '[Organiser legal name]',                              // ✎ REQUIRED before go-live: who is the "responsible party" under POPIA
-    contact: '[contact email]',                                              // ✎ REQUIRED before go-live: where guests ask to see, correct or delete their details
-    retention: '[retention period, e.g. 30 days after the event]',           // ✎ REQUIRED before go-live: when the details are deleted
-    policyUrl: '[https://privacy policy URL]',                               // ✎ REQUIRED before go-live: full notice; shown as a link only once it starts with https://
+    responsibleParty: 'Marlon Demas',                                        // who is the "responsible party" under POPIA
+    contact: 'demasmarlon@gmail.com',                                        // where guests ask to see, correct or delete their details
+    retention: 'within 30 days after the event, by 20 January 2027',         // when the details are deleted; read as "I delete your details <retention>."
+    policyUrl: 'https://thirty-united.netlify.app/privacy/',                 // full notice; shown as a link only once it starts with https://
   },
   // Brand kits (DESIGN.md section 4): HOME = shirt-red with white; AWAY = a dark neutral (void / panel) with moonlight trim. No club cues.
   // homeLight is the scene's poster-red (decoration and signage only, never on the UI layer); awayLight is moonlight.
@@ -22,7 +22,7 @@ export const EVENT = {
 // The invite key travels in the link (?k=). Same text for a missing key and for the server's invalid_link.
 export const MISSING_KEY_MESSAGE = 'This link is missing its invite key. Ask Makes to send you the full link.';
 // Version string sent with every RSVP so the server can tell which privacy notice the guest saw. Bump it whenever EVENT.privacy or the notice wording changes (convex/lib/declineValidation.ts allow-lists the exact string, so bump both together). Must match /^[a-z0-9.-]{1,32}$/.
-export const NOTICE_VERSION = 'popia-2026-11-v2';
+export const NOTICE_VERSION = 'popia-2026-11-v3';
 const num = (hex) => parseInt(hex.slice(1), 16);
 export const KIT_HEX = Object.fromEntries(Object.entries(EVENT.kits).map(([k, v]) => [k, num(v)]));
 export const TITLE_UC = EVENT.brand;

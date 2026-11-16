@@ -1,0 +1,26 @@
+@font-face {
+  font-family: "Inter Tight";
+  src: url("/world/fonts/InterTight-var-latin.woff2") format("woff2");
+  font-weight: 400 800;
+  font-display: swap;
+}
+:root { color-scheme: dark; --ink: #0E0B13; --chalk: #F4F1EA; --stone: #B8B3A9; --rule: rgba(244, 241, 234, .14); }
+* { box-sizing: border-box; }
+html { background: var(--ink); -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; padding: 32px 16px 64px;
+  background: var(--ink); color: var(--chalk);
+  font: 400 16.5px/1.5 "Inter Tight", "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+}
+main { max-width: 40rem; margin: 0 auto; overflow-wrap: break-word; }
+h1 { font-size: 28px; line-height: 1.15; font-weight: 700; margin: 0 0 20px; }
+h2 { font-size: 20px; line-height: 1.25; font-weight: 700; margin: 36px 0 8px; padding-top: 20px; border-top: 1px solid var(--rule); }
+p, ul { margin: 0 0 14px; }
+ul { padding-left: 1.25rem; }
+li { margin-bottom: 6px; }
+a { color: var(--chalk); text-decoration: underline; text-underline-offset: 3px; }
+a:hover { color: var(--stone); }
+a:focus-visible { outline: 2px solid var(--chalk); outline-offset: 2px; border-radius: 2px; }
+code { font: 14px ui-monospace, Menlo, Consolas, monospace; color: var(--stone); }
+.muted { color: var(--stone); }
+@media (min-width: 600px) { body { font-size: 17px; padding-top: 56px; } h1 { font-size: 34px; } }
