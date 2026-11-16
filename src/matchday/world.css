@@ -1,5 +1,9 @@
 /* Inter Tight (SIL OFL 1.1), one variable wght file, Latin subset. Licence: public/world/fonts/InterTight-OFL.txt */
 @font-face{font-family:"Inter Tight";src:url(/world/fonts/InterTight-var-latin.woff2) format("woff2");font-weight:100 900;font-style:normal;font-display:swap}
+/* L2 faces (SIL OFL 1.1; licences beside the files): Bodoni Moda for the name, the date numeral and the italics; Jost for the tracked caps. Used on the invitation and the reply page only. */
+@font-face{font-family:"Bodoni Moda";src:url(/world/fonts/bodoni-moda-latin-500-normal.woff2) format("woff2");font-weight:500;font-style:normal;font-display:swap}
+@font-face{font-family:"Bodoni Moda";src:url(/world/fonts/bodoni-moda-latin-400-italic.woff2) format("woff2");font-weight:400;font-style:italic;font-display:swap}
+@font-face{font-family:"Jost";src:url(/world/fonts/jost-latin-400-normal.woff2) format("woff2");font-weight:400;font-style:normal;font-display:swap}
 /* THEME fallbacks: config.js overrides every one of these at startup (kit colours from EVENT.kits, the rest from THEME). Keep in sync. */
 :root{--kit-home:#9F0B19;--kit-home-dark:#850914;--kit-home-light:#F81E24;--kit-away:#18131F;--kit-away-light:#B7D3FA;--kit-away-tint:#241D2E;--primary:#8A1F2D;--primary-hover:#9A2536;--primary-pressed:#6A1622;
   --ink-950:#0E0B13;--ink-900:#18131F;--ink-800:#241D2E;--ink-700:#2F2740;--fog-100:#F4F1EA;--fog-300:#B8B3A9;--fog-500:#8E8A83;
@@ -9,6 +13,8 @@
   --font:"Inter Tight","Segoe UI",system-ui,-apple-system,Arial,sans-serif;
   --fs-caption:12px;--lh-caption:16px;--fw-caption:600;--fs-body-sm:13px;--lh-body-sm:18px;--fw-body-sm:500;--fs-body:15px;--lh-body:22px;--fw-body:450;
   --fs-label:15px;--lh-label:20px;--fw-label:600;--fs-input:16px;--lh-input:22px;--fw-input:500;--fs-title:20px;--lh-title:26px;--fw-title:700;--fs-display:28px;--lh-display:32px;--fw-display:800;--fs-hero:34px;--lh-hero:38px;--fw-hero:700;--fs-hero-wide:44px;--lh-hero-wide:48px;--fw-hero-wide:700;--fs-card-label:14px;--lh-card-label:20px;--fw-card-label:500;--fs-card-value:16px;--lh-card-value:22px;--fw-card-value:600;
+  --l-ground:#F5F0E4;--l-ink:#1F1A17;--l-muted:#5A5148;--l-caps:#3B332D;--l-rule:#D9D0BC;--l-crimson:#98002E;--l-ctrl:#7A6F64;--l-field:#FFFEFB;--l-placeholder:#6F655C;--l-selected:#F3E3DF;--l-on-ink:#FFFFFF;--l-danger:#A8200F;--l-success:#1F6B3A;--l-warning:#7F4A00;
+  --serif:"Bodoni Moda","Didot","Bodoni 72",Georgia,serif;--sans:"Jost","Josefin Sans","Avenir Next",Futura,"Segoe UI",sans-serif;
   --dur-fast:120ms;--dur-base:200ms;--dur-settle:240ms;--ease-out:cubic-bezier(.2,0,0,1);--focus-ring-width:2px;--focus-ring-offset:2px}
 @media (prefers-reduced-motion:reduce){:root{--dur-fast:0ms;--dur-base:0ms;--dur-settle:0ms}}
 html,body{margin:0;height:100%;overflow:hidden;background:var(--ink-950)}canvas{display:block}
@@ -148,18 +154,6 @@ button:disabled{opacity:.45;cursor:default}
     #card.fast .err,#card.fb .err{min-height:0;margin:4px 0 6px}
 #card.fast .kicker{margin-bottom:2px}
 #card.fast h2{margin-bottom:10px}
-#fb{position:fixed;inset:0;overflow:auto;box-sizing:border-box;padding:24px 16px 32px;background:var(--ink-950)}
-#card.fb{position:static;translate:none;width:min(480px,100%);max-height:none;overflow:visible;margin:0 auto;animation:none}
-#card.fb h1.display,#card.fb h2.display{margin-bottom:12px}
-#card.fb .kicker:not(:first-child){margin-top:14px}
-/* no-WebGL page identity: a kit-red left rule (3px) and a paper strip behind the facts. */
-#card.fb{border-left:3px solid var(--primary)}
-#card.fb h1.display,#card.fb h2.display{font-size:26px;line-height:30px;letter-spacing:-.01em}
-#card.fb dl{margin:10px 0 6px;padding:2px 14px;background:var(--paper-100);border-radius:var(--radius-2)}
-#card.fb dt,#card.fb dd{border-top-color:var(--paper-rule)}
-#card.fb dt{color:var(--paper-muted)}
-#card.fb dd{color:var(--paper-ink)}
-#card.fb dl>:nth-child(-n+2){border-top:0}
 /* static loading screen: visible before any module runs, removed when __ready is true */
 #boot{position:fixed;inset:0;z-index:20;display:grid;place-content:center;gap:6px;padding:24px;box-sizing:border-box;text-align:center;background:var(--ink-950);color:var(--text);font-family:var(--font);font-size:var(--fs-body);line-height:var(--lh-body)}
 #boot p{margin:0;color:var(--text-muted)}
@@ -189,34 +183,145 @@ dialog.poster .hint-text,dialog.poster .note{margin:0 0 8px;font-size:var(--fs-b
 dialog.poster .row{display:flex;gap:10px;flex-wrap:wrap}
 dialog.poster .err{margin:6px 0 0;font-size:var(--fs-body-sm);color:var(--danger-300)}
 
-/* plain invitation (invite.js): the start page. Fixed page on ink-950 like #fb; one centred column. Existing tokens only (hero is the one new type entry). */
-#inv{position:fixed;inset:0;overflow:auto;box-sizing:border-box;padding:calc(24px + env(safe-area-inset-top)) calc(24px + env(safe-area-inset-right)) calc(48px + env(safe-area-inset-bottom)) calc(24px + env(safe-area-inset-left));background:var(--ink-950);color:var(--text)}
-.inv-col{width:min(480px,100%);margin:0 auto}
-.inv-hero{min-height:clamp(180px,calc(100svh - 420px),56svh);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center}
-.inv-hero h1{margin:0;font-size:var(--fs-hero);line-height:var(--lh-hero);font-weight:var(--fw-hero);letter-spacing:-.015em;text-wrap:balance}
-.inv-date{margin:0;font-size:var(--fs-caption);line-height:var(--lh-caption);font-weight:var(--fw-caption);letter-spacing:.12em;text-transform:uppercase;color:var(--text-muted)}
-.inv-card{margin-top:24px;padding:4px 16px;background:var(--paper-100);color:var(--paper-ink);border-radius:var(--radius-2)}
-.inv-card dl{display:grid;grid-template-columns:88px 1fr;margin:0}
-.inv-card dt,.inv-card dd{margin:0;padding:12px 0;border-top:1px solid var(--paper-rule)}
-.inv-card dt{font-size:var(--fs-card-label);line-height:var(--lh-card-label);font-weight:var(--fw-card-label);color:var(--paper-muted)}
-.inv-card dd{display:flex;align-items:flex-start;gap:8px;font-size:var(--fs-card-value);line-height:var(--lh-card-value);font-weight:var(--fw-card-value)}
-.inv-card dl>:nth-child(-n+2){border-top:0}
-.inv-card .pin{flex:none}
-.inv-kicker{margin:24px 0 8px;font-size:var(--fs-caption);line-height:var(--lh-caption);font-weight:var(--fw-caption);letter-spacing:.12em;text-transform:uppercase;color:var(--text-muted)}
+/* ==== L2 "Ivory and crimson" (.specno-design/plates/v2/L2-*.png): the invitation (#inv) and the reply page (#fb) ONLY. The game's own #card never gets any of this. ==== */
+/* Page colour per view (config.js setView sets data-view on <html>): ivory for the invitation, the reply page and the boot screen; the game sets "dark" and the base rule above applies. */
+html[data-view=light],html[data-view=light] body{background:var(--l-ground)}
+html[data-view=light] #boot{background:var(--l-ground)}
+/* Token remap: inside these roots the shared tokens read the light set, so every existing rule (inputs, errors, links, focus ring) restyles itself. #card in hud.js is outside them and keeps the dark values. */
+#inv,#fb,html[data-view=light] #boot{--text:var(--l-ink);--text-muted:var(--l-muted);--rule-hairline:var(--l-rule);--rule-control:var(--l-ctrl);--danger-300:var(--l-danger);--fog-300:var(--l-muted);--focus-outer:var(--l-ink);--focus-inner:var(--l-ground);
+  --primary:var(--l-ink);--primary-hover:var(--l-caps);--primary-pressed:var(--l-muted);--radius-2:2px;--radius-3:2px}
+#inv,#fb{position:fixed;inset:0;overflow:auto;box-sizing:border-box;background:var(--l-ground);color:var(--l-ink);font-family:var(--font);font-size:17px;line-height:26px;font-weight:450;-webkit-font-smoothing:antialiased}
+#fb{padding:0}
+#card.fb.l2{background:none;border:0;border-radius:0;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;animation:none}
+
+/* the sheet: a double crimson hairline frame with four quarter-circle corner arcs */
+#ui .l2{position:relative;inset:auto;box-sizing:border-box;width:min(480px,100%);min-height:100vh;min-height:100svh;max-height:none;margin:0 auto;overflow:visible;translate:none;display:flex;flex-direction:column;
+  padding:calc(46px + env(safe-area-inset-top)) calc(34px + env(safe-area-inset-right)) calc(56px + env(safe-area-inset-bottom)) calc(34px + env(safe-area-inset-left))}
+#ui .l2::before{content:"";position:absolute;inset:12px;border:1px solid var(--l-crimson);pointer-events:none}
+#ui .l2::after{content:"";position:absolute;inset:18px;border:1px solid var(--l-crimson);pointer-events:none}
+#ui .l2 .crn{position:absolute;z-index:1;width:26px;height:26px;stroke:var(--l-crimson)}
+#ui .l2 .crn.tl{top:18px;left:18px}
+#ui .l2 .crn.tr{top:18px;right:18px;transform:scaleX(-1)}
+#ui .l2 .crn.bl{bottom:18px;left:18px;transform:scaleY(-1)}
+#ui .l2 .crn.br{bottom:18px;right:18px;transform:scale(-1,-1)}
+#ui .l2 .fbody{flex:1 1 auto;display:flex;flex-direction:column}
+#ui .l2[data-mode]:not([data-mode=form]) .fbody{justify-content:center}
+
+/* type: Jost caps for the quiet voice, Bodoni Moda for the name, the numeral and the italics */
+#ui .l2 p{margin:0;font-size:17px;line-height:26px;font-weight:450;color:var(--l-ink)}
+#ui .l2 .caps,#ui .l2 .kicker{font:400 14px/20px var(--sans);letter-spacing:.26em;text-indent:.26em;text-transform:uppercase;color:var(--l-caps);text-align:center;margin:0}
+#ui .l2 .nameh{display:flex;flex-direction:column;align-items:center;margin:0;font-family:var(--serif);font-weight:500;text-align:center;letter-spacing:0}
+#ui .l2 .nameh .nm{font-size:min(78px,20vw);line-height:1;letter-spacing:.03em;text-transform:uppercase;padding-left:.03em;color:var(--l-crimson)}
+#ui .l2 .nameh .it{font:italic 400 31px/36px var(--serif);color:var(--l-ink);margin-top:10px}
+#ui .l2 .nameh.sm .nm{font-size:min(58px,15vw)}
+#ui .l2 .nameh.sm .it{font-size:26px;line-height:30px;margin-top:6px}
+#ui .l2 .tg{font:italic 400 21px/28px var(--serif);color:var(--l-ink);text-align:center;margin:0 auto;max-width:300px;text-wrap:balance}
+#ui .l2 .d{display:inline-block;width:7px;height:7px;background:var(--l-crimson);transform:rotate(45deg);flex:none}
+#ui .l2 .venue{display:flex;justify-content:center;align-items:center;gap:14px;text-indent:0}
+#ui .l2 .venue span:not(.d){text-indent:.26em}
+/* MONDAY | 21 | DECEMBER 2026 */
+#ui .l2 .lock{position:relative;display:grid;grid-template-columns:auto auto auto;justify-content:center;align-items:center;column-gap:18px;padding:20px 16px;border:1px solid var(--l-crimson)}
+#ui .l2 .lock::after{content:"";position:absolute;inset:4px;border:1px solid var(--l-crimson);opacity:.55;pointer-events:none}
+#ui .l2 .lock .dow,#ui .l2 .lock .mon{font:400 14px/22px var(--sans);letter-spacing:.2em;text-transform:uppercase;color:var(--l-caps)}
+#ui .l2 .lock .day{font:500 64px/1 var(--serif);color:var(--l-crimson);padding-bottom:2px}
+#ui .l2 .lock.sm{padding:14px 12px}
+#ui .l2 .lock.sm .day{font-size:48px}
+/* centre-circle roundel */
+#ui .l2 .mo{display:block;margin:0 auto 20px}
+#ui .l2 .div{display:block;width:200px;height:60px;margin:0 auto}
+#ui .l2 .div g{stroke:var(--l-crimson)}#ui .l2 .div .spot{fill:var(--l-crimson)}
+#ui .l2 .mo.sm{margin:0 auto 14px}
+#ui .l2 .mo.sm .div{width:120px;height:36px}
+
+/* invitation layout */
+#ui .l2 .top{flex:1 1 auto;display:flex;flex-direction:column;align-items:stretch;justify-content:center}
+#ui .l2 .top .kick{margin:0 0 12px}
+#ui .l2 .top .lock{margin:24px 0 22px}
+#ui .l2 .top .venue{margin-top:20px}
+#ui .l2 .bot{margin-top:26px}
+#ui .l2 .bot .reply{margin:0 0 14px}
 .inv-capw{container-type:inline-size;font-size:var(--fs-label)}
-.inv-cap{display:flex;border:1px solid var(--fog-300);border-radius:var(--radius-pill);overflow:visible}
-.inv-half{position:relative;flex:1 1 0;min-height:56px;box-sizing:border-box;margin:0;padding:8px 16px;border:0;background:var(--primary);color:var(--text);font:inherit;font-size:var(--fs-label);line-height:var(--lh-label);font-weight:var(--fw-label);cursor:pointer;transition:background-color var(--dur-fast) var(--ease-out)}
-.inv-half:first-child{border-radius:var(--radius-pill) 0 0 var(--radius-pill);border-right:1px solid transparent}   /* transparent twin of the divider keeps both halves the same outer size */
-.inv-half:last-child{border-radius:0 var(--radius-pill) var(--radius-pill) 0;border-left:1px solid var(--fog-300)}
-.inv-half:hover{background:var(--primary-hover)}
-.inv-half:active{background:var(--primary-pressed)}
-.inv-half:focus-visible{z-index:1}
+.inv-cap{display:flex;border:1px solid var(--l-ink)}
+.inv-half{position:relative;flex:1 1 0;min-height:56px;box-sizing:border-box;margin:0;padding:8px 14px;border:0;border-radius:0;background:var(--l-ink);color:var(--l-on-ink);font:inherit;font-size:16.5px;line-height:22px;font-weight:600;cursor:pointer;transition:background-color var(--dur-fast) var(--ease-out)}
+.inv-half:first-child{border-right:1px solid transparent}   /* transparent twin of the divider keeps both halves the same outer size */
+.inv-half:last-child{border-left:1px solid rgba(245,240,228,.5)}
+.inv-half:hover{background:var(--l-caps)}
+.inv-half:active{background:var(--l-muted)}
+.inv-half:focus-visible{z-index:1;outline-color:var(--l-on-ink);outline-offset:-5px;box-shadow:none}   /* ink on ink would vanish at the shared edge: the ring sits inside the half, white */
 .inv-half[aria-disabled=true]{cursor:progress}
-@media (min-width:768px){.inv-hero h1{font-size:var(--fs-hero-wide);line-height:var(--lh-hero-wide)}}
-@media (min-width:1024px){.inv-hero{min-height:40svh}}
-@media (max-width:360px){#inv{padding-left:calc(20px + env(safe-area-inset-left));padding-right:calc(20px + env(safe-area-inset-right))}}
 /* narrow or zoomed: the halves stack, each full width */
-@media (max-width:359px){.inv-cap{flex-direction:column;border-radius:var(--radius-3)}.inv-half:first-child,.inv-half:last-child{border-radius:var(--radius-3)}.inv-half:first-child{border-right:0;border-bottom:1px solid transparent}.inv-half:last-child{border-left:0;border-top:1px solid var(--fog-300)}}
-/* 200% text: the container's em is the label size, so this is "the longest label would wrap to three lines" (each half needs about 5.5em of text width: "Opening the" is 5.5em, "the gates…" 5em; plus 33px padding and border, two halves and the 4px capsule edge) */
-@container (width < calc(11em + 70px)){.inv-cap{flex-direction:column;border-radius:var(--radius-3)}.inv-half:first-child,.inv-half:last-child{border-radius:var(--radius-3)}.inv-half:first-child{border-right:0;border-bottom:1px solid transparent}.inv-half:last-child{border-left:0;border-top:1px solid var(--fog-300)}}
-@media (forced-colors:active){.inv-cap{border-color:ButtonText}.inv-half{background:ButtonFace;color:ButtonText}.inv-half:first-child,.inv-half:last-child{border:1px solid ButtonText}.inv-card{background:Canvas;color:CanvasText;border:1px solid CanvasText}.inv-card dt,.inv-card dd{border-color:CanvasText;color:CanvasText}}
+@media (max-width:359px){.inv-cap{flex-direction:column}.inv-half:first-child{border-right:0;border-bottom:1px solid transparent}.inv-half:last-child{border-left:0;border-top:1px solid rgba(245,240,228,.5)}}
+/* 200% text: the container's em is the label size, so this is "the longest label would wrap to three lines" (each half needs about 5.5em of text width: "Opening the" is 5.5em, "the gates…" 5em; plus 33px padding and border, two halves and the 2px capsule edge) */
+@container (width < calc(11em + 70px)){.inv-cap{flex-direction:column}.inv-half:first-child{border-right:0;border-bottom:1px solid transparent}.inv-half:last-child{border-left:0;border-top:1px solid rgba(245,240,228,.5)}}
+@media (forced-colors:active){.inv-cap{border-color:ButtonText}.inv-half{background:ButtonFace;color:ButtonText}.inv-half:first-child,.inv-half:last-child{border:1px solid ButtonText}#ui .l2::before,#ui .l2::after,#ui .l2 .lock{border-color:CanvasText}#ui .l2 .crn,#ui .l2 .div g{stroke:CanvasText}#ui .l2 .d,#ui .l2 .div .spot{background:CanvasText;fill:CanvasText}}
+
+/* reply page: header, form, notice */
+#ui .l2 .hd{display:flex;flex-direction:column;align-items:stretch}
+#ui .l2 .hd .kick{margin:0 0 10px}
+#ui .l2 .hd .tg{margin:14px auto 20px}
+#ui .l2 .hd .venue{margin-top:16px}
+#ui .l2 .rule2{height:1px;background:var(--l-rule);margin:26px 0 22px}
+#ui .l2 .k2{margin:0 0 18px;text-align:left;text-indent:0}
+#ui .l2 .fl-field{margin:0 0 22px}
+#ui .l2 label,#ui .l2 .label{display:block;margin:0 0 9px;font-size:16px;line-height:22px;font-weight:650;color:var(--l-ink)}
+#ui .l2 input{width:100%;box-sizing:border-box;min-height:52px;padding:10px 14px;font-size:17px;line-height:24px;font-weight:500;color:var(--l-ink);background:var(--l-field);border:1.5px solid var(--l-ctrl);border-radius:2px}
+#ui .l2 input::placeholder{color:var(--l-placeholder);opacity:1}
+#ui .l2 input:hover{border-color:var(--l-ink)}
+#ui .l2 input[aria-invalid="true"],#ui .l2 .seg[aria-invalid="true"] .opt{border-color:var(--l-danger);border-width:2px}
+#ui .l2 input.code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:24px;line-height:30px;letter-spacing:.4em;text-indent:.4em;text-align:center}
+#ui .l2 .help{margin:8px 0 0;font-size:16px;line-height:23px;font-weight:450;color:var(--l-muted)}
+#ui .l2 .err{min-height:0;margin:8px 0 0;font-size:16px;line-height:23px;font-weight:600;color:var(--l-danger)}
+#ui .l2 .err:empty{margin:0}
+#ui .l2 .seg{display:grid;gap:10px;grid-template-columns:1fr 1fr}
+#ui .l2 .seg.n3{grid-template-columns:1fr}
+#ui .l2 .opt{position:relative;display:flex;align-items:center;gap:12px;min-height:52px;padding:8px 14px;text-align:left;font-size:16.5px;line-height:22px;font-weight:600;color:var(--l-ink);background:var(--l-field);border:1.5px solid var(--l-ctrl);border-radius:2px;box-shadow:none}
+#ui .l2 .opt::before{content:"";flex:none;width:22px;height:22px;box-sizing:border-box;border-radius:50%;border:1.5px solid var(--l-ctrl);background:var(--l-field)}
+#ui .l2 .opt:hover{border-color:var(--l-ink)}
+#ui .l2 .opt[aria-checked="true"]{border-width:2px;padding:7.5px 13.5px;border-color:var(--l-crimson);background:var(--l-selected)}
+#ui .l2 .opt[aria-checked="true"]::before{content:"\2713";display:grid;place-items:center;font-size:14px;line-height:1;font-weight:800;color:var(--l-on-ink);background:var(--l-crimson);border-color:var(--l-crimson)}
+#ui .l2 .btn{display:inline-flex;align-items:center;justify-content:center;min-height:56px;padding:10px 20px;font-size:16.5px;line-height:22px;font-weight:600;text-align:center;text-decoration:none;color:var(--l-on-ink);background:var(--l-ink);border:1.5px solid var(--l-ink);border-radius:2px}
+#ui .l2 .btn[hidden]{display:none}
+#ui .l2 .btn:hover{background:var(--l-caps);border-color:var(--l-caps)}
+#ui .l2 .btn:active{background:var(--l-muted);border-color:var(--l-muted)}
+#ui .l2 .btn.ghost{color:var(--l-ink);background:transparent;border-color:var(--l-ink)}
+#ui .l2 .btn.ghost:hover{background:var(--l-selected)}
+#ui .l2 .btn.ghost:active{background:var(--l-rule)}
+#ui .l2 .btn:disabled{opacity:.55}
+#ui .l2 .row{display:flex;align-items:stretch;gap:10px;margin:0}
+#ui .l2 .row .btn{flex:1}
+#ui .l2 .linkbtn{padding:0 4px;font-size:16px;color:var(--l-muted);text-decoration-color:var(--l-ctrl)}
+#ui .l2 .linkbtn:hover{color:var(--l-ink)}
+#ui .l2 .notice{margin:0 0 26px;padding:14px 0 14px 16px;text-indent:-16px;font-size:16px;line-height:24px;font-weight:450;color:var(--l-muted);border-top:1px solid var(--l-rule);border-bottom:1px solid var(--l-rule)}
+#ui .l2 .notice::before{content:"";display:inline-block;width:6px;height:6px;margin:0 10px 2px 0;background:var(--l-crimson);transform:rotate(45deg)}
+#ui .l2 .notice a{color:var(--l-crimson);text-underline-offset:3px}
+#ui .l2 a:not(.btn){color:var(--l-crimson)}
+/* status lines: icon + words on the tone's colour (info, ok, warn, err), every one at least 4.5:1 as text and 3:1 as edge on ivory, field and selected */
+#ui .l2 .status{--tone:var(--l-ink);display:flex;gap:10px;align-items:flex-start;margin:14px 0;padding:10px 12px;font-size:16px;line-height:23px;font-weight:600;color:var(--tone);text-align:left;text-indent:0;background:var(--l-field);border:1px solid var(--l-rule);border-left:3px solid var(--tone)}
+#ui .l2 .status.ok{--tone:var(--l-success)}#ui .l2 .status.warn{--tone:var(--l-warning)}#ui .l2 .status.err{--tone:var(--l-danger)}
+#ui .l2 .status .ico{flex:none;display:grid;place-items:center;width:22px;height:22px;box-sizing:border-box;margin:0;border:1.5px solid var(--tone);border-radius:50%;font-size:12px;line-height:1;font-weight:700;font-family:var(--font);color:var(--tone)}
+#ui .l2 .slot{min-height:0}
+#ui .l2 .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;word-break:normal;overflow-wrap:anywhere}
+
+/* confirmation, code card, decline card, closed page: centred, one column, the sheet's vertical middle */
+#ui .l2[data-mode]:not([data-mode=form]) .kicker{margin:0 0 10px}
+#ui .l2[data-mode]:not([data-mode=form]) h1{margin:0;font-family:var(--serif);font-weight:500;font-size:min(40px,10.5vw);line-height:1.15;letter-spacing:0;text-align:center;color:var(--l-ink)}
+#ui .l2[data-mode=confirm] h1{font-size:min(46px,12vw);line-height:52px}
+#ui .l2[data-mode]:not([data-mode=form]) .fbody>p:not(.kicker):not(.status):not(.seat):not(.sign){margin-top:18px;text-align:center}
+#ui .l2[data-mode]:not([data-mode=form]) form{margin-top:22px}
+#ui .l2 .seat{margin:26px 0 24px;padding:16px 10px;border:1px solid var(--l-crimson);font:400 14px/20px var(--sans);letter-spacing:.26em;text-indent:.26em;text-transform:uppercase;text-align:center;color:var(--l-caps)}
+#ui .l2 .keep{margin:0}
+#ui .l2 .keep .row{margin:0 0 10px}
+#ui .l2 .keep .err{min-height:0;margin:0}
+#ui .l2 .sign{margin:26px 0 0;text-align:center;font:italic 400 30px/34px var(--serif);color:var(--l-ink)}
+#ui .l2 .ce{margin:22px 0 0}
+#ui .l2 .row+.row{margin-top:10px}
+
+/* signature motion: corner arcs, then the roundel, draw in (about 2 s). Only when the guest has not asked for less; otherwise the finished picture is the default. */
+@media (prefers-reduced-motion:no-preference){
+  #ui .l2 .dr{stroke-dasharray:1;stroke-dashoffset:0;animation:l2-draw 1.5s cubic-bezier(.4,0,.2,1) both}
+  #ui .l2 .crn .dr{animation-delay:.3s;animation-duration:1s}
+  #ui .l2 .div .dr{animation-delay:.5s;animation-duration:1.2s}
+  #ui .l2 .div .spot{animation:l2-fade .5s ease-out 1.5s both}
+}
+@keyframes l2-draw{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
+@keyframes l2-fade{from{opacity:0}to{opacity:1}}

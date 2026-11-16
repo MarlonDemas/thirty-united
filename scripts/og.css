@@ -1,0 +1,20 @@
+/* 1200 x 630 link preview (plate L2-og.png). Sits on top of world.css's L2 rules; only the sizes change. */
+html, body { margin: 0; overflow: hidden; background: #F5F0E4; }
+#ui .l2.og { width: 1200px; height: 630px; min-height: 0; margin: 0; padding: 0; }
+#ui .l2.og::before { inset: 18px; }
+#ui .l2.og::after { inset: 28px; }
+#ui .l2.og .crn { width: 56px; height: 56px; }
+#ui .l2.og .crn.tl { top: 28px; left: 28px; }
+#ui .l2.og .crn.tr { top: 28px; right: 28px; }
+#ui .l2.og .crn.bl { bottom: 28px; left: 28px; }
+#ui .l2.og .crn.br { bottom: 28px; right: 28px; }
+#ui .l2.og .ogc { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+#ui .l2.og .mo { margin: 0 0 14px; }
+#ui .l2.og .div { width: 210px; height: 63px; }
+#ui .l2.og .nameh .nm { font-size: 126px; line-height: 1.05; letter-spacing: .04em; }
+#ui .l2.og .nameh .it { font-size: 38px; line-height: 42px; margin-top: 4px; }
+#ui .l2.og .lock { margin: 20px 0 18px; padding: 14px 30px; column-gap: 28px; }
+#ui .l2.og .lock .dow, #ui .l2.og .lock .mon { font-size: 24px; line-height: 32px; }
+#ui .l2.og .lock .day { font-size: 84px; }
+#ui .l2.og .venue { margin: 0; font-size: 24px; line-height: 30px; }
+#ui .l2.og .d { width: 9px; height: 9px; }

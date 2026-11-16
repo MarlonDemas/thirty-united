@@ -1,5 +1,6 @@
 // matchday-rsvp: entry point. Deliberately tiny and three-free: the scene lives in game.js and is loaded with a dynamic import, so if WebGL is missing,
 // the three import fails, create() throws (e.g. the HDR 404s) or the GL context is lost for good, the guest still gets the plain fast-lane page (fallback.js).
+import { setView } from './config.js';
 import { showFallback } from './fallback.js';
 import { createInvite } from './invite.js';
 import { runTeardown, salvage } from './teardown.js';
@@ -39,7 +40,7 @@ async function play() {
   const stalled = new Promise((_, rej) => { limit = setTimeout(() => rej(new Error('scene load timed out')), LOAD_LIMIT_MS); });
   try {
     if (!hasWebGL2()) throw new Error('WebGL2 is not available');
-    await Promise.race([import('./game.js').then(() => { if (window.__fallback) discard(); else invite.el.remove(); }), stalled]);
+    await Promise.race([import('./game.js').then(() => { if (window.__fallback) discard(); else { invite.el.remove(); setView('dark'); } }), stalled]);
   } catch (e) { console.warn('[matchday] scene failed to start, showing the fast-lane page:', e); showFallback('load-failed'); }
   clearTimeout(limit);
 }

@@ -49,3 +49,21 @@ describe('fallback form after "Check my answers"', () => {
     expect(document.activeElement).toBe(heading)
   })
 })
+
+describe('fallback form page text', () => {
+  beforeEach(() => {
+    delete (window as { __fallback?: boolean }).__fallback
+    document.body.innerHTML = '<div id="ui"></div><div id="boot"></div>'
+  })
+
+  it.each([
+    ['no_reason', undefined],
+    ['load-failed', 'load-failed'],
+  ])('should_not_print_null_or_undefined_on_the_form_page_when_the_reason_is_%s', (_name, reason) => {
+    showFallback(reason)
+    expect(document.querySelector('#fast-form')).not.toBeNull()
+    const text = document.querySelector('#card')?.textContent ?? ''
+    // No \b: textContent joins sibling text nodes with no space, so a stray "null" can sit between letters ("instead.nullYour").
+    expect(text).not.toMatch(/null|undefined/)
+  })
+})

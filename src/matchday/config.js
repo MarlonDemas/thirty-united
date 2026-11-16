@@ -44,8 +44,16 @@ export const THEME = {
     accentUi: '#D9505C',   // the UI's own rose (side stripes); `accent` below stays the kit's loud red for the 3D scene (beacons, station boards)
     accent: EVENT.kits.homeLight, accentAway: EVENT.kits.awayLight, scoreboardAccentGoal: EVENT.kits.homeLight,
   },
+  // L2 "Ivory and crimson" (.specno-design/direction-review-2026-11-16-v2.md): the invitation (#inv) and the reply page (#fb) ONLY. CSS gets these as --l-*; world.css remaps the shared tokens inside those two roots, so the game's own cards stay dark.
+  // Every text colour is at least 4.5:1 on ground, field and selected; ctrl, crimson and the status colours are at least 3:1 as edges and icons (scratchpad/contrast.mjs, table in the build report).
+  light: {
+    ground: '#F5F0E4', ink: '#1F1A17', muted: '#5A5148', caps: '#3B332D', rule: '#D9D0BC', crimson: '#98002E', ctrl: '#7A6F64', field: '#FFFEFB', placeholder: '#6F655C', selected: '#F3E3DF', onInk: '#FFFFFF',
+    danger: '#A8200F', success: '#1F6B3A', warning: '#7F4A00',   // status text, icons and edges on ivory (the dark set's pastels fail there)
+  },
+  view: { light: '#F5F0E4', dark: '#0E0B13' },   // page and theme-color per view: ivory on the invitation and reply page, dark in the game (setView)
   radius: { 0: 0, 1: 4, 2: 8, 3: 12, pill: 999 },
-  font: { family: '"Inter Tight"', fallback: '"Segoe UI", system-ui, -apple-system, Arial, sans-serif', weightMin: 400, weightMax: 800, file: '/world/fonts/InterTight-var-latin.woff2' },
+  font: { family: '"Inter Tight"', fallback: '"Segoe UI", system-ui, -apple-system, Arial, sans-serif', weightMin: 400, weightMax: 800, file: '/world/fonts/InterTight-var-latin.woff2',
+         serif: '"Bodoni Moda", "Didot", "Bodoni 72", Georgia, serif', sans: '"Jost", "Josefin Sans", "Avenir Next", Futura, "Segoe UI", sans-serif' },   // L2 only: Didone name and numerals, tracked caps
   type: { caption: [12, 16, 600], bodySm: [13, 18, 500], body: [15, 22, 450], label: [15, 20, 600], input: [16, 22, 500], title: [20, 26, 700], display: [28, 32, 800], hero: [34, 38, 700], heroWide: [44, 48, 700], cardLabel: [14, 20, 500], cardValue: [16, 22, 600] },   // [px, line px, weight]
   motion: {
     ms: { instant: 0, fast: 120, base: 200, settle: 240, flip: 360 },
@@ -74,10 +82,18 @@ if (typeof document !== 'undefined') {
   for (const [k, v] of Object.entries(THEME.color)) setVar(kebab(k), v);
   for (const [k, v] of Object.entries(THEME.radius)) setVar('radius-' + k, v + 'px');
   for (const [k, [px, lh, w]] of Object.entries(THEME.type)) { setVar('fs-' + kebab(k), px + 'px'); setVar('lh-' + kebab(k), lh + 'px'); setVar('fw-' + kebab(k), w); }
-  setVar('font', FONT_STACK);
+  for (const [k, v] of Object.entries(THEME.light)) setVar('l-' + kebab(k), v);
+  setVar('font', FONT_STACK); setVar('serif', THEME.font.serif); setVar('sans', THEME.font.sans);
   for (const [k, v] of Object.entries(THEME.motion.ease)) setVar('ease-' + k, v);
   setVar('rule-control-width', THEME.rule.controlWidth + 'px'); setVar('focus-ring-width', THEME.focus.width + 'px'); setVar('focus-ring-offset', THEME.focus.offset + 'px');
   applyMotion(!!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);   // the start page and the fallback form honour the preference too; flow.js keeps it in sync once the game runs
+}
+
+// Which page colour the browser shows: 'light' (invitation, reply page) or 'dark' (the game). Sets data-view on <html> (world.css paints html, body and #boot from it) and the theme-color meta. CSP-clean: an attribute and a meta, no inline style.
+export function setView(view) {
+  if (typeof document === 'undefined') return;
+  document.documentElement.dataset.view = view;
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', THEME.view[view]);
 }
 
 // Canvases (ticket, scoreboard, LED boards, plaza sign) must not bake the fallback face: await this before the first draw. Resolves even if the font fails (fallback stack).

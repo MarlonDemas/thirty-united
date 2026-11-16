@@ -1,6 +1,6 @@
 import { test, expect, type Page } from "@playwright/test";
 import { MOBILE, MISSING_KEY_TEXT, openInvite } from "./helpers";
-import { EVENT, DATE_LINE } from "../src/matchday/config.js";
+import { EVENT } from "../src/matchday/config.js";
 
 test.use(MOBILE);
 test.describe.configure({ timeout: 60_000 });
@@ -9,12 +9,11 @@ test("the invitation shows the facts from config.js and two equal real buttons",
   await openInvite(page);
   expect(await page.evaluate(() => (window as unknown as { __ready: boolean }).__ready)).toBe(false);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(EVENT.title);
-  await expect(page.getByText(DATE_LINE, { exact: true })).toBeVisible();
-  const card = page.locator("#inv dl");
-  for (const [label, value] of [["Who", EVENT.host], ["What", EVENT.tagline], ["When", EVENT.date], ["Where", EVENT.venue]]) {
-    await expect(card.locator("dt", { hasText: label })).toBeVisible();
-    await expect(card.locator("dd", { hasText: value })).toBeVisible();
-  }
+  // L2 plate: the facts are a lockup, not a table. The date group is labelled with EVENT.date; the venue and the tagline are plain text.
+  await expect(page.getByRole("group", { name: EVENT.date })).toBeVisible();
+  await expect(page.locator("#inv .venue")).toHaveText(EVENT.venue);
+  await expect(page.locator("#inv .tg")).toHaveText(EVENT.tagline);
+  await expect(page.getByText("You've been called up", { exact: true })).toBeVisible();
   const group = page.getByRole("group", { name: "Your reply" });
   const play = group.getByRole("button", { name: "Play the match" });
   const reply = group.getByRole("button", { name: "Just reply" });
