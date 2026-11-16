@@ -33,19 +33,20 @@ export const DATE_LINE = `${EVENT.date} \u00b7 ${EVENT.venue}`;
 export const THEME = {
   // DESIGN.md section 4: void #0E0B13, panel #18131F, panel-raised #241D2E, moonlight #B7D3FA, line #8A8FB0, text #FFFFFF, error #FF9E8F. Paper tokens are the invitation ticket's stock only.
   color: {
-    ink950: '#0E0B13', ink900: '#18131F', ink800: '#241D2E', ink700: '#2F2740', fog100: '#FFFFFF', fog300: '#B7D3FA', fog500: '#8A8FB0',
-    paper100: '#EFE9DB', paper300: '#D8CFBA', paperInk: '#14171F', paperMuted: '#4A4F5C', paperRule: '#8A8576',
-    danger300: '#FF9E8F', success300: '#8EDDA9', warning300: '#FFC978', primary: '#9F0B19', primaryHover: '#B3101F', primaryPressed: '#850914',
+    ink950: '#0E0B13', ink900: '#18131F', ink800: '#241D2E', ink700: '#2F2740', fog100: '#F4F1EA', fog300: '#B8B3A9', fog500: '#8E8A83',
+    paper100: '#EFE9DB', paper300: '#D8CFBA', paperInk: '#14171F', paperMuted: '#5B564D', paperRule: '#CBC3AE',
+    danger300: '#FF9E8F', success300: '#8EDDA9', warning300: '#FFC978', primary: '#8A1F2D', primaryHover: '#9A2536', primaryPressed: '#6A1622',
     surface: 'rgba(24,19,31,.94)', surfaceSolid: '#18131F', surfaceRaised: '#241D2E',
-    text: '#FFFFFF', textMuted: '#B7D3FA',
-    ruleHairline: 'rgba(183,211,250,.22)', ruleControl: '#8A8FB0',
-    focusOuter: '#FFFFFF', focusInner: '#0E0B13', focusOnPaper: '#14171F',
-    scoreboardText: '#FFFFFF', scoreboardDim: '#B7D3FA', scoreboardAccent: '#FFFFFF',
+    text: '#F4F1EA', textMuted: '#B8B3A9',
+    ruleHairline: 'rgba(244,241,234,.14)', ruleControl: '#8E8A83',
+    focusOuter: '#F4F1EA', focusInner: '#0E0B13', focusOnPaper: '#14171F',
+    scoreboardText: '#F4F1EA', scoreboardDim: '#B8B3A9', scoreboardAccent: '#F4F1EA',
+    accentUi: '#D9505C',   // the UI's own rose (side stripes); `accent` below stays the kit's loud red for the 3D scene (beacons, station boards)
     accent: EVENT.kits.homeLight, accentAway: EVENT.kits.awayLight, scoreboardAccentGoal: EVENT.kits.homeLight,
   },
   radius: { 0: 0, 1: 4, 2: 8, 3: 12, pill: 999 },
   font: { family: '"Inter Tight"', fallback: '"Segoe UI", system-ui, -apple-system, Arial, sans-serif', weightMin: 400, weightMax: 800, file: '/world/fonts/InterTight-var-latin.woff2' },
-  type: { caption: [11, 16, 600], bodySm: [13, 18, 500], body: [15, 22, 450], label: [15, 20, 600], input: [16, 22, 500], title: [20, 26, 700], display: [28, 32, 800], hero: [32, 34, 800] },   // [px, line px, weight]
+  type: { caption: [12, 16, 600], bodySm: [13, 18, 500], body: [15, 22, 450], label: [15, 20, 600], input: [16, 22, 500], title: [20, 26, 700], display: [28, 32, 800], hero: [34, 38, 700], heroWide: [44, 48, 700], cardLabel: [14, 20, 500], cardValue: [16, 22, 600] },   // [px, line px, weight]
   motion: {
     ms: { instant: 0, fast: 120, base: 200, settle: 240, flip: 360 },
     reduced: { instant: 0, fast: 0, base: 0, settle: 0, flip: 0 },

@@ -85,7 +85,7 @@ export function fieldsForm({ keys, id, init = {}, side, onValid, onChange }) {
   return {
     form, items, read, onChange: (fn) => { onChange = fn; },
     focusFirst: () => (items.find((it) => !it.w.hidden) ?? items[0]).c.focusFirst(),
-    setErrors(errs) { let first = null; for (const it of items) { const m = errs[it.k]; it.err.textContent = m ?? ''; it.c.invalid(!!m); if (m && !it.w.hidden) first ??= it; } first?.c.focusFirst(); },
+    setErrors(errs) { let first = null; for (const it of items) { const m = errs[it.k]; it.err.textContent = m ?? ''; it.c.invalid(!!m); if (m && !it.w.hidden) first ??= it; } first?.c.focusFirst(); return !!first; },
   };
 }
 
@@ -170,7 +170,7 @@ export function fastLaneForm({ onSend, capped = true, init = {}, errors = null }
   const off = onState(sync); sync(getState());
   form.prepend(notice); form.append(h('div', { class: 'row' }, btn));
   if (errors) f.setErrors(errors);
-  return { form, focusFirst: f.focusFirst };
+  return { form, focusFirst: f.focusFirst, setErrors: f.setErrors };
 }
 
 // Mute button icon (speaker, with waves or a cross). Decorative: aria-hidden; the button carries the label.

@@ -31,10 +31,10 @@ export function showFallback(reason, initial = null) {
     card.replaceChildren(...code.nodes); card.querySelector('h1').id = 'fb-h'; focusHead(); code.start();
   };
   const showForm = (errors = null) => {
-    const { form } = fastLaneForm({ capped: false, init: answers ? withAttending(answers.side, answers.values) : {}, errors, onSend: ({ side, values }) => { answers = { side, values: { ...values } }; showCode(); } });
+    const { form, setErrors } = fastLaneForm({ capped: false, init: answers ? withAttending(answers.side, answers.values) : {}, errors, onSend: ({ side, values }) => { answers = { side, values: { ...values } }; showCode(); } });
     const details = h('dl', {}, h('dt', { text: 'When' }), h('dd', { text: EVENT.date }), h('dt', { text: 'Where' }), h('dd', { text: EVENT.venue }), h('dt', { text: 'Host' }), h('dd', { text: EVENT.host }));
     card.replaceChildren(h('p', { class: 'kicker', text: "You've been called up" }), h('h1', { id: 'fb-h', class: 'display', tabindex: '-1', text: EVENT.title }), h('p', { text: EVENT.tagline }), details, reason === 'load-failed' ? statusLine('info', "The game didn't load. You can reply here instead.") : null, h('p', { class: 'kicker', text: 'Your reply' }), form);
-    focusHead();
+    if (!(errors && setErrors?.(errors))) focusHead();   // returning to fix answers: the first invalid field; no field errors (kill switch, rate limit): the heading
   };
   if (getSent()) showConfirm(getSent());
   else if (closedText()) showClosed();
