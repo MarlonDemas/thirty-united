@@ -6,7 +6,7 @@ import { PURGE_FLOOR_MS } from "./admin";
 import { newTest, PEPPER } from "./test.setup";
 
 const KEY = "invite-key-for-tests";
-const NOTICE = "popia-2026-11-v2";
+const NOTICE = "popia-2026-11-v3";
 type T = ReturnType<typeof newTest>;
 
 const args = (over: Record<string, unknown> = {}) => ({
@@ -178,7 +178,7 @@ describe("declines.record", () => {
     await rec(t, { reason: "second" });
     expect(await rec(t, { reason: "third" })).toEqual({ status: "saved" });
     const [row] = await rows(t);
-    expect(row.reason).toBe("second");
+    expect(row.reason).toBe("first");
   });
 
   it("declineDailyGlobal exhausted returns rate_limited", async () => {
@@ -226,20 +226,46 @@ describe("declines.record", () => {
     expect(all.find((r) => r.nameKey === "n|s7")?.reason).toBeUndefined();
   });
 
-  it("upsert preserves createdAt and updates updatedAt (and drops a removed reason)", async () => {
+  it("keeps the first decline: a second submit returns saved and leaves the row unchanged", async () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-11-01T12:00:00Z"));
     const t = newTest();
     await rec(t, { reason: "first" });
     const [a] = await rows(t);
     vi.setSystemTime(new Date("2026-11-02T12:00:00Z"));
-    await rec(t, { firstName: "ADA" });
+    expect(await rec(t, { firstName: "ADA", reason: "second" })).toEqual({ status: "saved" });
     const all = await rows(t);
     expect(all).toHaveLength(1);
+    expect(all[0]).toEqual(a);
+    expect(all[0].reason).toBe("first");
     expect(all[0].createdAt).toBe(a.createdAt);
-    expect(all[0].updatedAt).toBeGreaterThan(a.updatedAt);
-    expect(all[0].firstName).toBe("ADA");
-    expect(all[0].reason).toBeUndefined();
+  });
+
+  it("a second submit for an existing name consumes both buckets like a new name", async () => {
+    const t = newTest();
+    const remaining = async () => ({
+      global: (await t.run((ctx) => rateLimiter.check(ctx, "declineDailyGlobal"))).ok,
+      perName: (await t.run((ctx) => rateLimiter.check(ctx, "declinePerName", { key: "rk-ada" }))).ok,
+    });
+    await rec(t, { reason: "first" });
+    // One per-name token used (of 2): a second submit must take the last one.
+    expect((await remaining()).perName).toBe(true);
+    await rec(t, { reason: "second" });
+    expect((await remaining()).perName).toBe(false);
+    expect(await rows(t)).toHaveLength(1);
+  });
+
+  it("an existing-name submit drains the global bucket exactly like a new name", async () => {
+    const t = newTest();
+    await rec(t);
+    // Leave exactly 2 global tokens (50 per day): one for the repeat, one spare.
+    await t.run(async (ctx) => {
+      for (let i = 0; i < 47; i++) await rateLimiter.limit(ctx, "declineDailyGlobal");
+    });
+    await rec(t, { reason: "repeat" }); // existing name: still spends a global token
+    expect((await t.run((ctx) => rateLimiter.check(ctx, "declineDailyGlobal"))).ok).toBe(true);
+    await rec(t, { nameKey: "g|h", rateKey: "rk-g" });
+    expect(await rec(t, { nameKey: "x|y", rateKey: "rk-x" })).toEqual({ status: "rate_limited" });
   });
 });
 
@@ -293,13 +319,13 @@ describe("admin declines", () => {
     expect((await t.run((ctx) => rateLimiter.check(ctx, "declinePerName", { key: keyG }))).ok).toBe(false);
   });
 
-  it("a smart-quote name and a straight-quote name upsert to the same row", async () => {
+  it("a smart-quote name and a straight-quote name dedupe to the same row (first kept)", async () => {
     const t = newTest();
     expect(await submit(t, { surname: "O\u2019Brien", reason: "a" })).toEqual({ status: "saved" });
     expect(await submit(t, { surname: "O'Brien", reason: "b" })).toEqual({ status: "saved" });
     const all = await rows(t);
     expect(all).toHaveLength(1);
-    expect(all[0].reason).toBe("b");
+    expect(all[0].reason).toBe("a");
     const hit = await t.query(internal.admin.getDecline, { firstName: "Ada", surname: "O\u2019Brien" });
     expect(hit?._id).toBe(all[0]._id);
   });

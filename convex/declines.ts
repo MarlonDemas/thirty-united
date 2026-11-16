@@ -19,6 +19,7 @@ const actionResultValidator = v.union(
 
 /**
  * Stores a name-only decline (self-reported, unverified). Never reads or writes `guests`.
+ * Keep-first: a name already on file is left untouched (no write); a repeat submit never edits the row.
  * Always answers "saved" for an accepted or deduplicated decline and never echoes stored data.
  */
 export const record = internalMutation({
@@ -48,24 +49,24 @@ export const record = internalMutation({
       .withIndex("by_nameKey", (q) => q.eq("nameKey", args.nameKey))
       .first();
 
+    // Consume both buckets BEFORE the existing-row early return, so a new name and an existing
+    // one spend the same tokens and can't be told apart.
     await rateLimiter.limit(ctx, "declinePerName", { key: args.rateKey });
     await rateLimiter.limit(ctx, "declineDailyGlobal");
 
+    // Keep-first: the first decline stands; a repeat submit writes nothing.
+    if (existing) return { status: "saved" as const };
+
     const now = Date.now();
-    const doc = {
+    await ctx.db.insert("declines", {
       firstName: args.firstName,
       surname: args.surname,
       ...(args.reason !== undefined ? { reason: args.reason } : {}),
       nameKey: args.nameKey,
       noticeVersion: args.noticeVersion,
+      createdAt: now,
       updatedAt: now,
-    };
-    if (existing) {
-      // replace (not patch) so a dropped reason disappears.
-      await ctx.db.replace(existing._id, { ...doc, createdAt: existing.createdAt });
-    } else {
-      await ctx.db.insert("declines", { ...doc, createdAt: now });
-    }
+    });
     return { status: "saved" as const };
   },
 });

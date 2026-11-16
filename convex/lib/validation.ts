@@ -95,7 +95,7 @@ export function validateRsvp(input: RsvpPayload): ValidationResult {
   const value: CleanRsvp = { firstName, surname, attending };
 
   // Privacy notice version the guest saw. Checked before the "no" early return so declines
-  // store it too. Strict allow-list; the raw value is not trimmed or cleaned.
+  // store it too. Format check only (NOTICE_VERSION_RE), not an allow-list; the raw value is not trimmed or cleaned.
   if (input.noticeVersion !== undefined) {
     if (NOTICE_VERSION_RE.test(input.noticeVersion)) value.noticeVersion = input.noticeVersion;
     else errors.noticeVersion = "Invalid notice version";

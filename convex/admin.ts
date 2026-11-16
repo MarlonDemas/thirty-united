@@ -231,8 +231,8 @@ export const deleteGuest = internalMutation({
 
 /** Event date: Mon 21 Dec 2026 (UTC midnight). */
 export const EVENT_DATE_MS = Date.UTC(2026, 11, 21);
-// ✎ set to the POPIA retention period
-export const RETENTION_DAYS = 90;
+// Matches EVENT.privacy.retention: "within 30 days after the event, by 20 January 2027".
+export const RETENTION_DAYS = 30;
 /** Guests are not purgeable before this instant. Hard-coded on purpose: never an argument. */
 export const PURGE_FLOOR_MS = EVENT_DATE_MS + RETENTION_DAYS * 24 * 60 * 60 * 1000;
 

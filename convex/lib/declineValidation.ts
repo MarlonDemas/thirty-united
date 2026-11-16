@@ -2,7 +2,7 @@ import { clean, LIMITS, NOTICE_VERSION_RE } from "./validation";
 import { hmacCode } from "./otp";
 
 /** Privacy-notice versions a decline may cite. Bump together with the client. */
-export const DECLINE_NOTICE_VERSIONS: readonly string[] = ["popia-2026-11-v2"];
+export const DECLINE_NOTICE_VERSIONS: readonly string[] = ["popia-2026-11-v3"];
 
 export const REASON_MAX = 140;
 

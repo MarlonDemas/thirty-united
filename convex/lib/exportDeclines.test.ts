@@ -5,7 +5,7 @@ const row = (reason: string) => ({
   firstName: "Ada",
   surname: "Lovelace",
   reason,
-  noticeVersion: "popia-2026-11-v2",
+  noticeVersion: "popia-2026-11-v3",
   createdAt: 0,
   updatedAt: 0,
 });

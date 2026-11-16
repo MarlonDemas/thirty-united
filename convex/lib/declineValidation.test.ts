@@ -7,7 +7,7 @@ import {
   validateDecline,
 } from "./declineValidation";
 
-const base = { firstName: "Ada", surname: "Lovelace", noticeVersion: "popia-2026-11-v2" };
+const base = { firstName: "Ada", surname: "Lovelace", noticeVersion: "popia-2026-11-v3" };
 const errorsOf = (over: Record<string, unknown>) => {
   const r = validateDecline({ ...base, ...over } as never);
   return r.ok ? null : r.errors;
@@ -79,9 +79,9 @@ describe("validateDecline", () => {
     },
   );
   it("rejects notice versions outside the allow-list or the format", () => {
-    expect(DECLINE_NOTICE_VERSIONS).toEqual(["popia-2026-11-v2"]);
+    expect(DECLINE_NOTICE_VERSIONS).toEqual(["popia-2026-11-v3"]);
     expect(errorsOf({ noticeVersion: "popia-2026-11-v1" })).toHaveProperty("noticeVersion");
-    expect(errorsOf({ noticeVersion: " popia-2026-11-v2" })).toHaveProperty("noticeVersion");
+    expect(errorsOf({ noticeVersion: " popia-2026-11-v3" })).toHaveProperty("noticeVersion");
     expect(errorsOf({ noticeVersion: "" })).toHaveProperty("noticeVersion");
   });
 });
