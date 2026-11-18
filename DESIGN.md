@@ -28,7 +28,7 @@ A one-page save-the-date and RSVP for Marlon "Makes" Demas's 30th birthday, Mond
 
 ## 3. Brand & Voice
 
-**Tagline:** *Thirty feels like half time. Come for the oranges.* (the serif standfirst, as built)
+**Tagline:** *30 years in. Still playing to win.* (the serif standfirst, as built)
 
 **Tone:** a matchday with a film's sense of occasion. Warm, short, a little playful, confident. Written by Makes in first person and signed "Makes". Football is a nod, never a requirement.
 

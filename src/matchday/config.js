@@ -4,7 +4,7 @@
 // Makes's 30th (DESIGN.md sections 2 and 3). No kick-off time until there is one; no club, crest or stadium names anywhere.
 export const EVENT = {
   title: 'Makes turns 30', date: 'Monday 21 December 2026', venue: 'Venue TBA', host: 'Makes',
-  tagline: 'Thirty feels like half time. Come for the oranges.',
+  tagline: '30 years in. Still playing to win.',
   shortDate: '21 DEC 2026',   // the stub, the LED boards and the scoreboard
   brand: 'THIRTY',            // the one word on the signage
   led: 'MAKES \u00b7 30',
