@@ -31,7 +31,7 @@ Run `npx convex dev` under Node 24. Node 26 can't run Convex's local backend.
 | --- | --- |
 | `src/matchday/` | The 3D world: scene, game, stations, cards, fallback page, submit path |
 | `src/matchday/config.js` | `EVENT` (details and privacy notice values) and `NOTICE_VERSION` |
-| `public/world/` | Unhashed statics for the world (HDR, textures, model, font). Asset credits are in `public/world/CREDITS.md` |
+| `public/world/` | Unhashed statics for the world (HDR, textures, model, and the Inter Tight, Bodoni Moda and Jost fonts). Asset credits are in `public/world/CREDITS.md` |
 | `src/poster/` | Poster compositor and the Open Graph image (`pnpm og`) |
 | `src/lib/` | Shared helpers: API, calendar, keepsake, seat, motion preferences, haptics |
 | `convex/` | Backend functions, schema and tests, including the host-only `admin.ts` |
