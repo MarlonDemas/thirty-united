@@ -1,28 +1,31 @@
 import path from 'node:path'
-import tailwindcss from '@tailwindcss/vite'
-import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 
+const NOT_PROD =
+  'Refusing to build: NODE_ENV=%s makes import.meta.env.DEV true, so every dev gate (closedReasons dev, window.__rsvp) would ship. Unset NODE_ENV or use `pnpm build`.'
+
 // https://vite.dev/config/
-export default defineConfig({
-  plugins: [react(), tailwindcss()],
-  resolve: {
-    alias: {
-      '@': path.resolve(import.meta.dirname, './src'),
-    },
-  },
-  build: {
-    rolldownOptions: {
-      output: {
-        // Stable vendor chunks: their hashes only change when the library does, so a returning guest's cache
-        // (immutable /assets/*) keeps them across app deploys.
-        manualChunks(id) {
-          if (!id.includes('node_modules')) return
-          if (/[\\/]node_modules[\\/](?:\.pnpm[\\/])?(?:react|react-dom|scheduler)[@\\/]/.test(id)) return 'vendor-react'
-          if (/[\\/]node_modules[\\/](?:\.pnpm[\\/])?(?:motion|motion-dom|motion-utils|framer-motion)[@\\/]/.test(id)) return 'vendor-motion'
-          if (/[\\/]node_modules[\\/](?:\.pnpm[\\/])?(?:three|@react-three\+fiber|@react-three[\\/]fiber)[@\\/]/.test(id)) return 'vendor-three'
-        },
+export default defineConfig(({ command }) => {
+  // Vite gives DEV=true to any build whose NODE_ENV is not "production" (`NODE_ENV=development vite build`); unset is fine, Vite defaults it to production before this runs.
+  if (command === 'build' && process.env.NODE_ENV && process.env.NODE_ENV !== 'production') {
+    throw new Error(NOT_PROD.replace('%s', process.env.NODE_ENV))
+  }
+  return {
+    server: { port: 5173, strictPort: true },
+    resolve: {
+      alias: {
+        '@': path.resolve(import.meta.dirname, './src'),
       },
     },
-  },
+    plugins: [
+      {
+        // A NODE_ENV=development line in a .env file flips NODE_ENV after this config has loaded, so the check above never sees it; the resolved isProduction does.
+        name: 'build-guard',
+        apply: 'build',
+        configResolved(c) {
+          if (!c.isProduction) throw new Error(NOT_PROD.replace('%s', process.env.NODE_ENV ?? 'development'))
+        },
+      },
+    ],
+  }
 })

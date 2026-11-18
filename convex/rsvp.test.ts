@@ -237,7 +237,8 @@ describe("rsvp.consumeAndUpsert", () => {
     await seedChallenge(t);
     await submit(t, { payload: { ...yesPayload } });
     const g = (await t.run((ctx) => ctx.db.query("guests").collect()))[0];
-    expect(g.funFact).toBeUndefined();
+    // funFact / howKnowMakes are deliberately preserved on yes/maybe (see rsvpNotice.test.ts).
+    expect(g.funFact).toBe("old");
     expect(g.plusOne).toBeUndefined();
     expect(g.plusOneName).toBeUndefined();
   });

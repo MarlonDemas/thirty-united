@@ -1,0 +1,20 @@
+<!doctype html>
+<!-- Link-preview page (build-time only; never ships). scripts/render-og.mjs opens it in headless Chromium and screenshots it at 1200 x 630.
+     The sheet is built from the same ornament.js and EVENT as the invitation, so the date, the name and the venue cannot drift from config.js. -->
+<html lang="en-ZA" data-view="light">
+<head>
+<meta charset="utf-8">
+<title>og</title>
+<link rel="stylesheet" href="/src/matchday/world.css">
+<link rel="stylesheet" href="/scripts/og.css">
+</head>
+<body>
+<div id="ui"></div>
+<script type="module">
+import { h } from '/src/matchday/ui.js'
+import { corners, roundel, nameHeading, dateLockup, venueLine } from '/src/matchday/ornament.js'
+document.getElementById('ui').append(h('div', { class: 'l2 sheet og' }, ...corners(), h('div', { class: 'ogc' }, roundel(), nameHeading(), dateLockup(), venueLine())))
+window.__og = true
+</script>
+</body>
+</html>

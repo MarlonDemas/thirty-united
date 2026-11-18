@@ -3,6 +3,7 @@ import { limiterKey } from "./lib/otp";
 import { rateLimiter } from "./lib/limits";
 import { internal } from "./_generated/api";
 import { newTest } from "./test.setup";
+import * as admin from "./admin";
 
 type Row = {
   email: string;
@@ -66,6 +67,7 @@ describe("admin.summary", () => {
       no: 0,
       plusOnes: 0,
       expectedHeadcount: 0,
+      declinesUnverified: 0,
       teams: [],
     });
   });
@@ -118,5 +120,24 @@ describe("admin.resetCodeLimits", () => {
     const okB = await t.run((ctx) => rateLimiter.check(ctx, "otpCooldown", { key: b }));
     expect(okA.ok).toBe(true);
     expect(okB.ok).toBe(false);
+  });
+});
+
+describe("admin module visibility", () => {
+  // Operator-only (guest PII, deletes, purge): every registered function must stay internal so
+  // it is never reachable through the public `api`. Derived from the module's exports, so a new
+  // public export fails here; non-function exports (constants) are skipped.
+  type Flags = { isInternal?: true; isPublic?: true };
+  const registered = (Object.entries(admin) as [string, unknown][]).filter(
+    (e): e is [string, Flags] => typeof e[1] === "function",
+  );
+
+  it("finds the registered functions", () => {
+    expect(registered.length).toBeGreaterThan(0);
+  });
+
+  it.each(registered)("%s is internal, not public", (_name, fn) => {
+    expect(fn.isInternal).toBe(true);
+    expect(fn.isPublic).toBeUndefined();
   });
 });

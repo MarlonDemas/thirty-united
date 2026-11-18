@@ -1,7 +1,7 @@
-// OgCompositor runner (build-time, on the Mac; never ships): renders src/poster/og.ts in headless Chromium through
-// the Vite dev server, so the preview uses the same layers and the same 2D scene code as the saved poster.
-// Usage: node scripts/render-og.mjs <out.jpg>   (`npm run og` writes public/og.jpg, which index.html's og:image and
-// twitter:image point at)
+// OG runner (build-time, on the Mac; never ships): opens scripts/og.html (the L2 "Red Room" link preview, built from ornament.js and EVENT)
+// in headless Chromium through the Vite dev server and saves a 1200 x 630 JPEG.
+// Usage: node scripts/render-og.mjs <out.jpg>   (`pnpm og` writes public/og.jpg, which index.html's og:image and twitter:image point at)
+// The previous preview (the poster-art teaser from src/poster/og.ts) is in git: `git show 297d043:public/og.jpg > public/og.jpg` restores it.
 import { writeFileSync } from "node:fs"
 import { fileURLToPath } from "node:url"
 import { chromium } from "@playwright/test"
@@ -19,12 +19,11 @@ await server.listen()
 const base = server.resolvedUrls.local[0]
 const browser = await chromium.launch()
 try {
-  const page = await browser.newPage()
-  // A blank same-origin page: the plates load from the dev server, so the canvas stays exportable.
-  await page.route(`${base}__og`, (r) => r.fulfill({ contentType: "text/html", body: "<!doctype html><title>og</title>" }))
-  await page.goto(`${base}__og`)
-  const url = await page.evaluate(async () => (await import("/src/poster/og.ts")).renderOg())
-  const jpg = Buffer.from(url.slice(url.indexOf(",") + 1), "base64")
+  const page = await browser.newPage({ viewport: { width: 1200, height: 630 }, deviceScaleFactor: 1, reducedMotion: "reduce" })   // reduced motion: the finished picture, no draw-in
+  await page.goto(`${base}scripts/og.html`)
+  await page.waitForFunction(() => window.__og === true)
+  await page.evaluate(() => Promise.all(['500 1em "Bodoni Moda"', 'italic 400 1em "Bodoni Moda"', '400 1em "Jost"', '450 1em "Inter Tight"'].map((f) => document.fonts.load(f))).then(() => document.fonts.ready))
+  const jpg = await page.screenshot({ type: "jpeg", quality: 90 })
   writeFileSync(out, jpg)
   console.log(`${out}: ${(jpg.length / 1024).toFixed(1)} KiB`)
 } finally {

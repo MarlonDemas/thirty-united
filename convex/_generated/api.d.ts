@@ -11,6 +11,8 @@
 import type * as admin from "../admin.js";
 import type * as challenges from "../challenges.js";
 import type * as crons from "../crons.js";
+import type * as declines from "../declines.js";
+import type * as lib_declineValidation from "../lib/declineValidation.js";
 import type * as lib_inviteGate from "../lib/inviteGate.js";
 import type * as lib_limits from "../lib/limits.js";
 import type * as lib_otp from "../lib/otp.js";
@@ -32,6 +34,8 @@ declare const fullApi: ApiFromModules<{
   admin: typeof admin;
   challenges: typeof challenges;
   crons: typeof crons;
+  declines: typeof declines;
+  "lib/declineValidation": typeof lib_declineValidation;
   "lib/inviteGate": typeof lib_inviteGate;
   "lib/limits": typeof lib_limits;
   "lib/otp": typeof lib_otp;

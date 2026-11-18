@@ -1,5 +1,6 @@
 import manifest from "@/world/layers/layers.json"
-import type { Tier } from "@/world/tier"
+/** Render tier (the React world's tier module is gone; only the plate-set choice below still uses the name). */
+type Tier = "T3" | "T2" | "T1" | "T0" | "forced-colors"
 
 /** Poster space: every plate, quad and shot is in these pixels. */
 export const POSTER = manifest.poster as { w: 1080; h: 1920 }

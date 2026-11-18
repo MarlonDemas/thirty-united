@@ -111,8 +111,15 @@ export const consumeAndUpsert = internalMutation({
       ticketNo = existing.ticketNo;
       status = "updated";
       // replace (not patch) so fields from an earlier RSVP that no longer apply disappear.
+      // Exception: a yes/maybe reply that omits funFact / howKnowMakes keeps the stored values
+      // (the new client never re-sends them). A "no" reply keeps neither.
+      const keep = value.attending !== "no";
+      const funFact = value.funFact ?? (keep ? existing.funFact : undefined);
+      const howKnowMakes = value.howKnowMakes ?? (keep ? existing.howKnowMakes : undefined);
       await ctx.db.replace(existing._id, {
         ...value,
+        ...(funFact !== undefined ? { funFact } : {}),
+        ...(howKnowMakes !== undefined ? { howKnowMakes } : {}),
         email,
         ticketNo,
         createdAt: existing.createdAt,

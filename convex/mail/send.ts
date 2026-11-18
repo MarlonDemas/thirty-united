@@ -9,7 +9,11 @@ import { resolveProvider } from "./provider";
  * Returns false for an unknown/unset provider or missing credentials.
  */
 export async function sendCodeEmail(to: string, code: string): Promise<boolean> {
-  const provider = resolveProvider(process.env.MAIL_PROVIDER, process.env.MAIL_ALLOW_MOCK);
+  const provider = resolveProvider(
+    process.env.MAIL_PROVIDER,
+    process.env.MAIL_ALLOW_MOCK,
+    process.env.CONVEX_CLOUD_URL,
+  );
   if (provider === "mock") {
     console.log(`[mail:mock] code for ${to}: ${code}`);
     return true;

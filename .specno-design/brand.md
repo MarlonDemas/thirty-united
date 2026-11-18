@@ -5,7 +5,7 @@ profileVersion: "1.0.0"
 clientName: thirty-united
 stack: web-vite
 direction: D
-lastUpdated: "2026-10-15"
+lastUpdated: "2026-11-18"
 ---
 
 # Brand: Thirty United
@@ -15,6 +15,7 @@ lastUpdated: "2026-10-15"
 - **Chosen:** Direction D, "Matchday: The Signing" (owner, 2026-10-15, by replying "defaults" to `audits/cinematic-recommendation-2026-10-15.md`).
 - **Signature:** the invite is Makes's own living matchday poster, where every answer switches on a bank of floodlights until he holds up your shirt, with your name and number, as his new signing. (Pixel's wording, accepted through "defaults"; the owner did not write it.)
 - **Rejected (hard constraints, from 2026-10-14):** B Terrace Ticket (letterpress ink bleed, deckled edge, off-register stamp, one question per screen) and C Scoreboard Broadcast (solid ink strips, scrolling ticker, wipes, shirt-number form rows, scoreboard digits). Do not drift back into either.
+- **Invitation and reply pages:** 2a, The Red Room (owner, 2026-11-18), replacing L2 "Ivory and crimson" (2026-11-16). A surface layer on Direction D; the game keeps Direction D. Values in `tokens.md`, "Invitation and reply pages"; decision in `feedback.md`.
 - **Retired:** Direction A "Matchday Programme" (2026-10-14) and its paper palette, overridden by the owner on 2026-10-14. History in `direction-archive/2026-10-14.md`.
 
 ## What this is
@@ -38,7 +39,8 @@ A personal invite for Marlon "Makes" Demas's 30th birthday, Monday 21 December 2
 - **Red in the scene.** Amended 2026-10-15. The 2026-10-14 rule "no red in the scene" is reversed: red is the one hot colour, in the smoke, the shirt, the flags, the embers and the "UNITED" lockup (`poster-red`, `scene-smoke-red`, `scene-ember`). On the UI layer red stays limited to the primary button fill (`shirt-red`, with its moonlight ring).
 - **Makes's likeness (consent given 2026-10-15).** Makes is the hero of every frame, smiling, in three poses, and his face goes out on every poster guests save and post. The owner answered "likeness yes" on 2026-10-15 to "may my likeness appear on every shared poster". G1, the first image generation, is unblocked. His photo arrived on 2026-10-15 and the first G1 attempt is in review, not approved (it needs a file of at least 1080 x 1920 and a lights-off edit); he still approves G1 for likeness and cleanliness. Guests have no likeness on the poster: they are a shirt with a name and a number.
 - **What the poster carries:** Makes holding up the guest's shirt with their preferred name (or first name) and their number (`ticketNo`); THIRTY UNITED; "MON 21 DEC 2026 · VENUE TBA"; the credit line ("+ name" for a plus-one only; no team and no sport, owner decision 2026-10-15; the data is still collected for the host); the AI credit line "Poster art made with AI" under it, small, in `moonlight` over a `panel` scrim (owner decision 2026-10-15; saved poster only, never in the live page UI, never on the Open Graph image). No footer line: "Makes, 21 DEC 2026" is removed, the date is on the cover. Never a surname, email, WhatsApp number, fun fact or anything about other guests. A No gets no poster.
-- **Still banned:** confetti, balloons, gold foil, "30" clip-art, stock photography, neon, glow borders, betting-app chips, anything pointed at the camera (weapons, gauntlets, swords).
+- **Gold on the invitation and reply pages.** Amended 2026-11-18 (owner decision, 2a The Red Room). Champagne gold is allowed there as hairlines, corner arcs, the outlined "30", diamond marks and spaced-caps text; see `tokens.md` for where it may not go. Gold stays out of the game.
+- **Still banned:** confetti, balloons, gold foil (a foil fill, gradient or texture; hairline gold on the invitation and reply pages is not foil), "30" clip-art, stock photography, neon, glow borders, betting-app chips, anything pointed at the camera (weapons, gauntlets, swords).
 - **Open Graph image:** carries no AI credit line. A teaser composite, never a guest's poster: Makes from the chest up, moonlit, looking up at four dark floodlight towers, red smoke low in the frame, "THIRTY" in the sky and "21 DEC 2026" beneath it. 1200 × 630 JPEG, composited from the layers. Title and description stay as built. `noindex`.
 
 ## Accessibility floor
@@ -58,4 +60,4 @@ A personal invite for Marlon "Makes" Demas's 30th birthday, Monday 21 December 2
 
 ## Prohibited patterns
 
-Shadows on the UI layer; gradients on the UI layer (the poster carries all light and depth); red fills beyond the primary button; `poster-red` on the UI layer; pill buttons; toasts; a light theme; text on the moving scene; wipes or page fades between beats; forward camera travel, gyro parallax or idle camera drift; looping motion under reduced motion, in the UI layer or on the code beat; post-processing bloom, halftone or posterise in v1; video in v1; placeholder-only labels; red asterisks for required fields (optional fields carry a muted "optional" tag instead); any official club imagery; a poster for a No; a guest's surname or contact details on a poster.
+Shadows on the UI layer of the game, and gradients on it (the poster carries all light and depth); on the invitation and reply pages the one shadow on the sheet, the one on the red stub, the red glow and the faint stripes (`tokens.md`) are allowed and nothing else is; red fills beyond the primary button; `poster-red` on the UI layer; pill buttons; toasts; a light theme (the invitation and reply pages are dark too); text on the moving scene; wipes or page fades between beats; forward camera travel, gyro parallax or idle camera drift; looping motion under reduced motion, in the UI layer or on the code beat; post-processing bloom, halftone or posterise in v1; video in v1; placeholder-only labels; red asterisks for required fields (optional fields carry a muted "optional" tag instead); any official club imagery; a poster for a No; a guest's surname or contact details on a poster.

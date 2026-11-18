@@ -6,7 +6,7 @@ import { POSTER } from "@/world/layers"
  */
 
 /** Tokens: `text`, `moonlight`, `panel`, `poster-red`. */
-export const INK = { text: "#FFFFFF", moonlight: "#B7D3FA", panel: "#18131F", posterRed: "#F81E24" } as const
+export const INK = { text: "#FFFFFF", moonlight: "#B7D3FA", panel: "#18131F", posterRed: "#D9505C" } as const
 
 /**
  * The event date, short form: the stamp, the fixture line and the OG image take it from here. Stamp.tsx keeps its
