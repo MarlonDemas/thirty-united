@@ -4,7 +4,7 @@ compatiblePluginRange: ">=0.2.0,<1.0.0"
 clientName: thirty-united
 clientDisplayName: "Thirty United"
 stack: web-vite
-lastUpdated: "2026-10-15"
+lastUpdated: "2026-11-18"
 direction: direction.md
 chosenDirection: D
 chosenDirectionName: "Matchday: The Signing"
@@ -23,6 +23,7 @@ acceptedOwnerDecisions:
   - "Draft copy and timing stay as built: panel shows straight away, No ending has no warm closing line, Chapter 2 standfirst is \"Your name goes on the back. A few lines so I can seat you properly.\" (owner, 2026-10-15)."
   - "Live shirt name: until Surname has a value, the shirt shows only the first word of the name (owner, 2026-10-15)."
   - "AI credit on the saved poster: \"Poster art made with AI\", small, in moonlight next to the credit line, over a panel scrim; saved poster only, not in the live page UI and not on the OG image (owner, 2026-10-15). Original ChatGPT exports with C2PA metadata are kept by the owner outside the repo."
+  - "Invitation and reply pages: 2a, The Red Room (owner, 2026-11-18), replacing L2 Ivory and crimson (2026-11-16). Overturns no gold, no shadow and no texture for those pages only; the game keeps Direction D. See tokens.md and feedback.md."
 maintainers:
   - marlon@specno.com
 files:

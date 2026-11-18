@@ -1,4 +1,4 @@
-// matchday-rsvp: the L2 "Ivory and crimson" ornaments shared by the invitation (invite.js) and the reply page (fallback.js): corner arcs, the centre-circle roundel, the name heading and the date lockup.
+// matchday-rsvp: the L2 "Red Room" ornaments shared by the invitation (invite.js) and the reply page (fallback.js): corner arcs, the centre-circle roundel, the name heading and the date lockup.
 // Three-free. Facts come from EVENT (config.js); nothing here is typed text. SVG uses presentation attributes and classes only (CSP style-src 'self'); world.css colours and animates it.
 import { EVENT } from './config.js';
 import { h } from './ui.js';
@@ -30,10 +30,10 @@ export function nameHeading(attrs = {}, small = false) {
 }
 
 // MONDAY | 21 | DECEMBER 2026, taken apart from EVENT.date ("Monday 21 December 2026"). If the date ever stops fitting that shape, the whole string is shown as one line.
-export function dateLockup(small = false) {
+export function dateLockup() {
   const m = /^(\S+)\s+(\d{1,2})\s+(\S+)\s+(\d{4})$/.exec(EVENT.date.trim());
   const body = m ? [h('span', { class: 'dow', text: m[1] }), h('span', { class: 'day', text: m[2] }), h('span', { class: 'mon' }, m[3], h('br'), m[4])] : [h('span', { class: 'mon', text: EVENT.date })];
-  return h('div', { class: 'lock' + (small ? ' sm' : ''), role: 'group', 'aria-label': EVENT.date }, ...body);
+  return h('div', { class: 'lock', role: 'group', 'aria-label': EVENT.date }, ...body);
 }
 
 // ◆ VENUE TBA ◆

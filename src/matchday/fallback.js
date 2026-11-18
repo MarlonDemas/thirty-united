@@ -7,7 +7,10 @@ import { codeCard, declineCard } from './codecard.js';
 import { mapServerErrors, withAttending, nameOnly } from './fields.js';
 import { getSent, closedText } from './submit.js';
 import { runTeardown } from './teardown.js';
-import { corners, roundel, nameHeading, dateLockup, venueLine } from './ornament.js';
+import { corners, roundel, nameHeading } from './ornament.js';
+
+// "Mon 21 Dec 2026 ◆ Venue TBA": the date shortened from EVENT.date (unchanged if it ever stops fitting the "Monday 21 December 2026" shape) and the venue; CSS keeps each piece on one line.
+const dateVenue = () => h('p', { class: 'dv' }, h('span', {}, EVENT.date.trim().replace(/^(\S{3})\S*\s+(\d{1,2})\s+(\S{3})\S*\s+(\d{4})$/, '$1 $2 $3 $4'), h('i', { class: 'd', 'aria-hidden': 'true' })), ' ', h('span', { text: EVENT.venue }));
 
 // initial = { side, values } the game already collected (a lost context), or null: the form then opens pre-filled.
 export function showFallback(reason, initial = null) {
@@ -17,13 +20,13 @@ export function showFallback(reason, initial = null) {
   document.querySelectorAll('canvas').forEach((c) => c.remove());   // a half-built scene may have appended its canvas before failing
   const ui = document.getElementById('ui'); ui.replaceChildren();
 
-  // L2 "Ivory and crimson": the card is the framed sheet. The corner arcs live on the card and the content in `body`, so a state change swaps the content without redrawing the frame.
+  // L2 "Red Room": the card is the framed sheet. The corner arcs live on the card and the content in `body`, so a state change swaps the content without redrawing the frame.
   const body = h('div', { class: 'fbody' });
   const card = h('section', { id: 'card', class: 'glass fb l2 sheet', role: 'group', 'aria-labelledby': 'fb-h', tabindex: '-1' }, ...corners(), body);
-  const render = (mode, ...nodes) => { card.dataset.mode = mode; body.replaceChildren(...(mode === 'form' ? [] : [roundel(true)]), ...nodes); };   // the form brings its own header (with the roundel)
+  const render = (mode, ...nodes) => { card.dataset.mode = mode; body.replaceChildren(...(mode === 'form' || mode === 'signed' ? [] : [roundel(true)]), ...nodes); };   // the form brings its own header (with the roundel); a Yes / Not sure yet confirmation carries the shirt stub instead of a crest
   let code = null, answers = initial && Object.keys(initial.values ?? {}).length ? { side: initial.side ?? 'home', values: { ...initial.values } } : null;   // answers: { side, values } once the form has been filled (or handed over)
   const focusHead = () => card.querySelector('h1,h2')?.focus({ preventScroll: true });
-  const showConfirm = (r) => { code?.dispose(); render('confirm', ...confirmCard(r, { id: 'fb-h', level: 'h1' })); focusHead(); };
+  const showConfirm = (r) => { code?.dispose(); render(r.attending === 'no' ? 'confirm' : 'signed', ...confirmCard(r, { id: 'fb-h', level: 'h1', redRoom: true })); focusHead(); };
   const showClosed = () => { code?.dispose(); render('closed', h('p', { class: 'kicker', text: DATE_LINE }), h('h1', { id: 'fb-h', class: 'display', tabindex: '-1', text: "You've been called up" }), h('p', { class: 'closed', role: 'status', text: closedText() ?? '' })); focusHead(); };
   const showCode = () => {
     if (closedText()) { showClosed(); return; }
@@ -31,15 +34,15 @@ export function showFallback(reason, initial = null) {
     const { side, values } = answers;
     const to = { onSaved: showConfirm, onClosed: showClosed, onFix: (errs) => showForm(mapServerErrors(errs, true)) };
     code = nameOnly(withAttending(side, values)) ? declineCard({ getValues: () => withAttending(side, values), id: 'fb-cc', level: 'h1', ...to })   // "Have you replied before?" = No: name-only, no code
-      : codeCard({ side, getValues: () => withAttending(side, values), setEmail: (e) => { values.email = e; }, id: 'fb-cc', level: 'h1', ...to });
+      : codeCard({ side, getValues: () => withAttending(side, values), setEmail: (e) => { values.email = e; }, id: 'fb-cc', level: 'h1', redRoom: true, ...to });
     render('code', ...code.nodes); card.querySelector('h1').id = 'fb-h'; focusHead(); code.start();
   };
   const showForm = (errors = null) => {
-    const { form, setErrors } = fastLaneForm({ capped: false, init: answers ? withAttending(answers.side, answers.values) : {}, errors, onSend: ({ side, values }) => { answers = { side, values: { ...values } }; showCode(); } });
-    // The form page's header (plate L2-form-yes.png): roundel, kicker, the one h1, tagline, date lockup and venue; "Host: Makes" is gone (the name already says it).
+    const { form, setErrors } = fastLaneForm({ capped: false, redRoom: true, init: answers ? withAttending(answers.side, answers.values) : {}, errors, onSend: ({ side, values }) => { answers = { side, values: { ...values } }; showCode(); } });
+    // The form page's header (Red Room): the crest, "Makes turns 30" (the one h1) and one date-and-venue line, then the "Your reply" kicker and the form. The kicker "You've been called up" and the tagline stay on the invitation.
     // The ...(cond ? [x] : []) spread keeps a literal "null" out of the page text when the game loaded fine.
-    render('form', h('div', { class: 'hd' }, roundel(true), h('p', { class: 'caps kick k1', text: "You've been called up" }), nameHeading({ id: 'fb-h', tabindex: '-1' }, true), h('p', { class: 'tg', text: EVENT.tagline }), dateLockup(true), venueLine(),
-      ...(reason === 'load-failed' ? [statusLine('info', "The game didn't load. You can reply here instead.")] : []), h('div', { class: 'rule2', 'aria-hidden': 'true' }), h('p', { class: 'caps kick k2', text: 'Your reply' })), form);
+    render('form', h('div', { class: 'hd' }, roundel(true), nameHeading({ id: 'fb-h', tabindex: '-1' }, true), dateVenue(),
+      ...(reason === 'load-failed' ? [statusLine('info', "The game didn't load. You can reply here instead.")] : [])), h('p', { class: 'caps kick k2', text: 'Your reply' }), form);
     if (!(errors && setErrors?.(errors))) focusHead();   // returning to fix answers: the first invalid field; no field errors (kill switch, rate limit): the heading
   };
   if (getSent()) showConfirm(getSent());

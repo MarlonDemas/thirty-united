@@ -30,5 +30,6 @@ test("with WebGL blocked, Play shows the failure line and the plain page complet
   await enterCode(page, await fetchCode(email));
 
   await expect(page.getByRole("heading", { name: "You're in, Edith" })).toBeVisible();
-  await expect(page.locator("p.seat")).toHaveText(/^Seat \d{3} · Shirt \d+$/);
+  await expect(page.locator(".stub p.seat")).toHaveText(/^Seat \d{3} · Shirt \d+$/);
+  await expect(page.getByText("Semi-casual, in your jersey. Any club, any sport, any era. No jersey? Wear red.")).toBeVisible();
 });

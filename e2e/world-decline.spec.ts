@@ -236,5 +236,6 @@ test("fallback page (WebGL blocked): a name-only decline completes", async ({ pa
   await expect(page.getByRole("heading", { name: "Noted, Edith" })).toBeVisible();
   await expect(page.getByText("You'll be missed. If plans change, open your invite link again.")).toBeVisible();
   await expect(page.locator("p.seat")).toHaveCount(0);
+  await expect(page.getByText("No jersey? Wear red.")).toHaveCount(0);
   expect(await getDecline(g)).toMatchObject({ firstName: "Edith", surname: g.surname });
 });

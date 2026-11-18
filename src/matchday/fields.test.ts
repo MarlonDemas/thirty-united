@@ -34,6 +34,30 @@ describe('fields: fast lane', () => {
   })
 })
 
+describe('fields: fast lane order', () => {
+  const at = (k: string) => FAST_KEYS.indexOf(k)
+  it('asks how to send the details and the WhatsApp number before sport, other sport and team', () => {
+    expect(at('inviteChannel')).toBeGreaterThan(-1)
+    expect(at('inviteChannel')).toBeLessThan(at('whatsapp'))
+    for (const k of ['sport', 'otherSport', 'team']) expect(at('whatsapp')).toBeLessThan(at(k))
+    expect(at('sport')).toBeLessThan(at('otherSport'))
+    expect(at('otherSport')).toBeLessThan(at('team'))
+  })
+  it('still has all 14 questions, each once', () => {
+    expect(FAST_KEYS).toHaveLength(14)
+    expect(new Set(FAST_KEYS).size).toBe(14)
+  })
+  it('keeps the game stations as they were', () => {
+    expect(GROUPS).toEqual({
+      '1:home': ['firstName', 'surname', 'preferredName', 'attending'],
+      '1:away': ['repliedBefore', 'firstName', 'surname', 'email', 'reason'],
+      2: ['email', 'sport', 'otherSport', 'team'],
+      3: ['inviteChannel', 'whatsapp'],
+      4: ['plusOne', 'plusOneName'],
+    })
+  })
+})
+
 describe('fields: AWAY station', () => {
   it.each([
     [undefined, ['repliedBefore', 'firstName', 'surname'], 'away', false],

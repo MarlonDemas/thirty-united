@@ -1,4 +1,4 @@
-// OG runner (build-time, on the Mac; never ships): opens scripts/og.html (the L2 "Ivory and crimson" link preview, built from ornament.js and EVENT)
+// OG runner (build-time, on the Mac; never ships): opens scripts/og.html (the L2 "Red Room" link preview, built from ornament.js and EVENT)
 // in headless Chromium through the Vite dev server and saves a 1200 x 630 JPEG.
 // Usage: node scripts/render-og.mjs <out.jpg>   (`pnpm og` writes public/og.jpg, which index.html's og:image and twitter:image point at)
 // The previous preview (the poster-art teaser from src/poster/og.ts) is in git: `git show 297d043:public/og.jpg > public/og.jpg` restores it.

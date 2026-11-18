@@ -1,6 +1,6 @@
 # DESIGN.md: Thirty United
 
-Generated from the `.specno-design/` contract (Direction D, "Matchday: The Signing", chosen by the owner on 2026-10-15). This file is an export. Change the contract, not this file.
+Generated from the `.specno-design/` contract (Direction D, "Matchday: The Signing", chosen by the owner on 2026-10-15). This file is an export. Change the contract, not this file. The invitation and reply pages follow 2a, The Red Room (owner, 2026-11-18), a surface layer on Direction D: sections 3, 4, 5, 7, 9, 10 and 12.
 
 **Build status.** This file describes the contract, not the shipped build. `src/` still ships Direction A (the paper ticket, the paper views and the sealed-screen stadium stage) until nova migrates it. Components marked **planned** in section 10 do not exist yet.
 
@@ -40,7 +40,7 @@ A one-page save-the-date and RSVP for Marlon "Makes" Demas's 30th birthday, Mond
 
 **Don't:**
 - Use an official club crest, badge, wordmark, kit, sponsor mark, starball, club or stadium name, devil or trident, anywhere, ever (trademark). Makes's AI poster is a head-and-neck likeness reference only, never a base image.
-- Use confetti, balloons, gold foil, "30" clip-art, stock photography, neon, glow borders, betting-app chips, or anything pointed at the camera.
+- Use confetti, balloons, gold foil (a foil fill, gradient or texture), "30" clip-art (the outlined gold "30" on the invitation is the one approved exception), stock photography, neon, glow borders, betting-app chips, or anything pointed at the camera.
 - Use exclamation marks, emoji or "Oops", blame the guest, or use inflated vocabulary or filler openers (Specno writing rules apply to all copy).
 
 There is no logo: Makes's poster is the mark. The draft lines ("You've been called up", "Your shirt", "Seal it", "SIGNED", "PENCILLED IN", "Save it now. We don't keep a copy.") stay as drafts until Makes rewrites them. Owner decisions 2026-10-15: no footer line ("Makes, 21 DEC 2026" is removed; the date is on the cover); no team, sport or "NEUTRAL" line after saving or on the poster (still collected for the host); the panel shows straight away; the No ending has no warm closing line; Chapter 2's standfirst is "Your name goes on the back. A few lines so I can seat you properly."
@@ -92,7 +92,24 @@ _No entries yet._ There is no light theme in Direction D.
 | `moonlight` on `scene-smoke-red` | 4.18:1 | Passes 3:1; covered by the same halo |
 | `panel-raised` on `panel`; `panel` on `void` | 1.12:1; 1.07:1 | Not boundaries: inputs carry a `line` edge, the desktop panel a `moonlight` rule |
 
-**Rules:** every readable word is DOM text on `panel` or `panel-raised`, never on the moving scene. One primary button per beat, the only red on the UI layer. Nothing dimmer than `moonlight` for text, except the disabled label (`line`). State is never colour alone: each status pairs an icon and a line, errors add the 2 px rule, the selected tile adds a 2 px edge and a filled icon. Dark plus red must not drift toward a betting or gaming app: no neon, no glow, no gold.
+**Rules:** every readable word is DOM text on `panel` or `panel-raised`, never on the moving scene. One primary button per beat, the only red on the UI layer. Nothing dimmer than `moonlight` for text, except the disabled label (`line`). State is never colour alone: each status pairs an icon and a line, errors add the 2 px rule, the selected tile adds a 2 px edge and a filled icon. Dark plus red must not drift toward a betting or gaming app: no neon, no glow, no gold. This holds for the game; the invitation and reply pages have their own palette, below.
+
+### Invitation and reply pages: 2a, The Red Room
+
+Owner, 2026-11-18. Replaces L2 "Ivory and crimson" (2026-11-16). Applies to the invitation, the reply page and its cards; the game keeps the dark scheme above. Full table, roles and contrast in `.specno-design/tokens.md`.
+
+| Token | Value | Role |
+|---|---|---|
+| `ground` | `#0B0A0A` | Page and sheet, with faint mowing stripes and a red glow |
+| `card` | `#141111` | Inputs, option rows, status fill |
+| `cream` | `#F3EDE2` | Text and focus ring |
+| `muted` | `#B9AFA2` | Helper text, notice |
+| `gold` | `#C9A45C` | Lines only: double hairlines, corner arcs, rules, the outlined "30" |
+| `gold-light` | `#D9BC7E` | Gold text: kickers, labels, links, stamp |
+| `red` | `#C8102E` (hover `#D9183A`) | Primary button, chosen dot, the shirt stub |
+| `red-numeral` | `#E0243F` | Date numeral and I to IV numerals, 24 px or more |
+
+Gold may be hairlines, arcs, the outlined "30", diamond marks, selected edges and spaced-caps text in light gold. It is never a fill, a gradient, foil, text in `#C9A45C`, or text on red (2.51:1). It overturns "no gold" for these pages only. Contrast (computed 2026-11-18, flat colours, glow not measured): cream on ground 16.97:1, light gold on ground 10.78:1, red numeral on ground 4.23:1 (large text), white on red 5.88:1.
 
 Under `forced-colors: active`: the world stage is hidden, the panel uses `Canvas` and `CanvasText`, the focus ring maps to `Highlight`, Yes, Maybe and No stay distinct by wording and icon, and Save your poster and Share still work.
 
@@ -104,6 +121,7 @@ Under `forced-colors: active`: the world stage is hidden, the panel uses `Canvas
 - **Body:** Inter 400 and 500
 - **Data:** JetBrains Mono 500, tabular numerals (seat, code cells, email address, cooldown)
 - **Loaded from:** `@fontsource/*` packages, self-hosted, latin subset; nothing new to load. Keeping the four shipped faces is accepted by the owner; the SVG title lockups are outlined Barlow Condensed 700
+- **Invitation and reply pages (2a, The Red Room):** Bodoni Moda 500 (name, numerals, code digits, card headings) and 400 italic ("turns 30", tagline, question labels, group numerals); Jost 400 for everything else. Self-hosted from `/world/fonts/`. Spaced capitals 14 px or more, sentences 16 px or more.
 - **Fallback stack:** Arial Narrow (display), Georgia (serif), system-ui (body), ui-monospace (data), size-adjusted, `font-display: swap`
 
 Sizes are `rem`, so 200% text grows the panel, which scrolls inside itself instead of clipping. Minimum text 14px, inputs never below 16px.
@@ -149,8 +167,8 @@ Scene type (art, `aria-hidden`, on the 1080 × 1920 poster): "THIRTY" left-set a
 | `rule-active` | 2px by inset shadow, no layout shift: selected tile and focused group (`moonlight`), field in error (`status-error`) |
 | `ring-primary` | 2px solid `moonlight` around the primary button, at rest and in every state |
 | Radius | `--radius: 0` everywhere; 50% only for the radio dot and the code-step lamps |
-| Shadow | None on the UI layer. Depth and light live in the poster |
-| Grain | Static CSS grain and vignette over the poster only; removed under `forced-colors` |
+| Shadow | None on the game's UI layer. Depth and light live in the poster. Invitation and reply pages (2a, The Red Room): one shadow on the sheet and one on the red stub, nothing else |
+| Grain | Static CSS grain and vignette over the poster only; removed under `forced-colors`. None on the invitation and reply pages, which have faint mowing stripes and one red glow instead (2a, The Red Room) |
 | Stamp | Rotated -4deg. Yes: solid `poster-red` with `text`, "SIGNED · 21 DEC 2026". Maybe: `panel` fill, 2px `text` border, `pencil`, "PENCILLED IN" |
 | Focus ring | 3px `moonlight`, offset 2px, on every interactive element (`:focus-visible`); over the scene (the chips) a 2px `panel` halo outside it; the owning group's top rule thickens to 2px `moonlight` |
 
@@ -197,6 +215,7 @@ Budget: signature. "The lights answer you": every answer is a one-way floodlight
 - **Never:** forward camera travel, gyro, idle camera drift, wipes or page fades between beats, shaking on a wrong code.
 - **Haptics** (Android only, after the first tap, never under reduced motion): tear tick 4ms every 40px, separation [10, 30, 18], bank strike 12ms, Maybe and No 8ms, code digit 4ms, wrong code [10, 30, 10], number 22ms, stamp 22ms (Yes) / 12ms (Maybe).
 - **Sound** (opt-in, off by default, synthesised, no files): the built tear ticks, rip and stamp, plus a floodlight clunk with a 120 Hz hum swell (nothing below 100 Hz), crowd swell, a softer swell for Maybe, a crackle for No, a tick per code digit, crowd hush and a drum hit. Sound follows only its own opt-in, so it stays available under reduced motion if the guest turned it on.
+- **Invitation and reply pages:** exactly two motions, each once: the corner arcs and the crest draw in on load, and the stamp lands (the stub dips with it). Both are off under reduced motion, which shows the finished picture.
 - **Reduced motion** (`prefers-reduced-motion: reduce`) = T0: no parallax, particles, push-ins or loops. The cover is the still with "Tear open" only; on press the poster swaps to bank one lit. Every beat swaps to its final state at once; the finale appears with the stamp in place. Focus and live-region announcements still happen.
 
 ## 10. Components
@@ -243,6 +262,13 @@ Code is the source of truth for components that exist; `.specno-design/component
 ### Overlays
 - **PosterViewer** (planned): the one overlay. Full-screen `<img>` from a `data:` URL with alt text naming what is on it, "Press and hold the poster to save it", a close button; `role="dialog"`, `aria-modal`, focus moved in and returned, Esc closes. No other dialogs, popovers or toasts.
 
+### Invitation and reply pages (2a, The Red Room)
+Built in `src/matchday/` (`invite.js`, `fallback.js`, `ui.js`, `ornament.js`, `codecard.js`, `world.css`); details in `.specno-design/components.md`.
+- **Invitation:** kicker, the name, an outlined gold "30" behind it, tagline, date band, venue line, the dress-code line, and the two-half capsule "Play the match" and "Just reply".
+- **Reply header:** crest, "Makes turns 30", one date-and-venue line.
+- **Reply form:** "Can you make it?", then the privacy notice directly below it once it is answered, then the groups I "The player", II "Contact" (including "Where should I send the details?"), III "The supporter", IV "Matchday". Six drawn code cells over one real input.
+- **Confirmations:** a red shirt stub with a "Signed · 21 Dec 2026" stamp (Yes) or a dashed "Pencilled in" stub (Not sure yet). The dress-code line "Semi-casual, in your jersey. Any club, any sport, any era. No jersey? Wear red." shows on the invitation and on the Yes, Not-sure and Welcome-back confirmations.
+
 ### Retired with Direction A
 The paper `Ticket` and `HeaderTicket` as page objects, the `Stub` ruled table, the stage backdrop (`.stage-backdrop`, `terrace-dots.svg`) and the paper grain.
 
@@ -288,3 +314,4 @@ The paper `Ticket` and `HeaderTicket` as page objects, the `Stub` ruled table, t
 - **2026-10-15 (AI credit on the saved poster)**: owner decision: the saved 1080 × 1920 poster carries "Poster art made with AI" in small `moonlight` type under the credit line, on a `panel` scrim; not in the live page, not on the OG image. The owner keeps the original ChatGPT exports (C2PA metadata) outside the repo as provenance.
 - **2026-10-15 (real plates in the app: chips, title, signing shot, moon)**: owner decisions: Sound and Still become icon-only, stacked chips (option B), the title returns to about 80% of the poster width (superseded the same day: see the next entry), the signed beats use a two-stage shot (wide with all four banks on screen, then push in), the moon gets a halo and surface texture, the Chapter 1 to Chapter 2 push-in is 1.03 to 1.12, and the Android device test is deferred (real-device check required in phase 8, before merging to main). See `.specno-design/feedback.md`.
 - **2026-10-15 (as built: title width and layering)**: owner "defaults": the title is accepted at about 58% of the poster width, left-set, because it has to clear the chip column in every shot (this supersedes the 80% above); on the WebGL cover the title draws in front of the lanyard cord. The chips are named "Sound off" / "Sound on" (no `aria-pressed`) and "Still" (`aria-pressed`). The `chip` text style is retired. See `.specno-design/feedback.md`.
+- **2026-11-18 (invitation and reply pages: 2a, The Red Room)**: the owner picked 2a, The Red Room from his own design round and approved a final draft. It replaces L2 "Ivory and crimson" (2026-11-16) on the invitation and reply pages and overturns "no gold", "no shadow" and "no texture" for those pages only; the game keeps Direction D. Sections 3, 4, 5, 7, 9, 10 and 12 changed. Contract: `.specno-design/tokens.md`, `brand.md`, `components.md`, `feedback.md`. `.agents/specno-design.json` was not regenerated.

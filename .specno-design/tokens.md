@@ -5,7 +5,7 @@ profileVersion: "1.0.0"
 clientName: thirty-united
 stack: web-vite
 direction: D
-lastUpdated: "2026-10-15"
+lastUpdated: "2026-11-18"
 ---
 
 # Tokens: Thirty United (Direction D, Matchday: The Signing)
@@ -46,7 +46,7 @@ Projected from `direction.md` Direction D (typographic identity, colour thesis, 
 |---|---|---|
 | `status-error` | `#FF9E8F` | Error text, the alert icon, the 2 px error rule on a field. Always with `circle-alert`, so red-ish colour is never the only signal |
 | `status-success` | `#8EDDA9` | Check icon and short status line ("Saved", "Your answer is updated", "New code sent") |
-| `status-warning` | `#FFC978` | Cooldown and "tries left" lines, with `timer` or `circle-alert`. Status lines only, never a fill or a border (keeps it away from dark-plus-gold) |
+| `status-warning` | `#FFC978` | Cooldown and "tries left" lines, with `timer` or `circle-alert`. Status lines only, never a fill or a border (keeps it away from dark-plus-gold in the game; the invitation and reply pages have their own gold, below) |
 
 ### Scene tokens (code-drawn parts of the world; not UI paints)
 
@@ -224,8 +224,8 @@ Scene sizes are starting values to tune on G5 and G6 once the shirt quads are me
 | `ring-primary` | 2 px solid `moonlight` around the primary button, at rest and in every state |
 | `radius-0` | 0: panel, chips, inputs, buttons, tiles |
 | `radius-full` | 50 percent: the radio dot and the code-step lamps only |
-| `shadow` | None on the UI layer. Depth lives in the poster |
-| `overlay-grain` | Static CSS grain and vignette over the poster (not the panel); removed under `forced-colors` |
+| `shadow` | None on the UI layer of the game. Depth lives in the poster. The invitation and reply pages are the exception: see "Invitation and reply pages" below |
+| `overlay-grain` | Static CSS grain and vignette over the poster (not the panel); removed under `forced-colors`. No grain on the invitation and reply pages |
 | `stamp` | Rotated -4deg. Yes: solid `poster-red` with `panel` text (4.52:1). Maybe: `panel` fill, 2 px `text` border, `pencil` icon, "PENCILLED IN" |
 
 Hierarchy: the poster (everything) > the panel (one surface) > field groups (top rule only, no four-sided box inside the panel) > fields (1 px `line`).
@@ -304,3 +304,64 @@ No parallax, particles, push-ins or loops. The cover is the still in its pre-mat
 | Panel | 10 | `<main>`: the step panel and everything readable |
 | Chips | 20 | Sound and Still |
 | Poster viewer | 30 | Save your poster: the poster full screen as an `<img>`, "Press and hold the poster to save it", and a close button. Modal (`role="dialog"`, focus moved in and returned, Esc closes). The one overlay in the product; still no toasts and no other dialogs |
+
+## Invitation and reply pages: 2a, The Red Room (owner, 2026-11-18)
+
+A surface layer on top of Direction D. It applies to the invitation (`#inv`), the reply page (`#fb`) and its cards (form, code, decline, closed, confirmation), and is built in the same language on `/privacy/`. The 3D game keeps every token above. It replaces L2 "Ivory and crimson" (2026-11-16). Decision and the three overturned limits: `feedback.md`, 2026-11-18. In code the set is `THEME.light` and `THEME.view` (`src/matchday/config.js`), exposed as `--l-*` in `src/matchday/world.css`; the code keeps the ivory set's key names (`light`, `ink`, `crimson`, `field`).
+
+### Palette
+
+| Token | Code key | Hex | Role |
+|---|---|---|---|
+| `ground` | `ground`, `view.light` | `#0B0A0A` | Page, sheet and `theme-color` on these pages |
+| `card` | `field` | `#141111` | Input, option row and status fill |
+| `selected` | `selected` | `#2A0B12` | Chosen option fill, disabled button fill |
+| `cream` | `ink` | `#F3EDE2` | Text, focus ring |
+| `muted` | `muted` | `#B9AFA2` | Helper text, notice, dress-code line on the reply page |
+| `gold` | `gold` | `#C9A45C` | Lines only: double hairlines, corner arcs, rules, edges, the outlined "30", diamond marks |
+| `gold-light` | `goldLight`, `caps` | `#D9BC7E` | Gold text: kickers, labels, group names, links, the stamp, the sign-off line |
+| `rule` | `rule` | `rgba(201,164,92,.35)` | Quiet hairlines |
+| `red` | `crimson` | `#C8102E` | Primary button fill, chosen-option dot, the shirt stub |
+| `red-hover` | `redHover` | `#D9183A` | Button hover |
+| `red-numeral` | `numeral` | `#E0243F` | The date numeral and the I to IV group numerals (large text only) |
+| `control` | `ctrl` | `#6E6458` | Input and option-row edges |
+| `placeholder` | `placeholder` | `#9A8E80` | Placeholder text, unchosen option ring |
+| `on-red` | `onInk` | `#FFFFFF` | Text on red |
+| `danger`, `success`, `warning` | same | `#FF8A7A`, `#8EDDA9`, `#FFC978` | Status text, icons and edges, always with an icon and words |
+
+Contrast (WCAG formula, computed 2026-11-18 on flat colours; the glow area was not measured): cream on ground 16.97, on card 16.12, on selected 15.60; muted on ground 9.15, on card 8.69, on selected 8.41; light gold on ground 10.78, on card 10.24; gold on ground 8.43, on card 8.00; red numeral on ground 4.23 (needs 3, large text only, so the numerals stay at 24 px or more); red on ground 3.36 (button edge, needs 3); white on red 5.88, on red hover 5.07; control on card 3.24, on ground 3.41 (edges, need 3); placeholder on card 5.86; danger on card 8.20; success on card 11.69; warning on card 12.41. Gold on red is 2.51, so gold is never text on red.
+
+### Where gold may and may not go
+
+- Allowed: hairlines (the double frame, the date band, group and notice rules, the divider between the capsule halves), the four quarter-circle corner arcs, the centre-circle crest, the outlined "30" behind the name (1 px stroke, no fill), small diamond marks, the edge of selected rows and code cells, the inner line on the red button, the stamp, and spaced-caps text in light gold.
+- Not allowed: a gold fill, a gold gradient or foil, gold text in `gold` (text uses `gold-light`), gold text on red, gold on the game, gold behind readable text at a contrast below the pairs above. Gold foil, glow borders and neon stay banned everywhere.
+
+### Shadow, glow, stripes
+
+- One drop shadow on the sheet (`0 30px 60px rgba(0,0,0,.28)`) and one on the red stub (`0 24px 40px rgba(0,0,0,.45)`). Nothing else on these pages has a shadow. Focus uses an outline, not a shadow.
+- One red radial glow at the top of the sheet (`rgba(200,16,46,.24)`, an ellipse 120% wide and 380 px tall, fading out by 62%).
+- Faint mowing stripes on the sheet: vertical bands 50 px wide, white at 2%. The red stub has fine 1 px pinstripes at 9 px and a soft white highlight at 8%.
+- No grain, noise, foil texture or photograph.
+
+### Type
+
+| Role | Face | Use |
+|---|---|---|
+| Name and numerals | Bodoni Moda 500 normal | "MAKES" (78 px or `min(78px,20vw)` on the invitation, 30 px in the reply header), the date numeral, the stub name and number, the code digits, page headings on cards |
+| Italic | Bodoni Moda 400 italic | "turns 30", the tagline, the question labels, the I to IV numerals (24 px), the sign-off line |
+| Quiet voice | Jost 400 | Everything else |
+
+Spaced capitals are 14 px or more. Sentences are 16 px or more (17 px for body and inputs). Only the weights shipped (Jost 400, Bodoni Moda 500 and 400 italic). Self-hosted from `/world/fonts/` (SIL OFL licences beside the files).
+
+### Shapes and marks
+
+- Radius 0 everywhere except the round option dot and status icon.
+- Frame: two hairlines 12 px and 17 px in from the sheet edge, 80% and 30% gold, with four quarter-circle arcs at the corners.
+- Primary button: red fill, a 1 px gold inner line 6 px in, spaced caps, 60 px tall. Ghost button: gold outline.
+- Option rows: 56 to 60 px, a ring that fills red with a white tick when chosen, gold edge and `selected` fill. The tick is the mark, never the colour alone.
+- Code: six drawn cells over one real input; the input keeps its size, label and behaviour.
+- Stub: Yes is a red shirt stub with a "Signed · 21 Dec 2026" stamp; Not sure yet is a dashed pencilled stub with a "Pencilled in" stamp. Stamp: ground fill, gold edge, light gold text, rotated -4deg.
+
+### Motion
+
+Exactly two motions, each once, none looped: the corner arcs and the crest draw in on load; the stamp lands (and the stub dips with it). Both are declared only under `prefers-reduced-motion: no-preference`, so reduced motion shows the finished picture.

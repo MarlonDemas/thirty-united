@@ -10,7 +10,8 @@ import { requestCode, verifyAndSave, submitDecline, hasCodeFor, getSent, getStat
 const CODE_LEN = 6;
 const tries = (n) => `${n} ${n === 1 ? 'try' : 'tries'} left`;
 
-export function codeCard({ side, getValues, setEmail, onSaved, onFix, onClosed, id = 'cc', level = 'h2' }) {
+export function codeCard({ side, getValues, setEmail, onSaved, onFix, onClosed, id = 'cc', level = 'h2', redRoom = false }) {
+  if (redRoom) { const c = codeCard({ side, getValues, setEmail, onSaved, onFix, onClosed, id, level }); drawCells(c.nodes); return c; }
   let busy = false, needNew = false, dailyCap = false, coolUntil = 0, timer = 0, disposed = false, started = false;
   const email = () => getValues().email;
   const emailText = h('b', { class: 'mono' });
@@ -30,7 +31,7 @@ export function codeCard({ side, getValues, setEmail, onSaved, onFix, onClosed, 
   const heading = h(level, { id: id + '-h', tabindex: '-1', text: 'Check your inbox' });
   const nodes = [h('p', { class: 'kicker', id: id + '-k', text: 'VAR check' }), heading, intro, form, emailForm];
 
-  const say = (tone, text) => slot.replaceChildren(statusLine(tone, text));
+  const say = (tone, text, attrs) => slot.replaceChildren(statusLine(tone, text, attrs));
   const sync = () => {
     const sending = getState() === 'sending', left = Math.max(0, Math.ceil((coolUntil - Date.now()) / 1000));
     input.readOnly = busy || sending; confirm.disabled = busy || sending || needNew;
@@ -71,7 +72,7 @@ export function codeCard({ side, getValues, setEmail, onSaved, onFix, onClosed, 
       case 'saved': case 'updated': haptic(HAPTICS.number); onSaved(getSent() ?? r); return;   // the code was right and the reply is saved: the number lands
       case 'closed': onClosed(); return;
       case 'invalid_code': if (r.attemptsLeft == null) say('warn', "That code didn't match."); else if (r.attemptsLeft > 0) say('warn', `That code didn't match. ${tries(r.attemptsLeft)}`); else { needNew = true; say('err', 'Too many wrong tries. Send a new code.'); } input.value = ''; input.setAttribute('aria-invalid', 'true'); break;
-      case 'code_expired': needNew = true; say('err', 'That code has expired. Send a new one.'); break;
+      case 'code_expired': needNew = true; say('err', 'That code has expired. Send a new one.', { 'data-reason': 'expired' }); break;
       case 'too_many_attempts': needNew = true; say('err', 'Too many wrong tries. Send a new code.'); break;
       case 'no_code':   // the server has no live code for this email: if we never saw one requested, ask for it now; otherwise it was used or has lapsed
         if (!hasCodeFor(email())) { await request(); return; }
@@ -107,6 +108,20 @@ export function codeCard({ side, getValues, setEmail, onSaved, onFix, onClosed, 
     },
     dispose() { disposed = true; off(); if (timer) clearInterval(timer); },
   };
+}
+
+// redRoom only: six drawn cells over the ONE real input (the same element, id, label, attributes and behaviour; its text and caret are hidden by CSS). The cells are decoration (aria-hidden): they repeat the typed digits and
+// mark where the next one goes. They are repainted on typing, pasting and autofill (the input event) and on every script write to the value (cleared after a wrong code, or a changed email), so they never show stale digits.
+function drawCells(nodes) {
+  const input = nodes.map((n) => n.querySelector?.('input.code')).find(Boolean);
+  const cells = h('div', { class: 'cells', 'aria-hidden': 'true', translate: 'no' }, ...Array.from({ length: CODE_LEN }, () => h('span', { class: 'cell' })));
+  const paint = () => { const v = input.value.replace(/\D/g, ''); [...cells.children].forEach((c, i) => { c.textContent = v[i] ?? ''; c.className = 'cell' + (i < v.length ? ' on' : '') + (i === v.length ? ' cur' : ''); }); };
+  const { get, set } = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value');
+  Object.defineProperty(input, 'value', { configurable: true, get() { return get.call(this); }, set(v) { set.call(this, v); paint(); } });
+  input.addEventListener('input', paint); input.addEventListener('change', paint); input.addEventListener('blur', paint);   // a write that fires no input event cannot leave the cells stale
+  const toEnd = () => { try { const n = input.value.length; input.setSelectionRange(n, n); } catch { /* an input type without selection support: leave the caret */ } };   // the highlighted cell is always the next empty one
+  input.addEventListener('focus', toEnd); input.addEventListener('click', toEnd);
+  const wrap = h('div', { class: 'cw' }); input.replaceWith(wrap); wrap.append(input, cells); paint();
 }
 
 // The name-only decline's send step (no email, no code): saves on open, and a failure stays here with a plain line and "Try again" (never a silent retry).

@@ -4,6 +4,7 @@ import { EVENT } from './config.js';
 import { FIELD, FAST_KEYS, keysFor, valueOf, noticeSide } from './fields.js';
 import { getState, onState, closedText } from './submit.js';
 import { formatSeat } from '../lib/seat.ts';
+import { shirtFor } from '../lib/keepsake.ts';
 import { buildIcs, googleCalendarUrl, ICS_FILE_NAME } from '../lib/calendar.ts';
 
 export const SEND_FAILED = "I couldn't send your reply. Try again.";
@@ -117,7 +118,10 @@ export function privacyNotice({ capped = true, side = 'home' } = {}) {
 // its firstName is the guest's own typed text (submit.js echoes the payload). Every value here is written with textContent only.
 // "updated" is a returning guest: the same seat, kept. No exclamation marks; a No gets no warm closing line and no poster.
 export const seatNo = formatSeat;   // lib/seat.ts: three digits, 007
-export function confirmCard(r, { id = 'd-h', level = 'h2' } = {}) {
+// Reply page only (`redRoom`, passed by fallback.js alone): the guest-facing strings of the red shirt stub and its stamp. Yes = Signed + the short date; Maybe = Pencilled in.
+export const STUB = { line: 'Thirty · New signing', signed: 'Signed', pencilled: 'Pencilled in' };
+export function confirmCard(r, { id = 'd-h', level = 'h2', redRoom = false } = {}) {
+  if (redRoom) return withStub(confirmCard(r, { id, level }), r);
   const back = r.status === 'updated', no = r.attending === 'no', maybe = r.attending === 'maybe';
   const who = r.answers?.preferredName?.trim() || r.firstName;   // the name the shirt and poster carry: preferred, else first
   const kicker = no ? 'Reply saved' : maybe ? 'Pencilled in' : 'Signed';
@@ -127,8 +131,20 @@ export function confirmCard(r, { id = 'd-h', level = 'h2' } = {}) {
     : back ? `Your answer is updated and seat ${seatNo(r.ticketNo)} is kept. I'll send the venue and details closer to the day.`
     : maybe ? `Seat ${seatNo(r.ticketNo)} is held while you decide. Use the same email to change your answer. I'll send the venue and details closer to the day.`
     : `I'll send the venue and details closer to the day.`;
-  return [h('p', { class: 'kicker', text: kicker }), h(level, { id, class: 'display', tabindex: '-1', text: heading }), h('p', { text: body }),
+  return [h('p', { class: 'kicker', text: kicker }), h(level, { id, class: 'display', tabindex: '-1', text: heading }), h('p', { text: body }), no ? null : h('p', { class: 'dress', text: EVENT.dressCode }),
     no ? null : h('p', { class: 'seat', text: `Seat ${seatNo(r.ticketNo)} · Shirt ${r.ticketNo}` }), no ? null : keepsakeRow(r), h('p', { class: 'sign', text: 'Makes' })].filter(Boolean);
+}
+
+// redRoom: the seat line moves into a red shirt stub (name, number) with a stamp. The stub follows the ANSWER (yes: signed, maybe: pencilled), never a decline. The name is the shirt's own rule (shirtFor,
+// the same one the poster uses); name, number and stamp only repeat the kicker and the seat line, so they are hidden from screen readers.
+function withStub(nodes, r) {
+  const seat = nodes.find((n) => n.classList?.contains('seat'));
+  const shirt = seat && (r.attending === 'yes' || r.attending === 'maybe') ? shirtFor({ firstName: r.firstName, surname: r.answers?.surname, preferredName: r.answers?.preferredName, ticketNo: r.ticketNo }) : null;
+  if (!shirt) return nodes;
+  const maybe = r.attending === 'maybe', deco = (cls, text) => h('p', { class: cls, 'aria-hidden': 'true', text });
+  nodes[nodes.indexOf(seat)] = h('div', { class: 'stub' + (maybe ? ' pc' : '') }, deco('st-line', STUB.line), shirt.name ? deco('st-name', shirt.name) : null, h('p', { class: 'st-no', 'aria-hidden': 'true', 'data-len': String(shirt.number.length), text: shirt.number }), seat,
+    h('div', { class: 'stamp', 'aria-hidden': 'true', text: maybe ? STUB.pencilled : `${STUB.signed} · ${EVENT.shortDate}` }));
+  return nodes;
 }
 
 // Yes and Maybe only: add the day to a calendar (event fields only, no guest data) and open the keepsake poster. The .ics is a plain download; the poster is composed only when its button is pressed.
@@ -154,7 +170,7 @@ function keepsakeRow(r) {
 // Every field is here, so a guest who never plays the game can still give the host everything. Yes and Not sure yet ask for everything; Can't make it asks "Have you replied before?" first: Yes then wants name and email (the code path), No wants name and an optional reason (no email).
 // onSend({ side: 'home'|'away', values }) runs with validated flat values only (fields.js), and never while a save is in flight or after one succeeded (shared state, submit.js).
 // init = earlier answers (values by key); errors = server errors by field key, shown inline when the form is reopened to fix them.
-export function fastLaneForm({ onSend, capped = true, init = {}, errors = null }) {
+export function fastLaneForm({ onSend, capped = true, init = {}, errors = null, redRoom = false }) {
   if (closedText()) {
     const form = h('form', { id: 'fast-form', name: 'rsvp', novalidate: true, onsubmit: (ev) => ev.preventDefault() }, closedNote());
     return { form };
@@ -169,8 +185,26 @@ export function fastLaneForm({ onSend, capped = true, init = {}, errors = null }
   const sync = (st) => { if (form.isConnected) shown = true; else if (shown) { off(); return; } btn.disabled = st === 'sending' || st === 'sent'; };
   const off = onState(sync); sync(getState());
   form.prepend(notice); form.append(h('div', { class: 'row' }, btn));
+  if (redRoom) replyLayout(f, notice);
   if (errors) f.setErrors(errors);
   return { form, focusFirst: f.focusFirst, setErrors: f.setErrors };
+}
+
+// The reply page's group markers (numeral + name), shown ahead of the first field of each group that has a field showing. A decline (attending "no") shows none, as in the draft.
+const REPLY_GROUPS = [['I', 'The player', ['firstName', 'surname', 'preferredName']], ['II', 'Contact', ['email', 'inviteChannel', 'whatsapp']], ['III', 'The supporter', ['sport', 'otherSport', 'team']], ['IV', 'Matchday', ['plusOne', 'plusOneName']]];
+// redRoom only, on a fast-lane form that is already built: the privacy notice moves to sit under the first question (hidden until it is answered, as in the draft), the group markers go in, and a trailing
+// "(optional)" in a label is set small. Nothing changes which fields show, their order, ids, or any label's text.
+function replyLayout(f, notice) {
+  const { items } = f, byKey = (k) => items.find((it) => it.k === k);
+  items[0].w.after(notice);
+  for (const it of items) { const label = it.w.querySelector('label'), m = label && /^(.*\S)\s*(\(optional\))$/.exec(label.textContent); if (m) label.replaceChildren(m[1] + ' ', h('small', { text: m[2] })); }
+  const marks = REPLY_GROUPS.map(([num, name, keys]) => {
+    const row = h('div', { class: 'grp' }, h('b', { 'aria-hidden': 'true', text: num }), h('span', { text: name }), h('i', { 'aria-hidden': 'true' })), its = keys.map(byKey).filter(Boolean);
+    its[0].w.before(row); return { row, its };
+  });
+  const sync = (v) => { notice.hidden = !v.attending; for (const { row, its } of marks) row.hidden = v.attending === 'no' || its.every((it) => it.w.hidden); };
+  f.onChange((v) => { notice.setSide(noticeSide(v)); sync(v); });   // the handler the form was built with, plus the layout
+  sync(f.read());
 }
 
 // Mute button icon (speaker, with waves or a cross). Decorative: aria-hidden; the button carries the label.

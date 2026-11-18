@@ -12,6 +12,8 @@ referenceSet: .specno-design/references/plain-invitation-2026-11-05.md
 
 # Direction supplement: the plain invitation
 
+> **Status, 2026-11-18.** The visual spec below (Layout, Tokens, Card copy and the capsule's shape and fill) is from 2026-11-05 and is superseded where it differs by 2a, The Red Room (`tokens.md`, "Invitation and reply pages"; `feedback.md`, 2026-11-18), which also overturns this file's "no shadow" for these pages. The page order, the venue-TBA rule, the loading states, the handovers, reduced motion, accessibility and "Never" are not touched by that pick. Where the build and this file still differ (the card rows, the capsule fills) the build is the later record and the difference is listed in `feedback.md`.
+
 Adds one surface to Direction D. It does not change D, the tokens or the binding REJECTED and CORRECTION entries in `feedback.md`. Where this file is silent, D and `src/matchday/config.js` apply. Event facts come only from `EVENT` in `config.js`: title "Makes turns 30", date "Monday 21 December 2026", venue "Venue TBA", host "Makes". No time, address or club name is added.
 
 ## What changes

@@ -71,7 +71,7 @@ export const GROUPS = {
   4: ['plusOne', 'plusOneName'],
 };
 // Fast lane: every field, in the order a guest reads them. Stranger fields appear only when their answer asks for them.
-export const FAST_KEYS = ['attendingFast', 'repliedBefore', 'firstName', 'surname', 'preferredName', 'email', 'reason', 'sport', 'otherSport', 'team', 'inviteChannel', 'whatsapp', 'plusOne', 'plusOneName'];
+export const FAST_KEYS = ['attendingFast', 'repliedBefore', 'firstName', 'surname', 'preferredName', 'email', 'reason', 'inviteChannel', 'whatsapp', 'sport', 'otherSport', 'team', 'plusOne', 'plusOneName'];
 const DECLINE_ONLY = new Set(['repliedBefore', 'reason']);
 const NO_KEYS = new Set(['attendingFast', 'repliedBefore', 'firstName', 'surname', 'email', 'reason']);
 // The fast lane shows only the first question until it is answered, then everything that answer needs. A decline asks "Have you replied before?" first: Yes

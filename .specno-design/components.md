@@ -5,7 +5,7 @@ profileVersion: "1.0.0"
 clientName: thirty-united
 stack: web-vite
 direction: D
-lastUpdated: "2026-10-15"
+lastUpdated: "2026-11-18"
 ---
 
 # Components: Thirty United
@@ -25,7 +25,7 @@ The poster and the step panel. A world stage fills the screen behind everything 
 | Primitive library | shadcn/ui with Radix | shadcn `base-nova` style on Base UI (`@base-ui/react`, per `components.json`) | Already scaffolded. Use the Base UI idioms (`render` prop, no `asChild`) |
 | Theme | Light and dark | Dark only, `color-scheme: dark`; no `.dark` toggle and no light block | Direction D: the world persists behind every beat (owner, 2026-10-14 and 2026-10-15) |
 | Radius | `--radius: 0.625rem` | `--radius: 0` | Poster grammar is square; the panel is a hard-edged band |
-| Shadows and cards | `Card` with border and shadow | No `Card`, no shadows, no gradients on the UI layer. The panel is the one surface; field groups are a `fieldset` with a 1 px `line` top rule and a caps legend, never a four-sided box inside the panel | Depth lives in the poster. A box inside the panel is a box inside a box |
+| Shadows and cards | `Card` with border and shadow | No `Card`, no shadows, no gradients on the UI layer. The panel is the one surface; field groups are a `fieldset` with a 1 px `line` top rule and a caps legend, never a four-sided box inside the panel | Depth lives in the poster. A box inside the panel is a box inside a box. The invitation and reply pages are the exception (2a, The Red Room): one shadow on the sheet and one on the red stub, no other |
 | Fonts | Geist Variable | Barlow Condensed, Source Serif 4, Inter, JetBrains Mono (all self-hosted); the SVG title lockups are outlined Barlow Condensed 700 | `tokens.md` typography (owner accepted) |
 | Colour use | `primary` anywhere | `shirt-red` on the primary button fill only, always with its 2 px `moonlight` ring; `poster-red` never on the UI layer | Direction D colour thesis; shirt red on the panel is 2.20:1 |
 | Icons | lucide | lucide (`icons.md`) | Already set in `components.json` |
@@ -66,6 +66,19 @@ Planned:
 - **`PosterViewer`**: the one overlay. Full-screen `<img>` from a `data:` URL, alt text naming what is on it ("Poster: Makes holds up a red shirt reading THANDI 17. THIRTY UNITED, Monday 21 December 2026"), "Press and hold the poster to save it", a close button. `role="dialog"`, `aria-modal`, focus moved in and returned, Esc closes.
 - **`OgCompositor`** and the offline asset scripts (depth maps, masks, splits, compression, contrast checks): run on the Mac at build time; never ship.
 
+## Invitation and reply pages: 2a, The Red Room
+
+Surface layer (owner, 2026-11-18); the game's components above are unchanged. Tokens in `tokens.md`; built in `src/matchday/invite.js`, `fallback.js`, `ui.js`, `ornament.js`, `codecard.js` and `world.css`.
+
+- **Sheet:** ground with faint stripes and a red glow, a double gold hairline frame, four quarter-circle corner arcs, one centred column up to 480 px.
+- **Invitation:** spaced-caps kicker, the name, "turns 30" in italic, an outlined gold "30" behind the name (decoration, `aria-hidden`), the tagline, the date band, the venue line, the dress-code line, the two-half capsule ("Play the match", "Just reply").
+- **Reply header:** crest, "Makes turns 30" on one line, one date-and-venue line.
+- **Dress-code line:** "Semi-casual, in your jersey. Any club, any sport, any era. No jersey? Wear red." on the invitation and on the Yes, Not-sure and Welcome-back confirmations.
+- **Reply form:** "Can you make it?" first. The privacy notice sits directly below it once it is answered, before any personal field. Then group markers I "The player", II "Contact" (email, "Where should I send the details?", WhatsApp), III "The supporter" (sport, team), IV "Matchday" (plus one). The marker numerals are 24 px red italic. A decline hides the markers.
+- **Code:** six drawn cells over one real input (`autocomplete="one-time-code"`).
+- **Confirmation:** a red shirt stub with a "Signed · 21 Dec 2026" stamp (Yes) or a dashed pencilled stub with a "Pencilled in" stamp (Not sure yet). Decline and closed cards use the same sheet.
+- **Open items:** the capsule halves differ in fill (outlined, red); the serif is used beyond the name. Neither is a recorded decision (`feedback.md`, 2026-11-18).
+
 ## Never
 
-Official club crest, badge, wordmark, kit, sponsor, starball, devil or trident, anywhere; confetti, balloons or gold foil; shadows or gradients on the UI layer; red fills beyond the primary button; `poster-red` on the UI layer; toasts; any dialog other than the poster viewer; a light theme; readable text on the moving scene; wipes or page fades between beats; numerals on the code lamps or a scoreboard of digits; the shirt number as a form row; a torn or deckled panel edge; one question per screen; a poster for a No.
+Official club crest, badge, wordmark, kit, sponsor, starball, devil or trident, anywhere; confetti, balloons or gold foil; shadows or gradients on the game's UI layer (the invitation and reply pages have their own, in `tokens.md`); red fills beyond the primary button; `poster-red` on the UI layer; toasts; any dialog other than the poster viewer; a light theme (the invitation and reply pages are dark); readable text on the moving scene; wipes or page fades between beats; numerals on the code lamps or a scoreboard of digits; the shirt number as a form row; a torn or deckled panel edge; one question per screen; a poster for a No.

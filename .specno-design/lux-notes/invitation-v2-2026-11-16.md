@@ -1,3 +1,5 @@
+> **Note, 2026-11-18.** The owner picked 2a, The Red Room, which replaces L2 "Ivory and crimson" and overturns three moves below: "No grain, no gradients, no shadow" under "Not committing" (the Red Room has gold hairlines, one shadow on the sheet and one on the stub, faint stripes and a red glow), the "one colour" and warm-neutral ground lines (the ground is now near-black `#0B0A0A`), and the cream-paper calibration. Still holding: no club names, crests or kits; no exclamation marks or emoji; text sizes and tap targets; a selected answer is never shown by colour alone; the game stays loud and separate; no haptics or sound on these pages. Not confirmed either way: "ornament is one hairline frame, corner marks, or one rule" and "equal fill on the capsule halves" (the build has a double frame with arcs and unequal halves). No new consultation ran on 18 November; see `feedback.md`, 2026-11-18.
+
 # Lux Consultation, invitation v2 (guest-facing pages)
 
 **Date:** 2026-11-16

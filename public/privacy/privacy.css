@@ -1,34 +1,29 @@
-/* Privacy notice, L2 "Ivory and crimson": the same sheet language as the invitation (ivory ground, ink text, crimson links, Bodoni Moda headings). Text is unchanged. */
-@font-face {
-  font-family: "Inter Tight";
-  src: url("/world/fonts/InterTight-var-latin.woff2") format("woff2");
-  font-weight: 400 800;
-  font-display: swap;
-}
+/* Privacy notice, L2 "Red Room": the same sheet language as the invitation (near-black ground, a lighter card, cream text, gold rules and links, Bodoni Moda headings). Text is unchanged. */
 @font-face { font-family: "Bodoni Moda"; src: url("/world/fonts/bodoni-moda-latin-500-normal.woff2") format("woff2"); font-weight: 500; font-style: normal; font-display: swap; }
 @font-face { font-family: "Jost"; src: url("/world/fonts/jost-latin-400-normal.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
-:root { color-scheme: light; --ground: #F5F0E4; --ink: #1F1A17; --muted: #5A5148; --rule: #D9D0BC; --crimson: #98002E; --serif: "Bodoni Moda", "Didot", "Bodoni 72", Georgia, serif; --sans: "Jost", "Josefin Sans", "Avenir Next", Futura, "Segoe UI", sans-serif; }
+:root { color-scheme: dark; --ground: #0B0A0A; --card: #141111; --ink: #F3EDE2; --muted: #B9AFA2; --rule: rgba(201, 164, 92, .35); --gold: #C9A45C; --gold-light: #D9BC7E; --serif: "Bodoni Moda", "Didot", "Bodoni 72", Georgia, serif; --sans: "Jost", "Josefin Sans", "Avenir Next", Futura, "Segoe UI", sans-serif; }
 * { box-sizing: border-box; }
 html { background: var(--ground); -webkit-text-size-adjust: 100%; }
 body {
   position: relative; min-height: 100vh; margin: 0; padding: 46px 34px 56px;
-  background: var(--ground); color: var(--ink);
-  font: 450 17px/26px "Inter Tight", "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+  background-color: var(--ground); color: var(--ink);
+  background-image: radial-gradient(ellipse 120% 380px at 50% -40px, rgba(200, 16, 46, .24), transparent 62%), repeating-linear-gradient(90deg, rgba(255, 255, 255, .02) 0 50px, transparent 50px 100px);
+  font: 400 17px/26px var(--sans);
   -webkit-font-smoothing: antialiased;
 }
-/* the double crimson frame wraps the whole page */
-body::before, body::after { content: ""; position: absolute; border: 1px solid var(--crimson); pointer-events: none; }
-body::before { inset: 12px; }
-body::after { inset: 18px; }
+/* the double gold frame wraps the whole page */
+body::before, body::after { content: ""; position: absolute; pointer-events: none; }
+body::before { inset: 12px; border: 1px solid rgba(201, 164, 92, .8); }
+body::after { inset: 17px; border: 1px solid rgba(201, 164, 92, .3); }
 main { max-width: 40rem; margin: 0 auto; overflow-wrap: break-word; }
-h1 { font: 500 34px/1.15 var(--serif); color: var(--crimson); margin: 0 0 22px; }
+h1 { font: 500 34px/1.15 var(--serif); color: var(--ink); margin: 0 0 22px; }
 h2 { font: 500 23px/1.25 var(--serif); color: var(--ink); margin: 36px 0 12px; padding-top: 20px; border-top: 1px solid var(--rule); }
 p, ul { margin: 0 0 14px; }
 ul { padding-left: 1.25rem; }
 li { margin-bottom: 6px; }
-a { color: var(--crimson); text-decoration: underline; text-underline-offset: 3px; }
+a { color: var(--gold-light); text-decoration: underline; text-underline-offset: 3px; }
 a:hover { color: var(--ink); }
-a:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; border-radius: 2px; }
-code { font: 15px ui-monospace, Menlo, Consolas, monospace; color: var(--muted); }
+a:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; border-radius: 0; }
+code { font: 15px ui-monospace, Menlo, Consolas, monospace; color: var(--muted); background: var(--card); padding: 1px 5px; }
 .muted { color: var(--muted); }
 @media (min-width: 600px) { body { padding-top: 64px; } h1 { font-size: 42px; } }

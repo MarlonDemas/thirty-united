@@ -5,6 +5,7 @@
 export const EVENT = {
   title: 'Makes turns 30', date: 'Monday 21 December 2026', venue: 'Venue TBA', host: 'Makes',
   tagline: '30 years in. Still playing to win.',
+  dressCode: 'Semi-casual, in your jersey. Any club, any sport, any era. No jersey? Wear red.',
   shortDate: '21 DEC 2026',   // the stub, the LED boards and the scoreboard
   brand: 'THIRTY',            // the one word on the signage
   led: 'MAKES \u00b7 30',
@@ -44,13 +45,14 @@ export const THEME = {
     accentUi: '#D9505C',   // the UI's own rose (side stripes); `accent` below stays the kit's loud red for the 3D scene (beacons, station boards)
     accent: EVENT.kits.homeLight, accentAway: EVENT.kits.awayLight, scoreboardAccentGoal: EVENT.kits.homeLight,
   },
-  // L2 "Ivory and crimson" (.specno-design/direction-review-2026-11-16-v2.md): the invitation (#inv) and the reply page (#fb) ONLY. CSS gets these as --l-*; world.css remaps the shared tokens inside those two roots, so the game's own cards stay dark.
-  // Every text colour is at least 4.5:1 on ground, field and selected; ctrl, crimson and the status colours are at least 3:1 as edges and icons (scratchpad/contrast.mjs, table in the build report).
+  // L2 "Red Room" (approved 2026-11-18): the invitation (#inv) and the reply page (#fb) ONLY. CSS gets these as --l-*; world.css remaps the shared tokens inside those two roots, so the game's own cards stay dark.
+  // Key names are the ivory set's (light, ink = the cream text, crimson = the red, field = the card, selected = the chosen fill). Text colours are at least 4.5:1 on ground, field and selected; ctrl, crimson and the status colours are at least 3:1 as edges and icons.
   light: {
-    ground: '#F5F0E4', ink: '#1F1A17', muted: '#5A5148', caps: '#3B332D', rule: '#D9D0BC', crimson: '#98002E', ctrl: '#7A6F64', field: '#FFFEFB', placeholder: '#6F655C', selected: '#F3E3DF', onInk: '#FFFFFF',
-    danger: '#A8200F', success: '#1F6B3A', warning: '#7F4A00',   // status text, icons and edges on ivory (the dark set's pastels fail there)
+    ground: '#0B0A0A', ink: '#F3EDE2', muted: '#B9AFA2', rule: 'rgba(201,164,92,.35)', crimson: '#C8102E', ctrl: '#6E6458', field: '#141111', placeholder: '#9A8E80', selected: '#2A0B12', onInk: '#FFFFFF',
+    danger: '#FF8A7A', success: '#8EDDA9', warning: '#FFC978',   // status text, icons and edges on the dark ground
+    gold: '#C9A45C', goldLight: '#D9BC7E', redHover: '#D9183A', numeral: '#E0243F',   // hairlines and arcs, kicker and label gold, the button hover, the date numeral
   },
-  view: { light: '#F5F0E4', dark: '#0E0B13' },   // page and theme-color per view: ivory on the invitation and reply page, dark in the game (setView)
+  view: { light: '#0B0A0A', dark: '#0E0B13' },   // page and theme-color per view: the Red Room ground on the invitation and reply page, dark in the game (setView)
   radius: { 0: 0, 1: 4, 2: 8, 3: 12, pill: 999 },
   font: { family: '"Inter Tight"', fallback: '"Segoe UI", system-ui, -apple-system, Arial, sans-serif', weightMin: 400, weightMax: 800, file: '/world/fonts/InterTight-var-latin.woff2',
          serif: '"Bodoni Moda", "Didot", "Bodoni 72", Georgia, serif', sans: '"Jost", "Josefin Sans", "Avenir Next", Futura, "Segoe UI", sans-serif' },   // L2 only: Didone name and numerals, tracked caps

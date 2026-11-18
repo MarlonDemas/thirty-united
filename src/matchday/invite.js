@@ -9,10 +9,10 @@ export function createInvite({ onPlay, onReply }) {
   const playBtn = h('button', { type: 'button', class: 'inv-half', text: 'Play the match', onclick: () => { if (playBtn.getAttribute('aria-disabled') !== 'true') onPlay(); } });
   const replyBtn = h('button', { type: 'button', class: 'inv-half', text: 'Just reply', onclick: () => onReply() });
   const live = h('p', { class: 'sr', role: 'status' });
-  // L2 "Ivory and crimson" (plate L2-invitation.png): a framed sheet, the roundel, the name, the date lockup, the tagline and the venue; the two halves at the foot.
+  // L2 "Red Room" (approved 2026-11-18, design in DESIGN.md): a framed sheet, the roundel, the name, the date lockup, the tagline and the venue; the two halves at the foot.
   const el = h('main', { id: 'inv' },
     h('div', { class: 'inv-col l2 sheet' }, ...corners(),
-      h('div', { class: 'top' }, roundel(), h('p', { class: 'caps kick', text: "You've been called up" }), nameHeading(), dateLockup(), h('p', { class: 'tg', text: EVENT.tagline }), venueLine()),
+      h('div', { class: 'top' }, roundel(), h('p', { class: 'caps kick', text: "You've been called up" }), h('div', { class: 'nmw' }, h('span', { class: 'big30', 'aria-hidden': 'true', text: '30' }), nameHeading()), dateLockup(), h('p', { class: 'tg', text: EVENT.tagline }), venueLine(), h('p', { class: 'dress', text: EVENT.dressCode })),
       h('div', { class: 'bot' },
         h('h2', { id: 'inv-reply', class: 'caps kick reply', text: 'Your reply' }),
         h('div', { class: 'inv-capw' }, h('div', { class: 'inv-cap', role: 'group', 'aria-labelledby': 'inv-reply' }, playBtn, replyBtn)),   // .inv-capw is the size container: the halves stack when the label text outgrows it

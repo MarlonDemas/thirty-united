@@ -247,7 +247,7 @@ Added 2026-10-15 as the owner's fourth option: a deliberate hybrid of the phase 
 - Surface family: cool night. Panel `#18131F` (sampled from the night sky of image 4), moonlight `#B7D3FA` for muted text, rings and focus (11.90:1 on the panel), white for text (18.23:1).
 - Poster red `#F81E24`: display type and decoration in the scene only, never a button fill (white on it is 4.04:1, so the Yes stamp uses `panel` text on it, 4.52:1).
 - The one signature move: progress is light. Four floodlight banks strike, one per beat, so a guest counts how far they've come without a stepper.
-- Cliché guard: dark plus red drifts toward a betting or gaming app. No neon, no glow borders, no gold, no chips that look like odds; red never glows on the UI layer.
+- Cliché guard: dark plus red drifts toward a betting or gaming app. No neon, no glow borders, no gold, no chips that look like odds; red never glows on the UI layer. This holds for the game; the invitation and reply pages have their own rules (2a, The Red Room, below).
 
 **Layout primitive:** the poster and the step panel. On a phone the poster fills the screen behind everything and a solid step panel docks at the bottom, about 40 to 45 percent of the height, square corners, with one 1 px moonlight rule on its top edge. Each beat has its own camera shot that keeps Makes's face and the shirt above the panel; with the keyboard open, the shot reframes to a strip on the shirt (driven by `visualViewport`). On desktop the poster stands as a tall 9:16 frame centre-left in a dark void, and the panel is a 420 px column on the right. Every word a guest must read sits on the panel or on a solid chip; nothing readable sits on the moving scene.
 
@@ -351,6 +351,7 @@ The owner accepted this sentence through "defaults" on 2026-10-15; he did not wr
 - Wireframe → `wireframes/save-the-date-signing-2026-10-15/` (the phone frame at each beat).
 - Communication → the plan below.
 - Surface supplement → `direction-plain-invitation.md` (the plain invitation start page, 2026-11-05); it adds to this direction and does not replace it.
+- Surface supplement, colour and type → on the invitation and reply pages, 2a, The Red Room (owner, 2026-11-18; replaces L2 "Ivory and crimson", 2026-11-16): `tokens.md`, "Invitation and reply pages"; decision in `feedback.md`. It overturns "no gold", "no shadow" and "no texture" for those pages only. The game keeps Direction D.
 
 ## Communication plan
 
