@@ -229,7 +229,7 @@ html[data-view=light] #boot{background:var(--l-ground)}
 #ui .l2 .d{display:inline-block;width:6px;height:6px;background:var(--l-gold);transform:rotate(45deg);flex:none}
 #ui .l2 .venue{display:flex;justify-content:center;align-items:center;gap:14px;text-indent:0}
 #ui .l2 .venue span:not(.d){text-indent:.26em}
-#ui .dress{font:400 16px/24px var(--sans);color:var(--text);margin:0 0 10px}
+#ui .dress{font:var(--fw-body) var(--fs-body)/var(--lh-body) var(--font);color:var(--text);margin:0 0 10px}
 #ui .l2 .dress{font:400 16px/24px var(--sans);color:var(--l-muted);text-align:center;margin:12px auto 0;max-width:300px;text-wrap:balance}
 /* MONDAY | 21 | DECEMBER 2026: the date band */
 #ui .l2 .lock{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);justify-content:stretch;align-items:center;padding:14px 0;border-top:1px solid rgba(201,164,92,.6);border-bottom:1px solid rgba(201,164,92,.6)}
@@ -300,23 +300,23 @@ html[data-view=light] #boot{background:var(--l-ground)}
 #ui .l2 .cw input.code{height:64px;border:0;outline:none;color:transparent;caret-color:transparent;background:transparent}
 #ui .l2 .cw input.code::placeholder{color:transparent}
 #ui .l2 .cw input.code::selection{background:transparent}
-#ui .l2 .cells{position:absolute;inset:0;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;pointer-events:none}
+#ui .l2 .cells{position:absolute;inset:0;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;pointer-events:none;user-select:none;-webkit-user-select:none}
 #ui .l2 .cell{display:grid;place-items:center;height:64px;box-sizing:border-box;min-width:0;background:var(--l-field);border:1px solid var(--l-ctrl);font:500 34px/1 var(--serif);color:var(--l-ink)}
 #ui .l2 .cell.on{border-color:var(--l-gold)}
 #ui .l2 .cw:focus-within .cells{outline:2px solid var(--l-ink);outline-offset:3px}
 #ui .l2 .cw:focus-within .cell.cur{border-color:var(--l-gold);box-shadow:inset 0 0 0 1px var(--l-gold)}
 #ui .l2 .cw:focus-within .cell.cur::after{content:"";width:1px;height:28px;background:var(--l-gold-light)}
 #ui .l2 .cw input[aria-invalid="true"]~.cells .cell{border-color:var(--l-danger)}
-/* expired and too many wrong tries set no aria-invalid; the markup shows them as an error status with Confirm disabled (a new code is needed), so the cells go red on that pair */
+/* expired and too many wrong tries set no aria-invalid; the markup shows them as an error status with Confirm disabled. The selector matches any error status while Confirm is disabled, so it also covers "no code for this email yet" (a new code is needed); the cells go red on that pair */
 #ui .l2 form:has(.slot .status.err):has(.row button.btn[type=submit]:not(.ghost):disabled) .cells .cell{border-color:var(--l-danger)}
 #ui .l2 form:has(.slot .status.err[data-reason=expired]):has(.row button.btn[type=submit]:not(.ghost):disabled) .cells .cell{border-color:var(--l-gold)}   /* an expired code: gold edges (the draft's frame 19); too many tries stays red */
-#ui .l2 .cells{user-select:none;-webkit-user-select:none}
 /* Windows high contrast: the drawn cells go, the real input shows with its own text, caret and a system-colour border */
 @media (forced-colors:active){
   #ui .l2 .cells{display:none}
   #ui .l2 .cw input.code{color:FieldText;caret-color:FieldText;background:Field;border:1px solid ButtonBorder}
   #ui .l2 .cw input.code::placeholder{color:GrayText}
   #ui .l2 .cw input.code::selection{background:Highlight}
+  #ui .l2 .cw input.code:focus-visible{outline:2px solid Highlight;outline-offset:3px}
 }
 #ui .l2 .help{margin:8px 0 0;font-size:16px;line-height:24px;font-weight:400;color:var(--l-muted)}
 #ui .l2 .err{min-height:0;margin:8px 0 0;font-size:16px;line-height:24px;font-weight:400;color:var(--l-danger)}
@@ -377,7 +377,6 @@ html[data-view=light] #boot{background:var(--l-ground)}
 #ui .l2[data-mode=confirm]:not([data-mode=form]) h1,#ui .l2[data-mode=signed]:not([data-mode=form]) h1{font-size:46px;line-height:1.13}
 @media (max-width:359px){#ui .l2[data-mode]:not([data-mode=form]) h1{font-size:12.2vw}#ui .l2[data-mode=confirm]:not([data-mode=form]) h1,#ui .l2[data-mode=signed]:not([data-mode=form]) h1{font-size:12.8vw}}
 #ui .l2[data-mode]:not([data-mode=form]) .fbody>p:not(.kicker):not(.status):not(.seat):not(.sign):not(.dress):not(.closed){margin:16px auto 0;max-width:300px;text-align:center;color:var(--l-muted);text-wrap:pretty}
-#ui .l2 .closed{font-weight:400}
 /* closed page and missing key: the message is the draft's boxed notice (border, gold left bar, a small "i" ring), the eyebrow is tighter and balanced, the heading margin is the draft's */
 #ui .l2[data-mode=closed] .kicker{letter-spacing:.14em;text-indent:.14em;text-wrap:balance;margin-bottom:14px}
 #ui .l2[data-mode=closed] .fbody>p.closed{--tone:var(--l-gold-light);display:flex;gap:10px;align-items:flex-start;max-width:none;margin:28px 0 0;padding:12px 14px;color:var(--tone);text-align:left;background:var(--l-field);border:1px solid color-mix(in srgb,var(--tone) 35%,transparent);border-left:3px solid var(--tone)}
@@ -388,7 +387,7 @@ html[data-view=light] #boot{background:var(--l-ground)}
 #ui .l2[data-mode=code] form.ce{margin-top:12px;padding-top:20px;border-top:1px solid rgba(201,164,92,.35)}
 #ui .l2[data-mode=code] form.ce label{text-align:left;margin-bottom:8px}
 #ui .l2 .ce .row{margin-top:14px}
-#ui .l2[data-mode=confirm] .dress,#ui .l2[data-mode=signed] .dress{margin-top:16px;color:var(--l-ink)}
+#ui .l2[data-mode=signed] .dress{margin-top:16px;color:var(--l-ink)}
 #ui .l2[data-mode=signed] .dress::before{content:"";display:inline-block;width:6px;height:6px;margin:0 10px 3px 0;background:var(--l-gold);transform:rotate(45deg)}   /* the small gold diamond before the dress-code line (reply page only) */
 /* a closed page and a decline confirmation: the centre spot is gold, not red */
 #ui .l2[data-mode=closed] .div .spot,#ui .l2[data-mode=confirm] .div .spot,#ui .l2[data-mode=code]:not(:has(input.code)) .div .spot{fill:var(--l-gold)}
@@ -417,7 +416,6 @@ html[data-view=light] #boot{background:var(--l-ground)}
 #ui .l2 .keep .err{min-height:0;margin:0}
 #ui .l2 .sign{display:flex;align-items:center;gap:14px;margin:30px 0 0;text-align:center;font:italic 400 32px/36px var(--serif);color:var(--l-gold-light)}
 #ui .l2 .sign::before,#ui .l2 .sign::after{content:"";flex:1;height:1px;background:rgba(201,164,92,.4)}
-#ui .l2 .ce{margin:22px 0 0}
 #ui .l2 .row+.row{margin-top:10px}
 
 /* two motions, each once, none looped. (1) The invitation, on load: the four corner arcs draw in, then the crest (circle, halfway line, then the spot pops). (2) A Signed / Pencilled-in confirmation: the stamp lands and the stub dips with it.

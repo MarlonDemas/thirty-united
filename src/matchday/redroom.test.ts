@@ -156,6 +156,22 @@ describe('fastLaneForm default (the game)', () => {
     expect(form.firstElementChild).toBe(notice(form))
     expect(shown(notice(form))).toBe(true)
   })
+  // The game builds the form capped (the default in ui.js): the notice is a <details>, not the plain paragraph.
+  it('should_keep_the_capped_details_notice_before_the_first_question', () => {
+    const form = build(false, true)
+    expect(notice(form).tagName).toBe('DETAILS')
+    expect(form.firstElementChild).toBe(notice(form))
+    expect(before(notice(form), group(form, 'Can you make it?'))).toBe(true)
+    pick(form, 'Can you make it?', 'Yes')
+    expect(form.firstElementChild).toBe(notice(form))
+    expect(shown(notice(form))).toBe(true)
+  })
+  it('should_add_no_group_markers_to_the_capped_form', () => {
+    const form = build(false, true)
+    pick(form, 'Can you make it?', 'Yes')
+    for (const n of NAMES) expect(marker(form, n)).toBeNull()
+    expect(form.querySelector('.grp')).toBeNull()
+  })
 })
 
 describe('fastLaneForm redRoom: privacy notice', () => {
@@ -193,6 +209,10 @@ describe('fastLaneForm redRoom: group markers', () => {
     const form = build(true)
     pick(form, 'Can you make it?', answer)
     expect(markersShown(form)).toEqual(NAMES)
+    const marks = NAMES.map((n) => marker(form, n)!)
+    for (let i = 0; i < marks.length - 1; i++) expect(before(marks[i], marks[i + 1])).toBe(true)
+    expect(before(marker(form, 'The supporter')!, group(form, 'Your sport'))).toBe(true)
+    expect(before(marker(form, 'Matchday')!, group(form, 'Bringing someone?'))).toBe(true)
     const numerals = NAMES.map((n) => marker(form, n)!.firstElementChild!)
     expect(numerals.map((n) => n.textContent)).toEqual(['I', 'II', 'III', 'IV'])
     for (const n of numerals) expect(n.getAttribute('aria-hidden')).toBe('true')
@@ -259,7 +279,8 @@ describe('codeCard redRoom cells', () => {
   const mk = (redRoom: boolean) => { const c = codeCard({ side: 'home', setEmail: noop, redRoom, ...cb }); return { c, root: wrap(c.nodes) } }
   const input = (root: Element) => root.querySelector('#cc-code') as HTMLInputElement
   const cells = (root: Element) => { const box = [...root.querySelectorAll('[aria-hidden="true"]')].find((e) => e.children.length === 6); return box ? [...box.children].map((c) => c.textContent) : null }
-  const type = (i: HTMLInputElement, v: string) => { i.value = v; i.dispatchEvent(new Event('input', { bubbles: true })) }
+  // Write through the prototype setter so only the `input` listener (not the instance `value` setter) can repaint the cells.
+  const type = (i: HTMLInputElement, v: string) => { Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(i, v); i.dispatchEvent(new Event('input', { bubbles: true })) }
   const attrs = (e: Element) => [...e.attributes].map((a) => `${a.name}=${a.value}`).sort()
 
   it('should_keep_exactly_one_real_code_input_with_the_same_id_label_and_attributes', () => {
